@@ -1,6 +1,88 @@
 <!-- HERO | DESIGN.md 255 Map | renderHero() L454-479 -->
 {% assign hero = include.hero | default: page.hero %}
 {% if hero %}
+
+{% if hero.demo %}
+<!-- Split hero with device mockup -->
+<div class="hero-split">
+  <div class="hero-split-inner">
+    <div class="hero-content">
+      {% if hero.badge %}<div class="hero-badge">{{ hero.badge }}</div>{% endif %}
+      <h1>{{ hero.title }}</h1>
+      {% if hero.description %}<p>{{ hero.description }}</p>{% endif %}
+      {% if hero.cta %}
+      <div class="cta-buttons">
+        {% for btn in hero.cta %}
+        <a href="{{ btn.href }}" class="btn{% unless forloop.first %} btn-secondary{% endunless %}"{% if btn.talk %} onclick="TALK.open();return false"{% endif %}>{{ btn.label }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    <div class="device-container">
+      <div class="device-glow"></div>
+      {% if hero.demo.products.size > 1 %}
+      <div class="demo-tabs">
+        {% for p in hero.demo.products %}
+        <button class="demo-tab{% if forloop.first %} active{% endif %}" onclick="window._demoSwitch({{ forloop.index0 }})">{{ p.productIcon }} {{ p.product }}</button>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% for p in hero.demo.products %}
+      <div class="iphone" data-demo="{{ forloop.index0 }}" {% unless forloop.first %}style="display:none"{% endunless %}>
+        <div class="iphone-screen">
+          <div class="app-preview">
+            <div class="chat-header">{{ p.productIcon }} {{ p.product }}</div>
+            <div class="chat-messages">
+              {% assign msg_idx = 0 %}
+              {% for msg in p.messages %}
+                {% if msg.role == 'user' %}
+                  {% assign msg_idx = msg_idx | plus: 1 %}
+                  <div class="chat-msg chat-user msg-{{ msg_idx }}">{{ msg.text }}</div>
+                {% elsif msg.role == 'bot' %}
+                  {% assign msg_idx = msg_idx | plus: 1 %}
+                  <div class="typing-indicator typing-{{ msg_idx }}"><span></span><span></span><span></span></div>
+                  {% assign msg_idx = msg_idx | plus: 1 %}
+                  <div class="chat-msg chat-bot msg-{{ msg_idx }}">{{ msg.text }}</div>
+                  {% if msg.citation %}
+                    {% assign msg_idx = msg_idx | plus: 1 %}
+                    <div class="chat-msg chat-cite msg-{{ msg_idx }}">{{ msg.citation }}</div>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </div>
+            <div class="chat-input-area">
+              <div class="chat-input">
+                {% for msg in p.messages %}
+                  {% if msg.role == 'user' %}
+                  <div class="input-text-wrapper input-wrapper-{{ forloop.index }}">
+                    <span class="input-text">{{ msg.text }}</span>
+                    <span class="input-cursor"></span>
+                  </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              <button class="chat-send">&#9654;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<script>
+window._demoSwitch = function(idx) {
+  document.querySelectorAll('.iphone[data-demo]').forEach(function(el) {
+    el.style.display = el.getAttribute('data-demo') == idx ? '' : 'none';
+  });
+  document.querySelectorAll('.demo-tab').forEach(function(el, i) {
+    el.classList.toggle('active', i === idx);
+  });
+};
+</script>
+
+{% else %}
+<!-- Standard hero (no demo) -->
 <div class="hero">
   {% if hero.badge %}<div class="hero-badge">{{ hero.badge }}</div>{% endif %}
   <h1 class="gradient-text">{{ hero.title }}</h1>
@@ -14,4 +96,6 @@
   </div>
   {% endif %}
 </div>
+{% endif %}
+
 {% endif %}
