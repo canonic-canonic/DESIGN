@@ -1,1 +1,11 @@
-<!-- SECTION: STATS | DESIGN.md 255 Map -->
+<!-- STATS | DESIGN.md 255 Map | renderStats() L1083-1111 -->
+{% if page.stats %}
+<div class="stats">
+  {% for s in page.stats %}
+  <div class="stat">
+    <div class="stat-value">{{ s.value }}</div>
+    <div class="stat-label">{{ s.label }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

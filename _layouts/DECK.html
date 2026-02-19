@@ -1,1 +1,70 @@
-<!-- LAYOUT: DECK | DESIGN.md 255 Map -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.scope }}</title>
+  <meta name="description" content="{{ page.description }}">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
+  <style>:root{--accent:{{ page.accent | default: site.accent | default: '#f5a623' }};--accent-rgb:{{ page.accent_rgb | default: site.accent_rgb | default: '245,166,35' }};}</style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <div class="brand"><strong>{{ page.brand | default: site.scope }}</strong></div>
+      <div class="deck-label">{{ page.subtitle | default: "DECK" }}</div>
+    </div>
+    <div class="header-right">
+      <div class="timer-badge" id="deckTimer">0:00</div>
+      <div class="slide-indicator"><span id="deckCurr">1</span> / {{ page.slides | size }}</div>
+      <div class="dl-wrap" id="deckDlWrap">
+        <button class="dl-btn" onclick="this.parentElement.classList.toggle('open')">EXPORT &#9662;</button>
+        <div class="dl-menu">
+          <button class="dl-menu-item" onclick="window.print()">PDF</button>
+        </div>
+      </div>
+      {% include TALK.html %}
+    </div>
+  </header>
+
+  <main>
+    <div class="slide-area">
+      <div class="slide-container">
+        {% for slide in page.slides %}
+        <div class="slide{% if slide.memorial %} slide-memorial{% endif %}{% if forloop.first %} active{% endif %}" data-slide="{{ forloop.index }}" data-time="{{ slide.time | default: '0:00' }}">
+
+          {% if slide.heading %}<h1 class="slide-heading">{{ slide.heading }}</h1>{% endif %}
+          {% if slide.story %}<div class="story">{{ slide.story }}</div>{% endif %}
+
+          {% if slide.figure == "timeline" %}{% include figures/TIMELINE.html items=slide.items %}
+          {% elsif slide.figure == "hero-stats" %}{% include figures/HERO-STATS.html items=slide.items footer=slide.footer %}
+          {% elsif slide.figure == "architecture" %}{% include figures/ARCHITECTURE.html layers=slide.layers label=slide.label comps=slide.comps punchline=slide.punchline bars=slide.bars multiplier=slide.multiplier %}
+          {% elsif slide.figure == "funnel" %}{% include figures/FUNNEL.html left=slide.left bridge=slide.bridge right=slide.right result=slide.result %}
+          {% elsif slide.figure == "score-meter" %}{% include figures/SCORE.html score=slide.score label=slide.label %}
+          {% elsif slide.figure == "tier-cards" %}{% include figures/TIER-CARDS.html cards=slide.cards %}
+          {% elsif slide.figure == "bar-chart" %}{% include figures/BARS.html bars=slide.bars %}
+          {% endif %}
+
+          {% if slide.content %}{{ slide.content }}{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="slide-nav">
+        {% for slide in page.slides %}
+        <div class="nav-dot{% if forloop.first %} active{% endif %}" onclick="DECK.go({{ forloop.index }})"></div>
+        {% endfor %}
+      </div>
+    </div>
+  </main>
+
+  <footer class="deck-footer">{{ page.footer_text | default: site.scope }}</footer>
+
+  {% if page.math %}{% include MATH.html %}{% endif %}
+  <script src="{{ '/assets/js/deck.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
+  <script>DECK.init(); TALK.init();</script>
+</body>
+</html>

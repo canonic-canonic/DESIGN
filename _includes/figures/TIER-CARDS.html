@@ -1,1 +1,19 @@
-<!-- FIGURE: TIER-CARDS | DESIGN.md 255 Map -->
+<!-- TIER-CARDS | DESIGN.md 255 Map | Decomposed from PMWC/DECK/ slide 7 -->
+<div class="tier-cards-grid">
+  {% for card in include.cards %}
+  <div class="tier-card" {% if card.color %}style="border-color:{{ card.color }};"{% endif %}>
+    <div class="tier-card-name">{{ card.name }}</div>
+    <div class="tier-card-price" {% if card.color %}style="color:{{ card.color }};"{% endif %}>{{ card.price }}</div>
+    {% if card.badges %}
+    <div class="tier-card-badges">
+      {% for b in card.badges %}<span class="tier-badge">{{ b }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    {% if card.features %}
+    <ul class="tier-card-features">
+      {% for f in card.features %}<li>{{ f }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>

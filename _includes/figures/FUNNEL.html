@@ -1,1 +1,28 @@
-<!-- FIGURE: FUNNEL | DESIGN.md 255 Map -->
+<!-- FUNNEL | DESIGN.md 255 Map | Decomposed from PMWC/DECK/ slide 6 -->
+<div class="funnel">
+  <div class="funnel-col funnel-left">
+    <div class="funnel-header">{{ include.left.header }}</div>
+    <div class="funnel-items">
+      {% for item in include.left.items %}<div class="fi fi-idiom">{{ item }}</div>{% endfor %}
+      {% if include.left.more %}<div class="fi fi-more">{{ include.left.more }}</div>{% endif %}
+    </div>
+  </div>
+  <div class="funnel-flow">&rarr;</div>
+  <div class="funnel-bridge">
+    <div class="bridge-circle">
+      <div class="bridge-c">{{ include.bridge.label }}</div>
+      <div class="bridge-sub">{{ include.bridge.sub }}</div>
+    </div>
+  </div>
+  <div class="funnel-flow">&rarr;</div>
+  <div class="funnel-col funnel-right">
+    <div class="funnel-header">{{ include.right.header }}</div>
+    <div class="funnel-items">
+      {% for item in include.right.items %}<div class="fi fi-lang">{{ item }}</div>{% endfor %}
+      {% if include.right.more %}<div class="fi fi-more">{{ include.right.more }}</div>{% endif %}
+    </div>
+  </div>
+</div>
+{% if include.result %}
+<div class="funnel-result">{{ include.result }}</div>
+{% endif %}

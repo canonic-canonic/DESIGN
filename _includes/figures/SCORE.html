@@ -1,1 +1,16 @@
-<!-- FIGURE: SCORE | DESIGN.md 255 Map -->
+<!-- SCORE | DESIGN.md 255 Map | DESIGN.js L506-537 + PMWC/DECK/ galaxy score -->
+{% assign score = include.score | default: 255 %}
+{% assign label = include.label | default: "MAGIC" %}
+{% assign pct = score | times: 100 | divided_by: 255 %}
+<div class="score-meter">
+  <svg viewBox="0 0 420 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:420px;">
+    <!-- Background arc -->
+    <path d="M 60 200 A 150 150 0 0 1 360 200" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="16" stroke-linecap="round"/>
+    <!-- Score arc -->
+    <path d="M 60 200 A 150 150 0 0 1 360 200" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round"
+          stroke-dasharray="{{ pct | times: 4.71 }} 471" opacity="0.9"/>
+    <!-- Score text -->
+    <text x="210" y="170" text-anchor="middle" fill="var(--fg)" font-size="72" font-weight="800" font-family="var(--font)">{{ score }}</text>
+    <text x="210" y="205" text-anchor="middle" fill="var(--accent)" font-size="16" font-weight="700" letter-spacing="0.2em" font-family="var(--mono)">{{ label }}</text>
+  </svg>
+</div>

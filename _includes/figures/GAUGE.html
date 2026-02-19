@@ -1,1 +1,5 @@
-<!-- FIGURE: GAUGE | DESIGN.md 255 Map -->
+<!-- GAUGE | DESIGN.md 255 Map | DESIGN.js L770-816 -->
+<!-- 270-degree arc meter for percentages/coverage -->
+<div class="figure-gauge" data-figure="gauge" data-value="{{ include.value }}" data-max="{{ include.max | default: 100 }}" data-label="{{ include.label }}" data-unit="{{ include.unit }}">
+  <noscript>{{ include.label }}: {{ include.value }}{{ include.unit }}</noscript>
+</div>

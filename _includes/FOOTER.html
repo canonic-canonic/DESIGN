@@ -1,1 +1,12 @@
-<!-- SECTION: FOOTER | DESIGN.md 255 Map -->
+<!-- FOOTER | DESIGN.md 255 Map | renderFooter() L1608-1632 -->
+{% assign fleet = site.data.fleet %}
+{% if page.footer.links %}
+<div style="display:flex;gap:24px;justify-content:center;margin-bottom:16px;flex-wrap:wrap;">
+  {% for l in page.footer.links %}<a href="{{ l.href }}">{{ l.label }}</a>{% endfor %}
+</div>
+<p>{{ page.footer.tagline | default: site.tagline | default: "CANONIC" }}</p>
+{% elsif fleet.sites %}
+{% for s in fleet.sites %}{% unless forloop.first %} · {% endunless %}<a href="{{ s.url }}">{{ s.label }}</a>{% endfor %}
+ · <a href="#" onclick="TALK.open();return false">TALK</a>
+<br><br>{{ site.tagline | default: "CANONIC" }}
+{% endif %}

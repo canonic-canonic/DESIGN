@@ -1,1 +1,5 @@
-<!-- FIGURE: AUDIT | DESIGN.md 255 Map -->
+<!-- AUDIT | DESIGN.md 255 Map | DESIGN.js L573-596 -->
+<!-- Stacked evidence blocks linked vertically -->
+<div class="figure-audit" data-figure="audit-trail" data-items='{{ include.items | jsonify }}'>
+  <noscript>{% for item in include.items %}<div>{{ item }}</div>{% endfor %}</noscript>
+</div>

@@ -1,1 +1,44 @@
-<!-- FIGURE: ARCHITECTURE | DESIGN.md 255 Map -->
+<!-- ARCHITECTURE | DESIGN.md 255 Map | Decomposed from PMWC/DECK/ slide 5 -->
+<div class="moat">
+  {% if include.label %}<div class="moat-label">{{ include.label }}</div>{% endif %}
+  <div class="arch">
+    {% for layer in include.layers %}
+    {% if layer.type == "frontend" or layer.type == "backend" %}
+    <div class="arch-layer arch-{{ layer.type }}">
+      <div class="arch-id">{{ layer.id }}</div>
+      <div class="arch-title">{{ layer.title }}</div>
+      <div class="arch-desc">{{ layer.desc }}</div>
+    </div>
+    {% if forloop.last == false %}<div class="arch-connector"><div class="arch-arrow"></div><div class="arch-arrow-label">{{ layer.connector | default: "" }}</div></div>{% endif %}
+    {% elsif layer.type == "stdlib" %}
+    <div class="arch-lib">
+      <div class="arch-id">{{ layer.id }}</div>
+      <div class="arch-lib-name">{{ layer.title }}</div>
+      <div class="arch-lib-type">{{ layer.desc }}</div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% if include.comps %}<div class="moat-comps">{{ include.comps }}</div>{% endif %}
+</div>
+{% if include.bars %}
+<div class="perf-evidence">
+  <div class="perf-bars">
+    {% for bar in include.bars %}
+    <div class="perf-row">
+      <span class="perf-era{% if bar.active %} active{% endif %}">{{ bar.label }}</span>
+      <div class="perf-bar-h" style="width:{{ bar.width }};background:{{ bar.color }};{% if bar.border %}border:1px solid {{ bar.border }};{% endif %}"></div>
+      <span class="perf-rate{% if bar.active %} active{% endif %}">{{ bar.value }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% if include.multiplier %}
+  <div class="perf-multiplier">
+    <div class="perf-mult-num">{{ include.multiplier.value }}</div>
+    <div class="perf-mult-label">{{ include.multiplier.label }}</div>
+    <div class="perf-mult-detail">{{ include.multiplier.detail }}</div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% if include.punchline %}<div class="moat-punchline">{{ include.punchline }}</div>{% endif %}

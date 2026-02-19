@@ -1,1 +1,15 @@
-<!-- SECTION: TIERS | DESIGN.md 255 Map -->
+<!-- TIERS | DESIGN.md 255 Map | renderSections L1204-1224 -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-top:32px;">
+  {% for t in include.tiers %}
+  <div class="tier{% if t.featured %} featured{% endif %}">
+    <div class="tier-name">{{ t.name }}</div>
+    <div class="tier-price">{{ t.price }}</div>
+    <div class="tier-price-sub">{{ t.sub }}</div>
+    <ul class="tier-list">
+      {% for f in t.features %}<li>{{ f }}</li>{% endfor %}
+    </ul>
+    <a href="{{ t.ctaHref | default: '#' }}" class="tier-cta{% if t.featured %} tier-cta-primary{% else %} tier-cta-secondary{% endif %}"{% if t.ctaTalk %} onclick="TALK.open();return false"{% endif %}>{{ t.ctaLabel }}</a>
+  </div>
+  {% endfor %}
+</div>
+{% if include.axiom %}<div style="text-align:center;padding:32px 24px;font-size:15px;color:var(--fg-secondary);font-style:italic;"><strong style="color:var(--fg);font-style:normal;">{{ include.axiom }}</strong></div>{% endif %}

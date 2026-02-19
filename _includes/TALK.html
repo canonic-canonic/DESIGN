@@ -1,1 +1,21 @@
-<!-- SECTION: TALK | DESIGN.md 255 Map -->
+<!-- TALK | DESIGN.md 255 Map | DESIGN.py template + talk.js -->
+<div class="talk-overlay" id="talkOverlay">
+  <div class="talk-overlay-header">
+    <div class="talk-dot"></div>
+    <span class="talk-scope">{{ site.talk_label | default: "TALK" }}</span>
+    <select id="talkProviderSelect" onchange="TALK.switchProvider(this.value)" style="background:#1a1a2e;color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:2px 6px;font-size:11px;margin-left:auto;cursor:pointer;">
+      <option value="auto">AUTO</option>
+      <option value="anthropic">ANTHROPIC</option>
+      <option value="runpod">RUNPOD</option>
+      <option value="vastai">VAST.AI</option>
+      <option value="deepseek">DEEPSEEK</option>
+    </select>
+    <span id="talkProviderLabel" style="font-size:10px;opacity:0.5;margin-left:4px;">AUTO</span>
+    <button type="button" class="talk-overlay-close" onclick="TALK.close()">ESC</button>
+  </div>
+  <div class="talk-messages" id="talkMessages"></div>
+  <div class="talk-input-row">
+    <input type="text" id="talkChatInput" placeholder="{{ page.talk_placeholder | default: 'Ask anything...' }}" autocomplete="off">
+    <button type="button" id="talkSend" onclick="TALK.send()">SEND</button>
+  </div>
+</div>

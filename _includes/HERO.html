@@ -1,1 +1,17 @@
-<!-- SECTION: HERO | DESIGN.md 255 Map -->
+<!-- HERO | DESIGN.md 255 Map | renderHero() L454-479 -->
+{% assign hero = page.hero %}
+{% if hero %}
+<div class="hero">
+  {% if hero.badge %}<div class="hero-badge">{{ hero.badge }}</div>{% endif %}
+  <h1 class="gradient-text">{{ hero.title }}</h1>
+  {% if hero.subtitle %}<p class="subtitle">{{ hero.subtitle }}</p>{% endif %}
+  {% if hero.description %}<p class="description">{{ hero.description }}</p>{% endif %}
+  {% if hero.cta %}
+  <div class="cta-buttons">
+    {% for btn in hero.cta %}
+    <a href="{{ btn.href }}" class="btn{% unless forloop.first %} btn-secondary{% endunless %}"{% if btn.talk %} onclick="TALK.open();return false"{% endif %}>{{ btn.label }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}

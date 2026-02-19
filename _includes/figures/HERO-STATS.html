@@ -1,1 +1,13 @@
-<!-- FIGURE: HERO-STATS | DESIGN.md 255 Map -->
+<!-- HERO-STATS | DESIGN.md 255 Map | Decomposed from PMWC/DECK/ slide 4 -->
+<div class="hero-stats">
+  {% for item in include.items %}
+  <div class="hero-stat">
+    <div class="hero-number">{{ item.value }}</div>
+    <div class="hero-label">{{ item.label }}</div>
+    {% if item.detail %}<div class="hero-detail">{{ item.detail }}</div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% if include.footer %}
+<div class="hero-footer">{{ include.footer }}</div>
+{% endif %}

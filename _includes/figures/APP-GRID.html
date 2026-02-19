@@ -1,1 +1,9 @@
-<!-- FIGURE: APP-GRID | DESIGN.md 255 Map -->
+<!-- APP-GRID | DESIGN.md 255 Map | DESIGN.js inline -->
+<div class="app-grid">
+  {% for app in include.apps %}
+  <a href="{{ app.url | default: '#' }}" class="app-icon" {% if app.accent %}style="border-color:{{ app.accent }};"{% endif %}>
+    {% if app.icon %}<span class="app-icon-glyph">{{ app.icon }}</span>{% endif %}
+    <span class="app-icon-label">{{ app.label }}</span>
+  </a>
+  {% endfor %}
+</div>

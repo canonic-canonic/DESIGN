@@ -1,1 +1,12 @@
-<!-- SECTION: TABLE | DESIGN.md 255 Map -->
+<!-- TABLE | DESIGN.md 255 Map | renderSimpleTable -->
+{% assign t = include.table %}
+{% if t %}
+<table>
+  {% if t.headers %}<thead><tr>{% for h in t.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>{% endif %}
+  <tbody>
+    {% for row in t.rows %}
+    <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}

@@ -1,1 +1,36 @@
-<!-- SECTION: DASHBOARD | DESIGN.md 255 Map -->
+<!-- DASHBOARD | DESIGN.md 255 Map | renderSections L1180-1197 -->
+<div class="dashboard">
+  {% for widget in include.widgets %}
+  <div class="dashboard-widget{% if widget.span == 2 %} dashboard-wide{% endif %}">
+    {% if widget.metric %}
+    <div class="metric-card">
+      <div class="metric-label">{{ widget.metric.label }}</div>
+      <div class="metric-value">{{ widget.metric.value }}</div>
+      {% if widget.metric.change %}<div class="metric-change" style="color:{% if widget.metric.trend == 'up' %}#00ff88{% elsif widget.metric.trend == 'down' %}#ff4444{% else %}var(--dim){% endif %}">{% if widget.metric.trend == "up" %}&#9650;{% elsif widget.metric.trend == "down" %}&#9660;{% endif %} {{ widget.metric.change }}</div>{% endif %}
+    </div>
+    {% endif %}
+    {% if widget.figure %}
+    <div class="dashboard-chart">
+      {% assign fig = widget.figure %}
+      {% if fig.type == "timeline" %}{% include figures/TIMELINE.html items=fig.items %}
+      {% elsif fig.type == "hero-stats" %}{% include figures/HERO-STATS.html items=fig.items footer=fig.footer %}
+      {% elsif fig.type == "architecture" %}{% include figures/ARCHITECTURE.html layers=fig.layers label=fig.label %}
+      {% elsif fig.type == "funnel" %}{% include figures/FUNNEL.html left=fig.left bridge=fig.bridge right=fig.right result=fig.result %}
+      {% elsif fig.type == "score-meter" %}{% include figures/SCORE.html score=fig.score label=fig.label %}
+      {% elsif fig.type == "tier-cards" %}{% include figures/TIER-CARDS.html cards=fig.cards %}
+      {% elsif fig.type == "bar-chart" %}{% include figures/BARS.html bars=fig.bars %}
+      {% elsif fig.type == "area-chart" %}{% include figures/AREA.html points=fig.points label=fig.label %}
+      {% elsif fig.type == "donut" %}{% include figures/DONUT.html segments=fig.segments total=fig.total label=fig.label %}
+      {% elsif fig.type == "gauge" %}{% include figures/GAUGE.html value=fig.value max=fig.max label=fig.label %}
+      {% elsif fig.type == "pipeline" %}{% include figures/PIPELINE.html steps=fig.steps %}
+      {% elsif fig.type == "flow-chain" %}{% include figures/FLOW.html nodes=fig.nodes %}
+      {% elsif fig.type == "audit-trail" %}{% include figures/AUDIT.html items=fig.items %}
+      {% elsif fig.type == "balance" %}{% include figures/BALANCE.html left=fig.left right=fig.right tilt=fig.tilt %}
+      {% elsif fig.type == "app-grid" %}{% include figures/APP-GRID.html apps=fig.apps %}
+      {% endif %}
+    </div>
+    {% endif %}
+    {% if widget.table %}{% include TABLE.html table=widget.table %}{% endif %}
+  </div>
+  {% endfor %}
+</div>

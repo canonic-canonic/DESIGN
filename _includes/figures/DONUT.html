@@ -1,1 +1,5 @@
-<!-- FIGURE: DONUT | DESIGN.md 255 Map -->
+<!-- DONUT | DESIGN.md 255 Map | DESIGN.js L819-878 -->
+<!-- COIN distribution / asset allocation donut chart -->
+<div class="figure-donut" data-figure="donut" data-segments='{{ include.segments | jsonify }}' data-total="{{ include.total }}" data-label="{{ include.label }}">
+  <noscript>{{ include.label }}: {{ include.total }}</noscript>
+</div>

@@ -1,0 +1,26 @@
+<!-- PROOF | DESIGN.md 255 Map | DESIGN.css L1269-1282, L2284-2311 -->
+<!-- Proof blocks: monospace evidence + closing proof section -->
+
+{% if include.type == 'closing' %}
+<!-- Post proof — closing statement with optional CTA -->
+<div class="post-proof{% if include.cta %} post-proof-cta{% endif %}">
+  {% if include.quote %}
+  <blockquote>{{ include.quote }}</blockquote>
+  {% endif %}
+  {% if include.sig %}
+  <p class="post-sig">{{ include.sig }}</p>
+  {% endif %}
+  {% if include.cta %}
+    {% for btn in include.cta %}
+    <a href="{{ btn.href }}" class="btn{% if btn.accent %} btn-accent{% endif %}">{{ btn.label }}</a>
+    {% endfor %}
+  {% endif %}
+</div>
+
+{% else %}
+<!-- Proof block — monospace evidence -->
+<div class="proof">
+  {% if include.title %}<strong>{{ include.title }}</strong><br><br>{% endif %}
+  {{ include.body | markdownify }}
+</div>
+{% endif %}

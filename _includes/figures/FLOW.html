@@ -1,1 +1,5 @@
-<!-- FIGURE: FLOW | DESIGN.md 255 Map -->
+<!-- FLOW | DESIGN.md 255 Map | DESIGN.js L599-627 -->
+<!-- Node flow chain: Foundation → MAGIC → Hadley Lab -->
+<div class="figure-flow" data-figure="flow-chain" data-nodes='{{ include.nodes | jsonify }}'>
+  <noscript>{% for node in include.nodes %}{{ node }}{% unless forloop.last %} → {% endunless %}{% endfor %}</noscript>
+</div>

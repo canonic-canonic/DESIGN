@@ -1,1 +1,14 @@
-<!-- SECTION: NAV | DESIGN.md 255 Map -->
+<!-- NAV | DESIGN.md 255 Map | renderNav() L421-444 -->
+{% if page.nav %}
+<div class="nav-inner">
+  <div style="display:flex;align-items:center;gap:10px;">
+    {% if page.scope_icon %}<span style="font-size:18px;color:var(--accent);line-height:1;">{{ page.scope_icon }}</span>{% endif %}
+    <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);">{{ page.scope_name | default: site.scope | upcase }}</span>
+  </div>
+  <ul class="nav-links">
+    {% for item in page.nav %}
+    <li><a href="{{ item.href }}"{% if item.type == "flagship" %} class="nav-flagship"{% endif %}>{{ item.label }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}

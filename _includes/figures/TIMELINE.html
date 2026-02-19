@@ -1,1 +1,11 @@
-<!-- FIGURE: TIMELINE | DESIGN.md 255 Map -->
+<!-- TIMELINE | DESIGN.md 255 Map | Decomposed from PMWC/DECK/ slide 2 -->
+<div class="timeline-visual">
+  {% for item in include.items %}
+  <div class="tl-node">
+    <div class="tl-year">{{ item.year }}</div>
+    <div class="tl-event{% if item.company %} company{% endif %}">{{ item.event }}</div>
+    <div class="tl-detail">{{ item.detail }}</div>
+    {% if item.amount %}<div class="tl-amt">{{ item.amount }}</div>{% else %}<div class="tl-amt"></div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
