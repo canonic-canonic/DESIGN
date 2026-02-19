@@ -59,5 +59,15 @@
   <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
   <script>TALK.init();</script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    document.querySelectorAll('code.language-mermaid').forEach(c=>{
+      const d=document.createElement('div');
+      d.classList.add('mermaid');
+      d.textContent=c.textContent;
+      c.parentElement.replaceWith(d);
+    });
+    mermaid.initialize({startOnLoad:true,theme:document.documentElement.classList.contains('dark')?'dark':'default'});
+  </script>
 </body>
 </html>
