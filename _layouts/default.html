@@ -1,7 +1,8 @@
 <!-- LAYOUT: default | ONE extensible layout | DESIGN.md 255 Map -->
 <!-- Renders: eco-bar, nav, hero, sections (cards/dashboard/table/tiers/about/etc), econ, cta, footer, talk -->
 <!-- Content resolves from: page front matter OR _data/{scope}.json -->
-{% assign sd = site.data[page.scope | downcase] %}
+{% assign scope_key = page.scope | default: site.scope | downcase %}
+{% assign sd = site.data[scope_key] %}
 {% assign hero = page.hero | default: sd.hero %}
 {% assign nav = page.nav | default: sd.nav %}
 {% assign sections = page.sections | default: sd.sections %}
