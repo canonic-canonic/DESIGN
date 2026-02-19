@@ -1,0 +1,63 @@
+<!-- LAYOUT: post | Blog articles | DESIGN.md 255 Map -->
+{% assign accent = page.accent | default: site.accent | default: '#3b82f6' %}
+{% assign accent_rgb = page.accent_rgb | default: site.accent_rgb | default: '59,130,246' %}
+<!DOCTYPE html>
+<html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
+  <title>{{ page.title }} | {{ site.title }}</title>
+  <meta name="description" content="{{ page.description | default: page.excerpt | strip_html | truncate: 160 }}">
+  <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
+  <style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
+</head>
+<body class="post-page">
+
+  {% include ECO.html %}
+
+  <nav id="nav">
+    <div class="nav-inner">
+      <a href="{{ '/BLOGS/' | relative_url }}" class="nav-back">&larr; Journal</a>
+      <ul class="nav-links">
+        <li><a href="{{ '/CHAT/' | relative_url }}">CHAT</a></li>
+        <li><a href="{{ '/BLOGS/' | relative_url }}">BLOGS</a></li>
+        <li><a href="{{ '/SERVICES/' | relative_url }}">SERVICES</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <article class="post container">
+    <header class="post-header">
+      <div class="hero-badge">{{ page.badge | default: "JOURNAL" }}</div>
+      <h1 class="gradient-text">{{ page.title }}</h1>
+      {% if page.date %}<time class="post-date">{{ page.date | date: "%B %d, %Y" }}</time>{% endif %}
+      {% if page.author %}<span class="post-author">{{ page.author }}</span>{% endif %}
+    </header>
+
+    {% if page.figure %}
+    <figure class="post-figure">
+      <div data-figure="{{ page.figure.type }}" data-config='{{ page.figure | jsonify }}'></div>
+    </figure>
+    {% endif %}
+
+    <div class="post-body prose">
+      {{ content }}
+    </div>
+
+    {% if page.proof %}
+    {% include PROOF.html type="closing" quote=page.proof.quote sig=page.proof.sig cta=page.proof.cta %}
+    {% endif %}
+  </article>
+
+  <footer id="footer">{% include FOOTER.html %}</footer>
+
+  {% include TALK.html %}
+
+  {% if page.math %}{% include MATH.html %}{% endif %}
+  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
+  <script>TALK.init();</script>
+</body>
+</html>

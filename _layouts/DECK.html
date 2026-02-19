@@ -1,69 +1,103 @@
+<!-- LAYOUT: DECK | Presentations | DESIGN.md 255 Map -->
+<!-- Same section data as default, rendered as slides instead of scrollable page -->
+{% assign sd = site.data[page.scope | downcase] %}
+{% assign sections = page.sections | default: sd.sections %}
+{% assign accent = page.accent | default: sd.accent | default: site.accent | default: '#f5a623' %}
+{% assign accent_rgb = page.accent_rgb | default: sd.accent_rgb | default: site.accent_rgb | default: '245,166,35' %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ page.title | default: site.scope }}</title>
-  <meta name="description" content="{{ page.description }}">
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
+  <title>{{ page.title | default: site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
   <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
-  <style>:root{--accent:{{ page.accent | default: site.accent | default: '#f5a623' }};--accent-rgb:{{ page.accent_rgb | default: site.accent_rgb | default: '245,166,35' }};}</style>
+  <style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
 </head>
-<body>
-  <header>
+<body class="deck-mode">
+
+  <header class="deck-header">
     <div class="header-left">
-      <div class="brand"><strong>{{ page.brand | default: site.scope }}</strong></div>
-      <div class="deck-label">{{ page.subtitle | default: "DECK" }}</div>
+      <div class="brand"><strong>{{ page.brand | default: site.title }}</strong></div>
+      <div class="deck-label">{{ page.subtitle | default: page.title }}</div>
     </div>
     <div class="header-right">
       <div class="timer-badge" id="deckTimer">0:00</div>
-      <div class="slide-indicator"><span id="deckCurr">1</span> / {{ page.slides | size }}</div>
+      <div class="slide-indicator"><span id="deckCurr">1</span> / {{ sections | size }}</div>
       <div class="dl-wrap" id="deckDlWrap">
         <button class="dl-btn" onclick="this.parentElement.classList.toggle('open')">EXPORT &#9662;</button>
         <div class="dl-menu">
           <button class="dl-menu-item" onclick="window.print()">PDF</button>
         </div>
       </div>
-      {% include TALK.html %}
     </div>
   </header>
 
-  <main>
+  <main class="deck-main">
     <div class="slide-area">
       <div class="slide-container">
-        {% for slide in page.slides %}
-        <div class="slide{% if slide.memorial %} slide-memorial{% endif %}{% if forloop.first %} active{% endif %}" data-slide="{{ forloop.index }}" data-time="{{ slide.time | default: '0:00' }}">
+        {% for section in sections %}
+        <div class="slide{% if forloop.first %} active{% endif %}" data-slide="{{ forloop.index }}">
+          {% if section.eyebrow %}<div class="slide-eyebrow">{{ section.eyebrow }}</div>{% endif %}
+          {% if section.title %}<h1 class="slide-heading">{{ section.title }}</h1>{% endif %}
+          {% if section.description %}<div class="slide-story">{{ section.description }}</div>{% endif %}
 
-          {% if slide.heading %}<h1 class="slide-heading">{{ slide.heading }}</h1>{% endif %}
-          {% if slide.story %}<div class="story">{{ slide.story }}</div>{% endif %}
-
-          {% if slide.figure == "timeline" %}{% include figures/TIMELINE.html items=slide.items %}
-          {% elsif slide.figure == "hero-stats" %}{% include figures/HERO-STATS.html items=slide.items footer=slide.footer %}
-          {% elsif slide.figure == "architecture" %}{% include figures/ARCHITECTURE.html layers=slide.layers label=slide.label comps=slide.comps punchline=slide.punchline bars=slide.bars multiplier=slide.multiplier %}
-          {% elsif slide.figure == "funnel" %}{% include figures/FUNNEL.html left=slide.left bridge=slide.bridge right=slide.right result=slide.result %}
-          {% elsif slide.figure == "score-meter" %}{% include figures/SCORE.html score=slide.score label=slide.label %}
-          {% elsif slide.figure == "tier-cards" %}{% include figures/TIER-CARDS.html cards=slide.cards %}
-          {% elsif slide.figure == "bar-chart" %}{% include figures/BARS.html bars=slide.bars %}
+          {% if section.dashboard %}
+          <div class="slide-dashboard">
+            {% for widget in section.dashboard %}
+            <div class="slide-widget{% if widget.span == 2 %} span-2{% endif %}">
+              {% if widget.metric %}
+              <div class="metric-card">
+                <div class="metric-value">{{ widget.metric.value }}</div>
+                <div class="metric-label">{{ widget.metric.label }}</div>
+                {% if widget.metric.change %}<div class="metric-change {{ widget.metric.trend }}">{{ widget.metric.change }}</div>{% endif %}
+              </div>
+              {% endif %}
+              {% if widget.table %}
+              <table class="slide-table">
+                <thead><tr>{% for h in widget.table.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+                <tbody>{% for row in widget.table.rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+              </table>
+              {% endif %}
+              {% if widget.figure %}
+              <div class="slide-figure" data-figure="{{ widget.figure.type }}" data-config='{{ widget.figure | jsonify }}'></div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
           {% endif %}
 
-          {% if slide.content %}{{ slide.content }}{% endif %}
+          {% if section.cards %}
+          <div class="slide-cards">
+            {% for card in section.cards %}
+            <div class="slide-card">
+              {% if card.icon %}<span class="card-icon">{{ card.icon }}</span>{% endif %}
+              <strong>{{ card.title }}</strong>
+              {% if card.desc %}<p>{{ card.desc }}</p>{% endif %}
+              {% if card.text %}<p>{{ card.text }}</p>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
         </div>
         {% endfor %}
       </div>
 
       <div class="slide-nav">
-        {% for slide in page.slides %}
+        {% for section in sections %}
         <div class="nav-dot{% if forloop.first %} active{% endif %}" onclick="DECK.go({{ forloop.index }})"></div>
         {% endfor %}
       </div>
     </div>
   </main>
 
-  <footer class="deck-footer">{{ page.footer_text | default: site.scope }}</footer>
+  <footer class="deck-footer">{{ page.footerTagline | default: page.title | default: site.title }}</footer>
 
   {% if page.math %}{% include MATH.html %}{% endif %}
-  <script src="{{ '/assets/js/deck.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/deck.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
   <script>DECK.init(); TALK.init();</script>
 </body>

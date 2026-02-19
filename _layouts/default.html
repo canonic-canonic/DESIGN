@@ -1,4 +1,5 @@
-<!-- LAYOUT: ECON | DESIGN.md 255 Map | extends RENDER + wallet/econ panels -->
+<!-- LAYOUT: default | ONE extensible layout | DESIGN.md 255 Map -->
+<!-- Renders: eco-bar, nav, hero, sections (cards/dashboard/table/tiers/about/etc), econ, cta, footer, talk -->
 <!-- Content resolves from: page front matter OR _data/{scope}.json -->
 {% assign sd = site.data[page.scope | downcase] %}
 {% assign hero = page.hero | default: sd.hero %}
@@ -14,10 +15,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
-  <title>{{ page.title | default: sd.name | default: site.scope }}</title>
+  <title>{{ page.title | default: sd.name | default: site.title }}</title>
   <meta name="description" content="{{ page.description | default: hero.description | default: site.description }}">
   <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
   <style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
+  {% if page.custom_head %}{{ page.custom_head }}{% endif %}
 </head>
 <body>
 
@@ -27,7 +29,7 @@
 
   <div id="hero">{% include HERO.html hero=hero %}</div>
 
-  <div id="stats">{% if page.stats %}{% include STATS.html %}{% endif %}</div>
+  {% if page.stats %}<div id="stats">{% include STATS.html %}</div>{% endif %}
 
   <div class="container">
     {% for section in sections %}
@@ -86,7 +88,8 @@
     </section>
     {% endfor %}
 
-    <!-- ECON: WORK = COIN ledger panel -->
+    {{ content }}
+
     {% if page.econ %}
     <section id="econ" class="card" style="margin-top:22px;padding:18px;">
       <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-tertiary);">WORK = COIN</div>
@@ -99,7 +102,6 @@
     </section>
     {% endif %}
 
-    <!-- ECON: Wallet panel -->
     {% if page.wallet %}
     <section id="wallet" class="card" style="margin-top:22px;padding:18px;">
       <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-tertiary);">COIN = WORK</div>
