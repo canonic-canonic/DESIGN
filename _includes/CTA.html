@@ -1,6 +1,7 @@
 <!-- CTA | DESIGN.md 255 Map | renderCTA() L1584-1606 -->
-{% assign cta = page.cta %}
+{% assign cta = include.cta | default: page.cta %}
 {% if cta %}
+{% if cta.class %}<div class="{{ cta.class }}">{% endif %}
 <div class="cta-title">{{ cta.title }}</div>
 <div class="cta-desc">{{ cta.description }}</div>
 <div class="cta-buttons">
@@ -8,4 +9,5 @@
   <a href="{{ btn.href }}" class="btn{% unless forloop.first %} btn-secondary{% endunless %}"{% if btn.talk %} onclick="TALK.open();return false"{% endif %}>{{ btn.label }}</a>
   {% endfor %}
 </div>
+{% if cta.class %}</div>{% endif %}
 {% endif %}

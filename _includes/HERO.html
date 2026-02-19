@@ -1,5 +1,5 @@
 <!-- HERO | DESIGN.md 255 Map | renderHero() L454-479 -->
-{% assign hero = page.hero %}
+{% assign hero = include.hero | default: page.hero %}
 {% if hero %}
 <div class="hero">
   {% if hero.badge %}<div class="hero-badge">{{ hero.badge }}</div>{% endif %}
