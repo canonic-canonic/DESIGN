@@ -1,1 +1,12 @@
-<!-- SECTION: PRODUCTS | DESIGN.md 255 Map -->
+<!-- PRODUCTS | DESIGN.md 255 Map | DESIGN.js renderProducts L1443-1457 -->
+<!-- App/product icon grid -->
+<div class="apps-grid">
+  {% for p in include.products %}
+  <a href="{{ p.href | default: '#' }}" class="app-card">
+    <div class="app-icon {{ p.icon_class }}">{{ p.icon }}</div>
+    <div class="app-name">{{ p.name }}</div>
+    <div class="app-desc">{{ p.description }}</div>
+    <span class="app-badge" style="{% if p.status_color %}background:rgba({{ p.status_color_rgb | default: '96,165,250' }},0.15);color:{{ p.status_color }};{% endif %}">{{ p.status }}</span>
+  </a>
+  {% endfor %}
+</div>

@@ -1,1 +1,65 @@
-<!-- SECTION: ABOUT | DESIGN.md 255 Map -->
+<!-- ABOUT | DESIGN.md 255 Map | DESIGN.js renderAbout L1488-1561 -->
+<!-- Identity + publications + career lineage + orgs -->
+<div class="about-section">
+  <div class="about-identity">
+    <div class="about-avatar">{{ include.about.initials }}</div>
+    <h3 class="about-name">{{ include.about.name }}</h3>
+    <p class="about-title">{{ include.about.title }}</p>
+    {% if include.about.location %}<p class="about-location">{{ include.about.location }}{% if include.about.institution %} &middot; {{ include.about.institution }}{% endif %}</p>{% endif %}
+    {% if include.about.tagline %}<p class="about-tagline">{{ include.about.tagline }}</p>{% endif %}
+
+    {% if include.about.links %}
+    <div class="about-links">
+      {% for l in include.about.links %}
+      <a href="{{ l.href }}" target="_blank" rel="noopener" class="about-link">{{ l.label }} &rarr;</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% if include.about.tags %}
+  <div class="about-tags">
+    {% for t in include.about.tags %}
+    <span class="about-tag">{{ t }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if include.about.publications %}
+  <div class="about-pubs">
+    <h4 class="about-section-title">Key Publications</h4>
+    {% for p in include.about.publications %}
+    <div class="about-pub">
+      <span class="about-pub-authors">{{ p.authors }}</span>
+      <em>{{ p.title }}</em>.
+      <span class="about-pub-journal">{{ p.journal }}</span>
+      {% if p.year %} ({{ p.year }}){% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if include.about.lineage %}
+  <div class="about-lineage">
+    <h4 class="about-section-title">Career Lineage</h4>
+    <div class="lineage-track">
+      {% for l in include.about.lineage %}
+      <div class="lineage-node">
+        <div class="lineage-year">{{ l.year }}</div>
+        <div class="lineage-dot"></div>
+        <div class="lineage-milestone">{{ l.milestone }}</div>
+        <div class="lineage-work">{{ l.work }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if include.about.orgs %}
+  <div class="about-orgs">
+    {% for o in include.about.orgs %}
+    <span class="about-org">{{ o.name }} <span class="about-org-year">{{ o.year }}</span></span>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>

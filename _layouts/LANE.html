@@ -1,1 +1,51 @@
-<!-- LAYOUT: LANE | DESIGN.md 255 Map -->
+<!-- LAYOUT: LANE | DESIGN.md 255 Map | LANE_STATIC surface -->
+<!-- Listing page: ECO + card grid + TALK bar -->
+<!DOCTYPE html>
+<html lang="en" data-scope="{{ site.scope | downcase }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
+  <title>{{ page.title | default: site.scope }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
+  <style>:root{--accent:{{ site.accent | default: '#3b82f6' }};--accent-rgb:{{ site.accent_rgb | default: '59,130,246' }};}</style>
+</head>
+<body>
+
+  {% include ECO.html %}
+
+  <div class="lane-hero" style="padding:140px 24px 48px;text-align:center;">
+    {% if page.badge %}<div class="hero-badge">{{ page.badge }}</div>{% endif %}
+    <h1 class="gradient-text">{{ page.title }}</h1>
+    {% if page.subtitle %}<p class="subtitle">{{ page.subtitle }}</p>{% endif %}
+  </div>
+
+  <div class="container">
+    {% if page.cards %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax({{ page.card_min | default: '280px' }}, 1fr));gap:{{ page.gap | default: '20px' }};margin-top:32px;">
+      {% for card in page.cards %}
+      <{% if card.href %}a href="{{ card.href }}"{% else %}div{% endif %} class="card" style="text-decoration:none;color:inherit;">
+        {% if card.icon %}<div class="primitive-icon" style="background:linear-gradient(135deg,{{ card.color1 | default: 'var(--accent)' }},{{ card.color2 | default: 'var(--green)' }});">{{ card.icon }}</div>{% endif %}
+        {% if card.eyebrow %}<div style="font-size:12px;color:var(--accent);font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">{{ card.eyebrow }}</div>{% endif %}
+        <h3 style="margin-bottom:8px;">{{ card.title }}</h3>
+        {% if card.text %}<p style="font-size:13px;color:var(--fg-secondary);line-height:1.6;">{{ card.text }}</p>{% endif %}
+        {% if card.tags %}<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+          {% for tag in card.tags %}<span style="padding:4px 10px;background:rgba(var(--accent-rgb),0.08);border:1px solid rgba(var(--accent-rgb),0.2);border-radius:999px;font-size:11px;font-weight:600;">{{ tag }}</span>{% endfor %}
+        </div>{% endif %}
+        {% if card.badge %}<span class="badge" style="margin-top:12px;border-color:var(--accent);color:var(--accent);">{{ card.badge }}</span>{% endif %}
+      </{% if card.href %}a{% else %}div{% endif %}>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {{ content }}
+  </div>
+
+  {% include TALK.html %}
+
+  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
+  <script>TALK.init();</script>
+</body>
+</html>

@@ -1,1 +1,52 @@
-<!-- LAYOUT: COMMERCE | DESIGN.md 255 Map -->
+<!-- LAYOUT: COMMERCE | DESIGN.md 255 Map | BOOKS_COMMERCE surface -->
+<!-- Checkout flow + content: ECO + product display + cart + TALK -->
+<!DOCTYPE html>
+<html lang="en" data-scope="{{ site.scope | downcase }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
+  <title>{{ page.title | default: site.scope }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
+  <style>:root{--accent:{{ site.accent | default: '#3b82f6' }};--accent-rgb:{{ site.accent_rgb | default: '59,130,246' }};}</style>
+</head>
+<body>
+
+  {% include ECO.html %}
+
+  <div class="books-hero">
+    <h1>{{ page.title }}</h1>
+    {% if page.subtitle %}<p>{{ page.subtitle }}</p>{% endif %}
+  </div>
+
+  <div class="books-grid">
+    {% for product in page.products %}
+    <div class="book-card">
+      {% if product.eyebrow %}<div class="book-eyebrow">{{ product.eyebrow }}</div>{% endif %}
+      <div class="book-title">{{ product.title }}</div>
+      {% if product.description %}<div class="book-desc">{{ product.description }}</div>{% endif %}
+      <div class="book-meta">
+        {% if product.price_usd %}<strong>${{ product.price_usd }}</strong>{% endif %}
+        {% if product.price_coin %}<strong>{{ product.price_coin }} COIN</strong>{% endif %}
+        {% if product.author %} · {{ product.author }}{% endif %}
+      </div>
+      {% if product.href %}
+      <a href="{{ product.href }}" class="btn" style="margin-top:16px;"
+         {% if product.checkout %}onclick="startCheckout('{{ product.id }}');return false"{% endif %}>
+        {{ product.cta | default: "Purchase" }}
+      </a>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    {{ content }}
+  </div>
+
+  {% include TALK.html %}
+
+  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
+  <script>TALK.init();</script>
+</body>
+</html>

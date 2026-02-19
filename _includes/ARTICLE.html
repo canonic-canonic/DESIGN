@@ -1,1 +1,36 @@
-<!-- SECTION: ARTICLE | DESIGN.md 255 Map -->
+<!-- ARTICLE | DESIGN.md 255 Map | DESIGN.js renderArticle L1384-1423 -->
+<!-- Long-form post/article body with prose styles, figures, and proof CTA -->
+<div class="post-body">
+  {% if include.article.back_href %}
+  <a href="{{ include.article.back_href }}" class="post-back">{{ include.article.back_label | default: "← Back" }}</a>
+  {% endif %}
+
+  {% if include.article.author or include.article.date %}
+  <div class="post-meta">
+    {% if include.article.author %}<strong>{{ include.article.author }}</strong>{% endif %}
+    {% if include.article.author and include.article.date %} &middot; {% endif %}
+    {% if include.article.date %}{{ include.article.date }}{% endif %}
+    &middot; CANONIC
+  </div>
+  {% endif %}
+
+  {% if include.article.figure %}
+  <div class="chart-wrap">
+    {% if include.article.figure.type == "bar-chart" %}{% include figures/BARS.html bars=include.article.figure.bars %}
+    {% elsif include.article.figure.type == "score-meter" %}{% include figures/SCORE.html score=include.article.figure.score label=include.article.figure.label %}
+    {% elsif include.article.figure.type == "timeline" %}{% include figures/TIMELINE.html items=include.article.figure.items %}
+    {% else %}<div data-figure="{{ include.article.figure.type }}" data-config='{{ include.article.figure | jsonify }}'></div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {{ include.article.body | markdownify }}
+
+  {% if include.article.cta %}
+  <div class="post-proof post-proof-cta">
+    {% for btn in include.article.cta %}
+    <a href="{{ btn.href }}" class="btn{% if btn.accent %} btn-accent{% endif %}">{{ btn.label }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>

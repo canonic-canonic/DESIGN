@@ -1,1 +1,26 @@
-<!-- LAYOUT: CUSTOM | DESIGN.md 255 Map -->
+<!-- LAYOUT: CUSTOM | DESIGN.md 255 Map | CUSTOM_MIN surface -->
+<!-- Passthrough: minimal chrome, hand-crafted content passed through -->
+<!DOCTYPE html>
+<html lang="en" data-scope="{{ site.scope | downcase }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
+  <title>{{ page.title | default: site.scope }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
+  <style>:root{--accent:{{ site.accent | default: '#3b82f6' }};--accent-rgb:{{ site.accent_rgb | default: '59,130,246' }};}</style>
+  {% if page.custom_head %}{{ page.custom_head }}{% endif %}
+</head>
+<body>
+
+  {{ content }}
+
+  {% if page.talk %}{% include TALK.html %}
+  <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
+  <script>TALK.init();</script>
+  {% endif %}
+  {% if page.math %}{% include MATH.html %}{% endif %}
+  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+</body>
+</html>

@@ -1,1 +1,59 @@
-<!-- SECTION: SWITCHER | DESIGN.md 255 Map -->
+<!-- SWITCHER | DESIGN.md 255 Map | DESIGN.js renderSwitcher L891-939 -->
+<!-- Tabbed content switcher with graphic/figure panels -->
+<div class="switcher" data-switcher="switcher-{{ include.id | default: 'x' }}"{% if include.switcher.default %} data-default="{{ include.switcher.default }}"{% endif %}>
+  {% if include.switcher.kicker %}<div class="switcher-kicker">{{ include.switcher.kicker }}</div>{% endif %}
+
+  <div class="switcher-tabs" role="tablist" aria-label="{{ include.switcher.aria_label | default: 'Explore' }}">
+    {% for t in include.switcher.tabs %}
+    <button type="button" class="switcher-tab{% if forloop.first %} active{% endif %}" role="tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" data-tab="{{ forloop.index0 }}">{{ t.label | default: "Tab" }}</button>
+    {% endfor %}
+  </div>
+
+  <div class="switcher-panels">
+    {% for t in include.switcher.tabs %}
+    <div class="switcher-panel{% unless forloop.first %}" hidden{% endunless %}" role="tabpanel" data-panel="{{ forloop.index0 }}">
+      <div class="switcher-copy">
+        {% if t.title %}<h3>{{ t.title }}</h3>{% endif %}
+        {% if t.text %}<p>{{ t.text }}</p>{% endif %}
+        {% if t.bullets %}
+        <ul class="switcher-bullets">
+          {% for b in t.bullets %}<li>{{ b }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+        {% if t.cta %}<div style="margin-top:14px;"><a href="{{ t.cta.href }}" class="btn btn-secondary">{{ t.cta.label }}</a></div>{% endif %}
+        {% if t.footnote %}<div class="switcher-footnote">{{ t.footnote }}</div>{% endif %}
+      </div>
+      <div class="switcher-graphic">
+        {% if t.figure %}
+        <div data-figure="{{ t.figure.type }}" data-config='{{ t.figure | jsonify }}'></div>
+        {% elsif t.graphic %}
+        {{ t.graphic }}
+        {% else %}
+        <div data-figure="flow-chain" data-nodes='["CANON","MAGIC","RUNTIME"]'></div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+(function(){
+  document.querySelectorAll('[data-switcher]').forEach(function(sw) {
+    var tabs = sw.querySelectorAll('.switcher-tab');
+    var panels = sw.querySelectorAll('.switcher-panel');
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        var idx = tab.getAttribute('data-tab');
+        tabs.forEach(function(t) { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+        panels.forEach(function(p) { p.hidden = true; });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected','true');
+        panels[idx].hidden = false;
+      });
+    });
+    var def = sw.getAttribute('data-default');
+    if (def && tabs[def]) tabs[def].click();
+  });
+})();
+</script>

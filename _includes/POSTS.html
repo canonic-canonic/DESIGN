@@ -1,1 +1,16 @@
-<!-- SECTION: POSTS | DESIGN.md 255 Map -->
+<!-- POSTS | DESIGN.md 255 Map | DESIGN.js renderPosts L1426-1440 -->
+<!-- Blog/literary post listing grid (Layer 11 blog-grid classes) -->
+<div class="blog-grid">
+  {% for post in include.posts %}
+  <a href="{{ post.href | default: '#' }}" class="blog-card">
+    {% if post.date %}<div class="blog-eyebrow">{{ post.date }}</div>{% endif %}
+    {% if post.title %}<div class="blog-title">{{ post.title }}</div>{% endif %}
+    {% if post.peek %}<div class="blog-desc">{{ post.peek }}</div>{% endif %}
+    {% if post.figure %}
+    <div class="chart-wrap chart-wrap-compact">
+      <div data-figure="{{ post.figure.type }}" data-config='{{ post.figure | jsonify }}'></div>
+    </div>
+    {% endif %}
+  </a>
+  {% endfor %}
+</div>

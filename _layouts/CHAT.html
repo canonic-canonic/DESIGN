@@ -1,1 +1,42 @@
-<!-- LAYOUT: CHAT | DESIGN.md 255 Map -->
+<!-- LAYOUT: CHAT | DESIGN.md 255 Map | CHAT_APP surface -->
+<!-- Full-screen chat UI: ECO + message list + input -->
+<!-- talk.js handles all interactivity; this is the chrome -->
+<!DOCTYPE html>
+<html lang="en" data-scope="{{ site.scope | downcase }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
+  <title>{{ page.title | default: site.scope }} TALK</title>
+  <meta name="description" content="{{ page.description | default: 'Chat' }}">
+  <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
+  <style>:root{--accent:{{ site.accent | default: '#3b82f6' }};--accent-rgb:{{ site.accent_rgb | default: '59,130,246' }};}</style>
+</head>
+<body class="chat-app">
+
+  {% include ECO.html %}
+
+  <div class="talk-fullscreen">
+    <div class="talk-header">
+      <div class="talk-dot"></div>
+      <span class="talk-scope">{{ page.title | default: site.scope }} TALK</span>
+      <select id="talkProviderSelect">
+        <option value="auto">AUTO</option>
+        <option value="anthropic">ANTHROPIC</option>
+        <option value="runpod">RUNPOD</option>
+        <option value="vastai">VAST.AI</option>
+        <option value="deepseek">DEEPSEEK</option>
+      </select>
+    </div>
+    <div class="talk-messages" id="talkMessages"></div>
+    <div class="talk-input-row">
+      <input type="text" id="talkChatInput" placeholder="{{ page.placeholder | default: 'Ask anything...' }}">
+      <button type="button" id="talkSend">SEND</button>
+    </div>
+  </div>
+
+  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
+  <script>TALK.init({ fullscreen: true });</script>
+</body>
+</html>
