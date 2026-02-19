@@ -34,6 +34,10 @@
     font-weight: 600;
     color: var(--fg);
     margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
 }
 
 .app-card .app-desc {
