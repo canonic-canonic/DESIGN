@@ -1,0 +1,97 @@
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAYER 0 — TOKENS
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+    /* ── Surface (DESIGN.md §Theme Dark) ── */
+    --bg: #000;
+    --fg: #f5f5f7;
+    --fg-secondary: #a1a1a6;
+    --dim: #86868b;
+    --card: #1c1c1e;
+    --border: rgba(255, 255, 255, 0.08);
+    --glow: #00ff88;
+    --panel: rgba(28, 28, 30, 0.95);
+    --glass: rgba(255, 255, 255, 0.04);
+    --glass-hover: rgba(255, 255, 255, 0.08);
+    --shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+    --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.6);
+
+    /* ── Accent (override per scope via CANON.json) ── */
+    --accent: #3b82f6;
+    --accent-rgb: 59, 130, 246;
+
+    /* ── Category Palette (DESIGN.md §Color System) ── */
+    --kernel: #ff0088;
+    --runtime: #00ff88;
+    --operations: #2997ff;
+    --commerce: #ff9f0a;
+    --knowledge: #bf5af2;
+    --governance: #ffd60a;
+    --services: #ec4899;
+
+    /* ── Fleet aliases (composable from categories) ── */
+    --green: var(--runtime);
+    --blue: var(--operations);
+    --purple: var(--knowledge);
+    --pink: var(--services);
+    --gold: var(--commerce);
+    --red: #ff453a;
+    --cyan: var(--operations);
+    --blue-light: #60a5fa;
+    --pink-light: #f472b6;
+
+    /* ── Typography (DESIGN.md §Typography) ── */
+    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    --mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    --font-xs: 11px;
+    --font-sm: 13px;
+    --font-base: 15px;
+    --font-lg: 18px;
+    --font-xl: 24px;
+    --font-2xl: clamp(28px, 4vw, 48px);
+    --font-3xl: clamp(40px, 6vw, 72px);
+    --font-hero: clamp(48px, 7vw, 80px);
+
+    /* ── Spacing ── */
+    --space-xs: 8px;
+    --space-sm: 16px;
+    --space-md: 24px;
+    --space-lg: 48px;
+    --space-xl: 80px;
+
+    /* ── Radius ── */
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-pill: 9999px;
+
+    /* ── Motion (DESIGN.md §Animation Tokens) ── */
+    --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-fast: all 0.15s var(--spring);
+    --transition-base: all 0.2s var(--spring);
+    --transition-slow: all 0.3s var(--spring);
+
+    /* ── Glass (DESIGN.md §Glass Morphism Rules) ── */
+    --blur-panel: blur(20px);
+    --blur-dock: blur(30px);
+    --blur-overlay: blur(40px);
+
+    /* ── Focus ── */
+    --focus-ring: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
+
+    /* ── Header geometry (fleet-wide behavior) ── */
+    --eco-h: 40px;
+    /* --eco-offset is the *effective* eco-bar top offset used ONLY for nav positioning.
+       Set to 0 when eco-bar is auto-hidden; eco-h stays unchanged. */
+    --eco-offset: var(--eco-h);
+    --nav-h: 64px;
+    /* --header-offset is STATIC (eco-h + nav-h). Never varies with eco visibility.
+       Content layout (hero padding, scroll-padding, scroll-margin) depends on this
+       being stable — dynamic changes cause scroll-anchoring feedback loops. */
+    --header-offset: calc(var(--eco-h) + var(--nav-h));
+}
+

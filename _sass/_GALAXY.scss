@@ -1,0 +1,186 @@
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAYER 12 — GALAXY HERO (Composable Visual Primitive)
+   ═══════════════════════════════════════════════════════════════════
+
+   GALAXY fills its container. Container determines size.
+   Options determine overlays. No modes. Configuration only.
+
+   Usage:
+     <div class="galaxy-hero">
+       <div class="galaxy-hero-text">...</div>
+       <div class="galaxy-container" style="height:70vh;"></div>
+     </div>
+
+   ═══════════════════════════════════════════════════════════════════ */
+
+.galaxy-hero { position: relative; }
+.galaxy-hero-text {
+    text-align: center;
+    padding: calc(var(--header-offset) + 20px) 24px 32px;
+    position: relative;
+    z-index: 2;
+}
+.galaxy-hero-text h1 {
+    font-size: clamp(36px, 5vw, 72px);
+    letter-spacing: -0.03em;
+}
+.galaxy-hero-text .subtitle {
+    font-size: 20px;
+    color: var(--dim);
+    margin-top: 12px;
+}
+.galaxy-hero-text .description {
+    font-size: 15px;
+    color: var(--dim);
+    max-width: 600px;
+    margin: 16px auto 0;
+    line-height: 1.7;
+}
+.galaxy-container {
+    width: 100%;
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Galaxy stats block */
+.galaxy {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.galaxy::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(0,255,136,0.12) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+}
+.galaxy h2 { position: relative; font-size: 24px; margin-bottom: 8px; color: var(--accent); }
+.galaxy p { position: relative; }
+.galaxy-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+    position: relative;
+}
+.galaxy-val {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent);
+}
+.galaxy-lbl {
+    font-size: 11px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+}
+
+/* Galaxy HUD overlay (top-left) */
+.galaxy-hud {
+    position: absolute;
+    top: 16px; left: 16px;
+    z-index: 10;
+    background: var(--panel);
+    -webkit-backdrop-filter: var(--blur-panel);
+    backdrop-filter: var(--blur-panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+}
+.hud-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+    text-align: center;
+    margin-top: 4px;
+}
+
+/* Galaxy search overlay (top-center) */
+.galaxy-search {
+    position: absolute;
+    top: 16px;
+    left: 50%; transform: translateX(-50%);
+    z-index: 10;
+}
+.galaxy-search input {
+    background: var(--panel);
+    -webkit-backdrop-filter: var(--blur-panel);
+    backdrop-filter: var(--blur-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    padding: 10px 20px;
+    color: var(--fg);
+    font-size: 13px;
+    font-family: var(--font);
+    width: 240px;
+    outline: none;
+    transition: width 0.3s var(--ease-out);
+}
+.galaxy-search input:focus {
+    width: 360px;
+    border-color: var(--accent);
+}
+
+/* Galaxy dock overlay (bottom-center) */
+.galaxy-dock {
+    position: absolute;
+    bottom: 16px;
+    left: 50%; transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    background: var(--panel);
+    -webkit-backdrop-filter: var(--blur-panel);
+    backdrop-filter: var(--blur-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    padding: 8px 16px;
+}
+.galaxy-dock a {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--dim);
+    text-decoration: none;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    transition: all 0.2s ease;
+}
+.galaxy-dock a:hover { color: var(--accent); background: rgba(255,255,255,0.06); }
+
+/* Galaxy detail panel (right) */
+.galaxy-detail {
+    position: absolute;
+    top: 0; right: 0;
+    width: 340px;
+    height: 100%;
+    background: var(--panel);
+    -webkit-backdrop-filter: var(--blur-panel);
+    backdrop-filter: var(--blur-panel);
+    border-left: 1px solid var(--border);
+    z-index: 10;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.3s var(--ease-out);
+}
+.galaxy-detail.open { transform: translateX(0); }
+
+@media (max-width: 768px) {
+    .galaxy-stats { grid-template-columns: repeat(2, 1fr); }
+    .galaxy-hero-text { padding: 80px 24px 24px; }
+    .galaxy-detail { width: 100%; bottom: 0; top: auto; height: auto; max-height: 50vh; transform: translateY(100%); border-left: none; border-top: 1px solid var(--border); }
+    .galaxy-detail.open { transform: translateY(0); }
+}
+

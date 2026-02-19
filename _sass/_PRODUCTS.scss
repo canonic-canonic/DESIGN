@@ -1,0 +1,119 @@
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAYER 14 — PRODUCTS, DEALS & GOVERNANCE
+   ═══════════════════════════════════════════════════════════════════
+
+   Product cards, status badges, deal grids, governance banners.
+   Shared across any scope that has products/deals.
+
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Section eyebrow */
+.section-eyebrow {
+    font-family: var(--mono);
+    font-size: var(--font-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.section-title {
+    font-size: clamp(24px, 3vw, 36px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+}
+
+/* Apps grid */
+.apps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+/* App icon variants — gradient backgrounds */
+.app-icon.mammo { background: linear-gradient(135deg, #ec4899, #f472b6); }
+.app-icon.onco { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+.app-icon.med { background: linear-gradient(135deg, #10b981, #34d399); }
+.app-icon.ip { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+.app-icon.deal { background: linear-gradient(135deg, #d4af37, #f4d03f); }
+
+.app-card .app-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 12px;
+    color: white;
+}
+
+/* App badge (status pill) */
+.app-badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* Status badge (positioned) */
+.status-badge {
+    position: absolute;
+    top: -12px; right: -12px;
+    background: var(--pink);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* Primitive card (INTEL/CHAT/COIN) */
+.primitive-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 32px;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    transition: border-color 0.2s var(--spring), transform 0.2s var(--spring);
+    position: relative;
+}
+.primitive-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+    background: var(--glass-hover);
+}
+.primitive-icon {
+    width: 64px; height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 20px;
+    color: white;
+}
+
+/* Governance banner */
+.governance-banner {
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.1), rgba(0, 0, 0, 0.4));
+    border: 1px solid rgba(var(--accent-rgb), 0.2);
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg);
+    display: flex;
+    gap: var(--space-lg);
+    align-items: center;
+    box-shadow: 0 0 40px rgba(var(--accent-rgb), 0.05);
+}
+
+/* Governance banner — responsive */
+@media (max-width: 768px) {
+    .governance-banner { flex-direction: column; padding: 32px; }
+}
+

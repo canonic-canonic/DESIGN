@@ -1,0 +1,110 @@
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAYER 9 — THEMES (light / dark)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Light theme — opt-in via data-theme="light" */
+[data-theme="light"] {
+    --bg: #ffffff;
+    --bg-alt: #f8fafc;
+    --fg: #1a1a2e;
+    --fg-secondary: #64748b;
+    --card: #ffffff;
+    --border: rgba(37, 99, 235, 0.1);
+    --shadow: 0 4px 24px rgba(37, 99, 235, 0.08);
+    --shadow-lg: 0 20px 60px rgba(37, 99, 235, 0.15);
+}
+
+[data-theme="light"] nav {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .stat,
+[data-theme="light"] .app-card,
+[data-theme="light"] .card {
+    background: var(--bg);
+    box-shadow: var(--shadow);
+}
+
+[data-theme="light"] .btn-secondary {
+    background: var(--bg);
+    color: var(--fg);
+}
+
+[data-theme="light"] .eco-bar {
+    background: #ffffff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .eco-links a { color: var(--dim); }
+[data-theme="light"] .eco-links a:hover { color: var(--accent); }
+[data-theme="light"] .eco-links a.eco-active { color: var(--fg); }
+[data-theme="light"] .eco-talk { border-color: rgba(0, 200, 100, 0.3); background: rgba(0, 200, 100, 0.06); }
+[data-theme="light"] .eco-talk:hover { border-color: rgba(0, 200, 100, 0.5); background: rgba(0, 200, 100, 0.1); }
+[data-theme="light"] .theme-toggle { border-color: var(--border); color: var(--dim); }
+[data-theme="light"] .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+[data-theme="light"] section {
+    background: var(--bg);
+    box-shadow: var(--shadow);
+}
+
+/* System light mode — auto-apply if no explicit theme */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+        --bg: #ffffff;
+        --bg-alt: #f8fafc;
+        --fg: #1a1a2e;
+        --fg-secondary: #64748b;
+        --dim: #64748b;
+        --card: #ffffff;
+        --border: rgba(37, 99, 235, 0.1);
+        --panel: rgba(255, 255, 255, 0.95);
+        --glass: rgba(0, 0, 0, 0.02);
+        --glass-hover: rgba(0, 0, 0, 0.04);
+        --shadow: 0 4px 24px rgba(37, 99, 235, 0.08);
+        --shadow-lg: 0 20px 60px rgba(37, 99, 235, 0.15);
+    }
+    :root:not([data-theme="dark"]) nav {
+        background: rgba(255, 255, 255, 0.9);
+    }
+    :root:not([data-theme="dark"]) .stat,
+    :root:not([data-theme="dark"]) .app-card,
+    :root:not([data-theme="dark"]) .card {
+        background: var(--bg);
+        box-shadow: var(--shadow);
+    }
+    :root:not([data-theme="dark"]) .eco-bar {
+        background: #ffffff;
+        border-bottom: 1px solid var(--border);
+    }
+    :root:not([data-theme="dark"]) .eco-links a { color: var(--dim); }
+    :root:not([data-theme="dark"]) .eco-links a:hover { color: var(--accent); }
+    :root:not([data-theme="dark"]) .eco-links a.eco-active { color: var(--fg); }
+    :root:not([data-theme="dark"]) .theme-toggle { border-color: var(--border); color: var(--dim); }
+    :root:not([data-theme="dark"]) section {
+        background: var(--bg);
+        box-shadow: var(--shadow);
+    }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   SCOPE ACCENTS — per-fleet override
+   ═══════════════════════════════════════════════════════════════════
+
+   Usage: <html data-scope="foundation">
+   Or just override in inline style:
+   <style>:root { --accent: #7c3aed; }</style>
+
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-scope="foundation"] { --accent: #7c3aed; }
+[data-scope="magic"]      { --accent: #00ff88; }
+[data-scope="hadleylab"]  { --accent: #60a5fa; }
+[data-scope="mammochat"]  { --accent: #ec4899; }
+[data-scope="oncochat"]   { --accent: #3b82f6; }
+[data-scope="patents"]    { --accent: #f59e0b; }
+[data-scope="deal"]       { --accent: #10b981; }
+[data-scope="investor"]   { --accent: #d4af37; }
+

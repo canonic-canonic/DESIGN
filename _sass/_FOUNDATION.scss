@@ -1,0 +1,126 @@
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAYER 16 — FOUNDATION COMPONENTS
+   Step numbers, question cards, industries, shop cards, MAGIC validation blocks.
+   Migrated from Foundation inline CSS. Zero inline styles.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* How-it-works step numbers */
+.step-num {
+    width: 48px; height: 48px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--accent), var(--knowledge));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-xl);
+    font-weight: 700;
+    color: white;
+    margin-bottom: var(--space-sm);
+}
+
+/* Question / idiom cards */
+.q-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-md);
+    transition: border-color 0.25s var(--spring), transform 0.25s var(--spring);
+}
+.q-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+.q-card h3 { font-size: var(--font-lg); font-weight: 600; margin-bottom: 4px; }
+
+/* Sector cards */
+.sector {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-md) var(--space-sm);
+    text-align: center;
+    transition: border-color 0.25s var(--spring), transform 0.25s var(--spring);
+}
+.sector:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+.sector-icon { font-size: 32px; margin-bottom: var(--space-xs); }
+.sector h3 { font-size: var(--font-sm); font-weight: 600; margin-bottom: 4px; }
+
+/* Shop / library cards */
+.shop-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    transition: border-color 0.25s var(--spring), transform 0.25s var(--spring);
+}
+.shop-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+.shop-card h3 { font-size: var(--font-lg); margin-bottom: var(--space-xs); }
+.shop-card p { font-size: var(--font-sm); color: var(--dim); line-height: 1.6; }
+
+/* MAGIC validation feature blocks */
+.magic-validation {
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08), rgba(0, 0, 0, 0.4));
+    border: 1px solid rgba(var(--accent-rgb), 0.2);
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg);
+    display: flex;
+    gap: var(--space-lg);
+    align-items: center;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+.magic-validation-content { flex: 1; }
+.magic-validation-eyebrow {
+    font-size: var(--font-xs);
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+.magic-validation-title {
+    font-size: var(--font-2xl);
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+    line-height: 1.2;
+}
+.magic-validation-desc { color: var(--dim); line-height: 1.7; font-size: var(--font-base); }
+.magic-validation-tags { display: flex; gap: 10px; margin-top: var(--space-sm); flex-wrap: wrap; }
+.magic-validation-tag {
+    padding: 6px 14px;
+    background: rgba(var(--accent-rgb), 0.12);
+    color: var(--accent);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-xs);
+    font-weight: 600;
+}
+.magic-validation-mark { font-size: 80px; opacity: 0.6; color: var(--accent); display: inline-block; }
+
+/* CTA section */
+.cta-section { text-align: center; }
+.cta-title { font-size: var(--font-2xl); font-weight: 700; margin-bottom: 12px; }
+.cta-desc { font-size: var(--font-lg); color: var(--dim); margin-bottom: 32px; }
+
+/* MAGIC validation + governance-banner responsive */
+@media (max-width: 768px) {
+    .magic-validation { flex-direction: column; padding: var(--space-md); }
+    .magic-validation-mark { display: none; }
+}
+
+[data-theme="light"] .magic-validation {
+    background: rgba(var(--accent-rgb), 0.04);
+    border-color: rgba(var(--accent-rgb), 0.12);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   MAGIC DESIGN | CANONIC FLEET | 2026-02-12
+   ═══════════════════════════════════════════════════════════════════ */
+

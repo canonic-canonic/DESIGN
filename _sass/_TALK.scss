@@ -1,0 +1,340 @@
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAYER 10 — TALK (Fleet-wide Chat Primitive)
+   ═══════════════════════════════════════════════════════════════════
+
+   TALK = CHAT + INTEL
+   The universal conversation service. Every frontend gets it.
+   Abstracted to AXIOMS in the GALAXY.
+
+   HTML contract:
+   <div class="talk-bar" id="talkBar">
+       <div class="talk-dot"></div>
+       <span class="talk-scope">SCOPE</span>
+       <input class="talk-input" id="talkInput">
+       <button class="talk-btn">TALK</button>
+   </div>
+
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Talk Bar — the invitation ── */
+.talk-bar {
+    position: fixed;
+    top: 33px;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: var(--panel);
+    -webkit-backdrop-filter: var(--blur-panel);
+    backdrop-filter: var(--blur-panel);
+    z-index: 1000;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 24px;
+}
+
+.talk-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: talk-breathe 3s ease-in-out infinite;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
+@keyframes talk-breathe {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 8px rgba(0, 255, 136, 0.4); }
+    50% { transform: scale(1.3); box-shadow: 0 0 16px rgba(0, 255, 136, 0.6), 0 0 32px rgba(0, 255, 136, 0.2); }
+}
+
+.talk-scope {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    flex-shrink: 0;
+    font-family: var(--mono);
+    opacity: 0.7;
+}
+
+.talk-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--fg);
+    font-size: var(--font-base);
+    font-family: var(--font);
+    outline: none;
+    padding: 0;
+    width: 0;
+    min-width: 0;
+}
+
+.talk-input::placeholder {
+    color: var(--dim);
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
+}
+.talk-input:focus::placeholder { opacity: 0.2; }
+
+.talk-btn {
+    background: rgba(0, 255, 136, 0.08);
+    border: 1px solid rgba(0, 255, 136, 0.25);
+    color: var(--green);
+    padding: 5px 16px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: var(--mono);
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s var(--spring);
+    flex-shrink: 0;
+}
+
+.talk-btn:hover {
+    background: rgba(0, 255, 136, 0.15);
+    border-color: var(--green);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.15);
+}
+
+/* ── Talk Panel — a CONTROL, not a text box ── */
+.talk-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 420px;
+    max-width: 100vw;
+    background: linear-gradient(180deg, rgba(20, 20, 24, 0.98) 0%, rgba(10, 10, 14, 0.99) 100%);
+    -webkit-backdrop-filter: var(--blur-overlay);
+    backdrop-filter: var(--blur-overlay);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.4s var(--spring), opacity 0.25s var(--ease-out);
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: -16px 0 64px rgba(0, 0, 0, 0.4), -4px 0 16px rgba(0, 0, 0, 0.2);
+}
+
+.talk-overlay.open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Scrim — dims page behind panel, click to close */
+.talk-overlay::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    right: 420px;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: -1;
+}
+.talk-overlay.open::before {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Header — commanding, tight */
+.talk-overlay-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.talk-overlay-header .talk-dot {
+    width: 9px;
+    height: 9px;
+}
+
+.talk-overlay-header .talk-scope {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--fg);
+    opacity: 0.6;
+}
+
+.talk-overlay-close {
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    padding: 6px 14px;
+    color: var(--dim);
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--mono);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    transition: all 0.2s var(--spring);
+}
+
+.talk-overlay-close:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    color: var(--fg);
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+}
+
+/* ── Messages area ── */
+.talk-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+}
+
+/* First message in TALK panel — the welcome — gets presence */
+.talk-messages > .message:first-child {
+    background: rgba(var(--accent-rgb, 59, 130, 246), 0.06);
+    border: 1px solid rgba(var(--accent-rgb, 59, 130, 246), 0.12);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    font-size: var(--font-sm);
+    line-height: 1.7;
+    color: var(--fg);
+    opacity: 0.9;
+}
+
+/* ── Talk Input — the draw ── */
+.talk-input-row {
+    display: flex;
+    gap: 10px;
+    padding: 20px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.talk-input-row input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    color: var(--fg);
+    font-family: var(--font);
+    font-size: var(--font-sm);
+    outline: none;
+    width: auto;
+    transition: all 0.25s var(--ease-out);
+}
+
+.talk-input-row input:focus {
+    border-color: rgba(var(--accent-rgb, 59, 130, 246), 0.4);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 59, 130, 246), 0.1), 0 4px 24px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.talk-input-row input::placeholder {
+    color: var(--dim);
+    opacity: 0.4;
+}
+
+.talk-input-row button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px 22px;
+    font-size: var(--font-sm);
+    font-weight: 700;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.2s var(--spring);
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(var(--accent-rgb, 59, 130, 246), 0.2);
+}
+
+.talk-input-row button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(var(--accent-rgb, 59, 130, 246), 0.3);
+}
+.talk-input-row button:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 1px 4px rgba(var(--accent-rgb, 59, 130, 246), 0.15);
+}
+
+/* ── Talk — light theme ── */
+[data-theme="light"] .talk-bar {
+    background: rgba(255, 255, 255, 0.92);
+    border-bottom: 1px solid rgba(0, 200, 100, 0.2);
+}
+[data-theme="light"] .talk-overlay {
+    background: rgba(248, 250, 252, 0.98);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08);
+}
+[data-theme="light"] .talk-overlay::before {
+    background: rgba(0, 0, 0, 0.15);
+}
+[data-theme="light"] .talk-input-row input {
+    background: rgba(0, 0, 0, 0.03);
+}
+[data-theme="light"] .talk-input-row input:focus {
+    background: white;
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 0,255,136), 0.1), 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .talk-bar {
+        background: rgba(255, 255, 255, 0.92);
+        border-bottom: 1px solid rgba(0, 200, 100, 0.2);
+    }
+    :root:not([data-theme="dark"]) .talk-overlay {
+        background: rgba(248, 250, 252, 0.98);
+        box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08);
+    }
+    :root:not([data-theme="dark"]) .talk-overlay::before {
+        background: rgba(0, 0, 0, 0.15);
+    }
+    :root:not([data-theme="dark"]) .talk-input-row input {
+        background: rgba(0, 0, 0, 0.03);
+    }
+    :root:not([data-theme="dark"]) .talk-input-row input:focus {
+        background: white;
+    }
+}
+
+/* ── Talk — responsive ── */
+@media (max-width: 640px) {
+    .talk-scope { display: none; }
+    .talk-bar { gap: 8px; padding: 0 16px; }
+    /* Mobile: full-width panel */
+    .talk-overlay { width: 100vw; border-left: none; }
+    .talk-overlay::before { display: none; }
+    .talk-messages { padding: 20px 16px; }
+    .talk-input-row { padding: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    .talk-overlay { transform: none; }
+    .talk-overlay.open { transform: none; }
+}
+

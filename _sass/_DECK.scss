@@ -1,0 +1,143 @@
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAYER 5 — DECK (Presentation Layer)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Slide */
+.slide {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 10vw;
+    overflow: hidden;
+}
+
+/* Kicker — monospace label */
+.kicker {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    color: var(--dim);
+    margin-bottom: 16px;
+}
+
+/* Deck title */
+.deck-title {
+    font-size: clamp(32px, 4.5vw, 56px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+}
+
+/* Deck body */
+.deck-body {
+    font-size: clamp(14px, 1.6vw, 20px);
+    color: var(--dim);
+    line-height: 1.8;
+}
+
+/* Gradient text classes */
+.grad-green {
+    background: linear-gradient(135deg, #00ff88, #2997ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.grad-pink {
+    background: linear-gradient(135deg, #2997ff, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.grad-gold {
+    background: linear-gradient(135deg, #ffd60a, #ff9f0a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.grad-red {
+    background: linear-gradient(135deg, #ff453a, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Inline color spans */
+.g { color: var(--green); }
+.b { color: var(--cyan); }
+.p { color: var(--pink); }
+.o { color: var(--orange); }
+.r { color: var(--red); }
+.gd { color: var(--gold); }
+
+/* Deck nav */
+.deck-nav {
+    position: fixed;
+    bottom: 32px;
+    right: 40px;
+    font-family: var(--mono);
+    font-size: 12px;
+    display: flex;
+    gap: 12px;
+    z-index: 100;
+}
+
+.deck-nav button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.deck-nav button:hover {
+    border-color: var(--green);
+    color: var(--green);
+}
+
+/* Tree — monospace structure */
+.tree {
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 2;
+    color: var(--dim);
+}
+
+/* Timeline */
+.timeline {
+    display: flex;
+    gap: 24px;
+}
+
+.timeline-item {
+    border-top: 2px solid var(--accent);
+    padding-top: 12px;
+    flex: 1;
+}
+
+/* Result row */
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+}
+
+.result-row .value {
+    color: var(--accent);
+    font-family: var(--mono);
+    font-weight: 600;
+}
+
