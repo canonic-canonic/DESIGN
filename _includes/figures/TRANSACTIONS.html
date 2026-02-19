@@ -1,0 +1,15 @@
+<!-- TRANSACTIONS | Live transaction list powered by wallet.js -->
+<div class="tx-list" id="{{ include.id | default: 'tx-list' }}">
+  {% if include.items %}
+  {% for item in include.items %}
+  <div class="tx-row">
+    <div class="tx-date">{{ item.date }}</div>
+    <div class="tx-badge tx-{{ item.type | downcase | replace: ':', '-' }}">{{ item.type }}</div>
+    <div class="tx-desc">{{ item.desc }}</div>
+    <div class="tx-amount {% if item.credit %}tx-credit{% else %}tx-debit{% endif %}">{{ item.amount }}</div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="tx-empty">No transactions yet.</div>
+  {% endif %}
+</div>

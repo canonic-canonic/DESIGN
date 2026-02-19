@@ -27,6 +27,8 @@
       {% elsif fig.type == "audit-trail" %}{% include figures/AUDIT.html items=fig.items %}
       {% elsif fig.type == "balance" %}{% include figures/BALANCE.html left=fig.left right=fig.right tilt=fig.tilt %}
       {% elsif fig.type == "app-grid" %}{% include figures/APP-GRID.html apps=fig.apps %}
+      {% elsif fig.type == "wallet-hero" %}{% include figures/WALLET-HERO.html id=fig.id balance=fig.balance actions=fig.actions %}
+      {% elsif fig.type == "transactions" %}{% include figures/TRANSACTIONS.html id=fig.id items=fig.items %}
       {% endif %}
     </div>
     {% endif %}

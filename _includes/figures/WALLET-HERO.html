@@ -1,0 +1,14 @@
+<!-- WALLET-HERO | Prominent balance + action buttons (PayPal/Coinbase style) -->
+<div class="wallet-hero" id="{{ include.id | default: 'wallet-hero' }}">
+  <div class="wallet-balance-label">Available Balance</div>
+  <div class="wallet-balance-value" id="{{ include.id | default: 'wallet-hero' }}-balance">{{ include.balance | default: "0" }} <span class="wallet-currency">COIN</span></div>
+  {% if include.actions %}
+  <div class="wallet-actions">
+    {% for action in include.actions %}
+    <a href="{{ action.href | default: '#' }}" class="wallet-action-btn{% if action.primary %} wallet-action-primary{% endif %}" {% if action.onclick %}onclick="{{ action.onclick }};return false"{% endif %}>
+      {{ action.label }}
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
