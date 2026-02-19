@@ -5,11 +5,7 @@
   {% for c in include.cards %}
   <div class="{{ c.class | default: 'card' }}">
     {% if c.statusBadge %}<div class="status-badge">{{ c.statusBadge }}</div>{% endif %}
-    {% if c.icon %}
-    {% if c.iconGradient %}<div class="primitive-icon" style="background:linear-gradient(135deg,{{ c.iconGradient[0] }},{{ c.iconGradient[1] }});">{{ c.icon }}</div>
-    {% else %}<div class="{{ c.iconClass }}">{{ c.icon }}</div>{% endif %}
-    {% endif %}
-    {% if c.title %}<div class="card-title">{{ c.title }}</div>{% endif %}
+    {% if c.title %}<div class="card-title">{% if c.icon %}<span class="card-icon{% if c.iconGradient %} primitive-icon{% endif %}"{% if c.iconGradient %} style="background:linear-gradient(135deg,{{ c.iconGradient[0] }},{{ c.iconGradient[1] }})"{% endif %}>{{ c.icon }}</span> {% endif %}{{ c.title }}</div>{% endif %}
     {% if c.text %}<div class="card-text">{{ c.text }}</div>{% endif %}
     {% if c.tags %}<div class="card-tags">{% for t in c.tags %}<span class="badge">{{ t }}</span>{% endfor %}</div>{% endif %}
     {% if c.figure %}{% include DASHBOARD.html widgets=c.figure %}{% endif %}
