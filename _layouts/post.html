@@ -1,6 +1,20 @@
-<!-- LAYOUT: post | Blog articles | DESIGN.md 255 Map -->
+<!-- LAYOUT: post | Unified viewer (BLOGS + PAPERS + BOOKS) | DESIGN.md 255 Map -->
 {% assign accent = page.accent | default: site.accent | default: '#3b82f6' %}
 {% assign accent_rgb = page.accent_rgb | default: site.accent_rgb | default: '59,130,246' %}
+{% assign scope = page.scope | default: "BLOGS" | upcase %}
+{% if scope == "PAPERS" %}
+  {% assign back_label = "Papers" %}
+  {% assign back_href = "/PAPERS/" %}
+  {% assign badge_label = "PAPER" %}
+{% elsif scope == "BOOKS" %}
+  {% assign back_label = "Library" %}
+  {% assign back_href = "/BOOKS/" %}
+  {% assign badge_label = "BOOK" %}
+{% else %}
+  {% assign back_label = "Journal" %}
+  {% assign back_href = "/BLOGS/" %}
+  {% assign badge_label = "JOURNAL" %}
+{% endif %}
 <!DOCTYPE html>
 <html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
 <head>
@@ -18,7 +32,7 @@
 
   <nav id="nav">
     <div class="nav-inner">
-      <a href="{{ '/BLOGS/' | relative_url }}" class="nav-back">&larr; Journal</a>
+      <a href="{{ back_href | relative_url }}" class="nav-back">&larr; {{ back_label }}</a>
       <ul class="nav-links">
         <li><a href="{{ '/CHAT/' | relative_url }}">CHAT</a></li>
         <li><a href="{{ '/BLOGS/' | relative_url }}">BLOGS</a></li>
@@ -37,7 +51,7 @@
 
   <article class="post container">
     <header class="post-header">
-      <div class="hero-badge">{{ page.badge | default: "JOURNAL" }}</div>
+      <div class="hero-badge">{{ page.badge | default: badge_label }}</div>
       <h1 class="gradient-text">{{ page.title }}</h1>
       {% if page.date %}<time class="post-date">{{ page.date | date: "%B %d, %Y" }}</time>{% endif %}
       {% if page.author %}<span class="post-author">{{ page.author }}</span>{% endif %}
