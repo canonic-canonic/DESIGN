@@ -16,7 +16,7 @@
     padding: 0 24px;
 }
 
-/* Hero (offset for eco-bar) */
+/* Hero (offset for nav) */
 .hero {
     padding: calc(var(--header-offset) + 56px) 24px 80px;
     text-align: center;
@@ -127,7 +127,7 @@ section > p:first-of-type {
 }
 
 /* Header / Footer */
-header {
+header:not(.nav) {
     margin-bottom: 64px;
     text-align: center;
 }

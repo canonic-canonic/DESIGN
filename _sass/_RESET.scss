@@ -11,7 +11,7 @@
 
 html {
     scroll-behavior: smooth;
-    /* Fixed eco-bar + nav: ensure in-page anchors never land under the header. */
+    /* Fixed nav: ensure in-page anchors never land under the header. */
     scroll-padding-top: calc(var(--header-offset) + 18px);
 }
 
