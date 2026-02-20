@@ -1,6 +1,6 @@
 /**
  * figures.js — SVG chart renderer for complex figures
- * DESIGN.md 255 Map | Extracted from DESIGN.js FIGURES L504-878
+ * DESIGN.md 255 Map
  * Only the figures that require JS math (area-chart, donut, gauge, balance, pipeline, audit-trail, flow-chain).
  * Simple figures (timeline, hero-stats, architecture, funnel, tier-cards, bars, score, app-grid) are pre-rendered by Jekyll.
  */

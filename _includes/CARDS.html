@@ -1,7 +1,7 @@
-<!-- CARDS | DESIGN.md 255 Map | renderCards() L1316-1382 -->
+<!-- CARDS | DESIGN.md 255 Map -->
 {% assign cols = include.columns | default: "auto-fit, minmax(280px, 1fr)" %}
 {% assign gap = include.gap | default: "20px" %}
-<div style="display:grid;grid-template-columns:repeat({{ cols }});gap:{{ gap }};margin-top:32px;">
+<div class="card-grid" style="grid-template-columns:repeat({{ cols }});gap:{{ gap }};">
   {% for c in include.cards %}
   <div class="{{ c.class | default: 'card' }}">
     {% if c.statusBadge %}<div class="status-badge">{{ c.statusBadge }}</div>{% endif %}

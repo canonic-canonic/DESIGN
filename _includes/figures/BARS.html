@@ -1,4 +1,4 @@
-<!-- BARS | DESIGN.md 255 Map | DESIGN.js L723-767 -->
+<!-- BARS | DESIGN.md 255 Map -->
 <svg viewBox="0 0 420 {{ include.bars | size | times: 40 | plus: 20 }}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:420px;">
   {% assign max_val = 0 %}
   {% for bar in include.bars %}{% if bar.value > max_val %}{% assign max_val = bar.value %}{% endif %}{% endfor %}
