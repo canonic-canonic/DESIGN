@@ -718,3 +718,45 @@ select {
 
 .proof strong { color: var(--accent); }
 
+/* Feature Block — section feature with title, text, tags, figure */
+.feature-block { margin-top: 32px; }
+.feature-title { font-size: 24px; margin-bottom: 12px; }
+.feature-text { line-height: 1.7; }
+
+/* Tag Cloud + Tag — governed scope pills, feature tags */
+.tag-cloud { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.tag {
+    padding: 4px 10px;
+    background: rgba(var(--accent-rgb), 0.08);
+    border: 1px solid rgba(var(--accent-rgb), 0.2);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.tag-link {
+    color: var(--fg-secondary);
+    text-decoration: none;
+}
+
+/* Governed Scopes — auto-generated children block */
+.governed-scopes {
+    margin-top: 20px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+.governed-scopes .section-eyebrow { margin-bottom: 10px; }
+
+/* Section CTA — call-to-action buttons within a section */
+.section-cta { margin-top: 32px; }
+
+/* Section Heading + Subtitle — reusable within ECON/WALLET/etc */
+.section-heading { font-size: 18px; font-weight: 800; margin-top: 6px; }
+.section-subtitle { margin-top: 8px; font-size: 12px; }
+
+/* ECON + WALLET sections — COIN enforcement surfaces */
+.econ-section, .wallet-section { margin-top: 22px; padding: 18px; }
+
+/* Footer Links — flex row of footer navigation */
+.footer-links { display: flex; gap: 24px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+

@@ -2,7 +2,7 @@
 {% assign footer = include.footer | default: page.footer %}
 {% assign fleet = site.data.fleet %}
 {% if footer.links %}
-<div style="display:flex;gap:24px;justify-content:center;margin-bottom:16px;flex-wrap:wrap;">
+<div class="footer-links">
   {% for l in footer.links %}<a href="{{ l.href }}">{{ l.label }}</a>{% endfor %}
 </div>
 <p>{{ footer.tagline | default: page.footerTagline | default: site.tagline | default: "CANONIC" }}</p>

@@ -1,0 +1,15 @@
+<!-- WALLET | DESIGN.md 255 Map | COIN wallet view — COIN = WORK enforcement -->
+{% assign wallet = include.wallet | default: page.wallet %}
+{% if wallet %}
+<section id="wallet" class="wallet-section card">
+  <div class="section-eyebrow">COIN = WORK</div>
+  <div class="section-heading">{{ wallet.title }}</div>
+  <p class="muted section-subtitle">{{ wallet.description }}</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-value">{{ wallet.events | default: 0 }}</div><div class="stat-label">events</div></div>
+    <div class="stat"><div class="stat-value">{{ wallet.balance | default: 0 }}</div><div class="stat-label">balance</div></div>
+    <div class="stat"><div class="stat-value">{{ wallet.sales | default: 0 }}</div><div class="stat-label">sales</div></div>
+    <div class="stat"><div class="stat-value">{{ wallet.net | default: 0 }}</div><div class="stat-label">net</div></div>
+  </div>
+</section>
+{% endif %}

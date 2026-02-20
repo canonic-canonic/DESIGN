@@ -1,0 +1,13 @@
+<!-- HEAD | DESIGN.md 255 Map | Shared <head> for all layouts -->
+{% assign scope_key = page.scope | default: site.scope | downcase %}
+{% assign sd = site.data[scope_key] %}
+{% assign accent = page.accent | default: sd.accent | default: site.accent %}
+{% assign accent_rgb = page.accent_rgb | default: sd.accent_rgb | default: site.accent_rgb %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
+<title>{{ include.title | default: page.title | default: sd.name | default: site.title }}</title>
+<meta name="description" content="{{ include.description | default: page.description | default: site.description }}">
+<link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
+<style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
+{% if page.custom_head %}{{ page.custom_head }}{% endif %}

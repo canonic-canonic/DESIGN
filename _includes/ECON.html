@@ -1,0 +1,13 @@
+<!-- ECON | DESIGN.md 255 Map | COIN economic view — WORK = COIN enforcement -->
+{% assign econ = include.econ | default: page.econ %}
+{% if econ %}
+<section id="econ" class="econ-section card">
+  <div class="section-eyebrow">WORK = COIN</div>
+  <div class="section-heading">{{ econ.title }}</div>
+  <p class="muted section-subtitle">{{ econ.description }}</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-value">{{ econ.entries | default: 0 }}</div><div class="stat-label">entries</div></div>
+    <div class="stat"><div class="stat-value">{{ econ.total | default: 0 }}</div><div class="stat-label">total COIN</div></div>
+  </div>
+</section>
+{% endif %}

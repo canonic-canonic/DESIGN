@@ -1,30 +1,15 @@
-<!-- LAYOUT: post | Unified viewer (BLOGS + PAPERS + BOOKS) | DESIGN.md 255 Map -->
-{% assign accent = page.accent | default: site.accent | default: '#3b82f6' %}
-{% assign accent_rgb = page.accent_rgb | default: site.accent_rgb | default: '59,130,246' %}
-{% assign scope = page.scope | default: "BLOGS" | upcase %}
-{% if scope == "PAPERS" %}
-  {% assign back_label = "Papers" %}
-  {% assign back_href = "/PAPERS/" %}
-  {% assign badge_label = "PAPER" %}
-{% elsif scope == "BOOKS" %}
-  {% assign back_label = "Library" %}
-  {% assign back_href = "/BOOKS/" %}
-  {% assign badge_label = "BOOK" %}
-{% else %}
-  {% assign back_label = "Journal" %}
-  {% assign back_href = "/BLOGS/" %}
-  {% assign badge_label = "JOURNAL" %}
-{% endif %}
+<!-- LAYOUT: post | Unified viewer | DESIGN.md 255 Map -->
+<!-- All labels resolve from: page front matter → scope data → scope name -->
+{% assign scope_key = page.scope | default: site.scope | downcase %}
+{% assign sd = site.data[scope_key] %}
+{% assign scope_up = page.scope | default: site.scope | upcase %}
+{% assign back_label = page.back_label | default: sd.back_label | default: scope_up %}
+{% assign back_href = page.back_href | default: sd.back_href %}
+{% assign badge_label = page.badge | default: sd.badge_label | default: scope_up %}
 <!DOCTYPE html>
 <html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
-  <title>{{ page.title }} | {{ site.title }}</title>
-  <meta name="description" content="{{ page.description | default: page.excerpt | strip_html | truncate: 160 }}">
-  <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
-  <style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
+  {% include HEAD.html title=page.title description=page.description %}
 </head>
 <body class="post-page">
 
@@ -55,14 +40,7 @@
 
   <footer id="footer">{% include FOOTER.html %}</footer>
 
-  {% include TALK.html %}
-
-  {% if page.math %}{% include MATH.html %}{% endif %}
-  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
-  <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
-  <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
-  <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
-  <script>TALK.init();</script>
+  {% include SCRIPTS.html %}
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
     document.querySelectorAll('code.language-mermaid').forEach(c=>{

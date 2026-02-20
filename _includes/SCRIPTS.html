@@ -1,0 +1,17 @@
+<!-- SCRIPTS | DESIGN.md 255 Map | Shared scripts for all layouts -->
+{% if page.math %}{% include MATH.html %}{% endif %}
+<script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+{% unless include.minimal %}
+<script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
+{% endunless %}
+{% if include.deck %}<script src="{{ '/assets/js/deck.js' | relative_url }}"></script>{% endif %}
+{% if include.minimal %}{% if page.talk %}
+{% include TALK.html %}
+<script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
+<script>TALK.init();</script>
+{% endif %}{% else %}
+{% include TALK.html %}
+<script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
+<script>{% if include.deck %}DECK.init(); {% endif %}TALK.init();</script>
+{% endif %}
