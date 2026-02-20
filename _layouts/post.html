@@ -28,26 +28,7 @@
 </head>
 <body class="post-page">
 
-  {% include ECO.html %}
-
-  <nav id="nav">
-    <div class="nav-inner">
-      <a href="{{ back_href | relative_url }}" class="nav-back">&larr; {{ back_label }}</a>
-      <ul class="nav-links">
-        <li><a href="{{ '/CHAT/' | relative_url }}">CHAT</a></li>
-        <li><a href="{{ '/BLOGS/' | relative_url }}">BLOGS</a></li>
-        <li><a href="{{ '/SERVICES/' | relative_url }}">SERVICES</a></li>
-      </ul>
-    </div>
-  </nav>
-
-  <!-- TALK BAR -->
-  <div class="talk-bar" id="talkBar">
-    <div class="talk-dot"></div>
-    <span class="talk-scope">{{ page.scope | default: site.scope | upcase }}</span>
-    <input type="text" class="talk-input" id="talkInput" placeholder="{{ page.talk_placeholder | default: 'Ask about this article...' }}" autocomplete="off">
-    <button type="button" class="talk-btn" onclick="TALK.open()">TALK</button>
-  </div>
+  {% include NAV-UNIFIED.html mode="post" back_href=back_href back_label=back_label scope_label=scope %}
 
   <article class="post container">
     <header class="post-header">
@@ -78,6 +59,7 @@
 
   {% if page.math %}{% include MATH.html %}{% endif %}
   <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
   <script>TALK.init();</script>

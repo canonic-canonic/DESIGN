@@ -1,0 +1,76 @@
+<!-- NAV | ONE PRIMITIVE | DESIGN.md 255 Map -->
+<!-- Replaces: ECO.html + bare <nav> + talk-bar -->
+<!-- Modes: default (scope+links), post (back+badge), deck (title+counter+timer) -->
+{% assign fleet = site.data.fleet %}
+{% assign scope_key = page.scope | default: site.scope | downcase %}
+{% assign scope_up = page.scope | default: site.scope | upcase %}
+{% assign sd = site.data[scope_key] %}
+{% assign nav_items = include.nav | default: page.nav | default: sd.nav %}
+{% assign mode = include.mode | default: "default" %}
+
+<header class="nav{% if mode == 'deck' %} nav--deck{% endif %}" id="nav" role="navigation">
+
+  <!-- LEFT: Fleet identity -->
+  <div class="nav-left">
+    <button class="nav-brand" id="navBrand" type="button" aria-label="Fleet menu" aria-expanded="false">
+      <span class="nav-mark">{{ fleet.brand.mark | default: "∩" }}</span>
+      <span class="nav-fleet">{{ fleet.brand.label | default: "CANONIC" }}</span>
+    </button>
+  </div>
+
+  <!-- CENTER: Scope context -->
+  <div class="nav-center">
+    {% if mode == "post" %}
+      {% if include.back_href %}<a href="{{ include.back_href | relative_url }}" class="nav-back">&larr; {{ include.back_label | default: "Back" }}</a>{% endif %}
+      {% if include.scope_label %}<span class="nav-scope">{{ include.scope_label }}</span>{% endif %}
+    {% elsif mode == "deck" %}
+      <span class="nav-deck-title">{{ page.brand | default: page.title | default: site.title }}</span>
+      <span class="nav-deck-counter"><span id="deckCurr">1</span> / {{ include.slide_count | default: "?" }}</span>
+      <span class="nav-deck-timer" id="deckTimer">0:00</span>
+    {% else %}
+      {% if nav_items %}
+      <ul class="nav-links">
+        {% for item in nav_items %}
+        <li><a href="{{ item.href }}"{% if item.type == "flagship" %} class="active"{% endif %}>{{ item.label }}</a></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <span class="nav-scope">{{ scope_up }}</span>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  <!-- RIGHT: TALK + Theme -->
+  <div class="nav-right">
+    <button class="nav-talk" type="button" onclick="TALK.open()" aria-label="Open TALK">
+      <span class="nav-dot"></span>
+      <span class="nav-talk-label">TALK</span>
+    </button>
+    <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">☾</button>
+  </div>
+
+  <!-- DROPDOWN: Fleet + Scope (MAX state) -->
+  {% if fleet.sites %}
+  <div class="nav-dropdown" id="navDropdown">
+    <div class="nav-dropdown-section">
+      <div class="nav-dropdown-label">FLEET</div>
+      <div class="nav-dropdown-links">
+        {% for s in fleet.sites %}
+        <a href="{{ s.url }}"{% if s.scope == site.scope %} class="active"{% endif %}>{{ s.label | default: s.scope }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    {% if nav_items %}
+    <div class="nav-dropdown-section">
+      <div class="nav-dropdown-label">{{ scope_up }}</div>
+      <div class="nav-dropdown-links">
+        {% for item in nav_items %}
+        <a href="{{ item.href }}">{{ item.label }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</header>

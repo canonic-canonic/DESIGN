@@ -5,8 +5,7 @@
 
 @media (max-width: 768px) {
     :root {
-        --eco-h: 38px;
-        --nav-h: 58px;
+        --nav-h: 42px;
     }
     .container { padding: 24px; }
     .hero { padding: calc(var(--header-offset) + 36px) 24px 60px; }
@@ -14,8 +13,6 @@
     .grid-3, .grid-4, .grid-5 { grid-template-columns: repeat(2, 1fr); }
     .paradigm { grid-template-columns: 1fr; }
     .panel { width: 100%; }
-    .nav-links { gap: 16px; }
-    .eco-links { gap: 12px; font-size: 10px; }
     .slide { padding: 0 6vw; }
     .hero-cta { flex-direction: column; align-items: center; }
     .switcher-panel { grid-template-columns: 1fr; }
@@ -26,15 +23,12 @@
     .grid, .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
     .message { max-width: 90%; }
     .fab { width: 48px; height: 48px; font-size: 20px; bottom: 16px; right: 16px; }
-    .eco-links a:not(.eco-active):not(.eco-talk) { display: none; }
-    .nav-links { display: none; }
     .slide { padding: 0 5vw; }
 }
 
 @media (max-width: 480px) {
     :root {
-        --eco-h: 34px;
-        --nav-h: 52px;
+        --nav-h: 40px;
     }
     .container { padding: var(--space-xs); }
     .hero { padding: calc(var(--header-offset) + 20px) var(--space-xs) 40px; }
@@ -42,7 +36,6 @@
     .stats { grid-template-columns: 1fr; }
     .stat { padding: var(--space-sm); }
     .section { padding: var(--space-lg) 0; }
-    .eco-bar { padding: 0 var(--space-xs); }
     .btn, .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
     .hero-cta { width: 100%; }
 }

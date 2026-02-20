@@ -83,15 +83,8 @@
     /* ── Focus ── */
     --focus-ring: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
 
-    /* ── Header geometry (fleet-wide behavior) ── */
-    --eco-h: 40px;
-    /* --eco-offset is the *effective* eco-bar top offset used ONLY for nav positioning.
-       Set to 0 when eco-bar is auto-hidden; eco-h stays unchanged. */
-    --eco-offset: var(--eco-h);
-    --nav-h: 64px;
-    /* --header-offset is STATIC (eco-h + nav-h). Never varies with eco visibility.
-       Content layout (hero padding, scroll-padding, scroll-margin) depends on this
-       being stable — dynamic changes cause scroll-anchoring feedback loops. */
-    --header-offset: calc(var(--eco-h) + var(--nav-h));
+    /* ── Header geometry (ONE bar — NAV primitive) ── */
+    --nav-h: 44px;
+    --header-offset: var(--nav-h);
 }
 

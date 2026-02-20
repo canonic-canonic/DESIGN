@@ -17,24 +17,7 @@
 
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Talk Bar — the invitation ── */
-.talk-bar {
-    position: fixed;
-    top: 33px;
-    left: 0;
-    right: 0;
-    height: 40px;
-    background: var(--panel);
-    -webkit-backdrop-filter: var(--blur-panel);
-    backdrop-filter: var(--blur-panel);
-    z-index: 1000;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 0 24px;
-}
-
+/* ── Talk dot + breathe (shared by overlay header) ── */
 .talk-dot {
     width: 8px;
     height: 8px;
@@ -58,48 +41,6 @@
     flex-shrink: 0;
     font-family: var(--mono);
     opacity: 0.7;
-}
-
-.talk-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--fg);
-    font-size: var(--font-base);
-    font-family: var(--font);
-    outline: none;
-    padding: 0;
-    width: 0;
-    min-width: 0;
-}
-
-.talk-input::placeholder {
-    color: var(--dim);
-    opacity: 0.4;
-    transition: opacity 0.3s ease;
-}
-.talk-input:focus::placeholder { opacity: 0.2; }
-
-.talk-btn {
-    background: rgba(0, 255, 136, 0.08);
-    border: 1px solid rgba(0, 255, 136, 0.25);
-    color: var(--green);
-    padding: 5px 16px;
-    border-radius: 8px;
-    font-size: 10px;
-    font-weight: 700;
-    font-family: var(--mono);
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    transition: all 0.2s var(--spring);
-    flex-shrink: 0;
-}
-
-.talk-btn:hover {
-    background: rgba(0, 255, 136, 0.15);
-    border-color: var(--green);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.15);
 }
 
 /* ── Talk Panel — a CONTROL, not a text box ── */
@@ -277,10 +218,6 @@
 }
 
 /* ── Talk — light theme ── */
-[data-theme="light"] .talk-bar {
-    background: rgba(255, 255, 255, 0.92);
-    border-bottom: 1px solid rgba(0, 200, 100, 0.2);
-}
 [data-theme="light"] .talk-overlay {
     background: rgba(248, 250, 252, 0.98);
     box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08);
@@ -297,10 +234,6 @@
 }
 
 @media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]) .talk-bar {
-        background: rgba(255, 255, 255, 0.92);
-        border-bottom: 1px solid rgba(0, 200, 100, 0.2);
-    }
     :root:not([data-theme="dark"]) .talk-overlay {
         background: rgba(248, 250, 252, 0.98);
         box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08);
@@ -318,8 +251,6 @@
 
 /* ── Talk — responsive ── */
 @media (max-width: 640px) {
-    .talk-scope { display: none; }
-    .talk-bar { gap: 8px; padding: 0 16px; }
     /* Mobile: full-width panel */
     .talk-overlay { width: 100vw; border-left: none; }
     .talk-overlay::before { display: none; }

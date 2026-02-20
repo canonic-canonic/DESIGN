@@ -24,9 +24,7 @@
 </head>
 <body>
 
-  {% include ECO.html %}
-
-  <nav id="nav">{% include NAV.html nav=nav %}</nav>
+  {% include NAV-UNIFIED.html nav=nav %}
 
   <div id="hero">{% include HERO.html hero=hero %}</div>
 
@@ -128,6 +126,7 @@
 
   {% if page.math %}{% include MATH.html %}{% endif %}
   <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
   <script>TALK.init();</script>

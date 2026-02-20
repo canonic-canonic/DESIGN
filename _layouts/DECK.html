@@ -17,22 +17,7 @@
 </head>
 <body class="deck-mode">
 
-  <header class="deck-header">
-    <div class="header-left">
-      <div class="brand"><strong>{{ page.brand | default: site.title }}</strong></div>
-      <div class="deck-label">{{ page.subtitle | default: page.title }}</div>
-    </div>
-    <div class="header-right">
-      <div class="timer-badge" id="deckTimer">0:00</div>
-      <div class="slide-indicator"><span id="deckCurr">1</span> / {{ sections | size }}</div>
-      <div class="dl-wrap" id="deckDlWrap">
-        <button class="dl-btn" onclick="this.parentElement.classList.toggle('open')">EXPORT &#9662;</button>
-        <div class="dl-menu">
-          <button class="dl-menu-item" onclick="window.print()">PDF</button>
-        </div>
-      </div>
-    </div>
-  </header>
+  {% include NAV-UNIFIED.html mode="deck" slide_count=sections.size %}
 
   <main class="deck-main">
     <div class="slide-area">
@@ -94,8 +79,11 @@
 
   <footer class="deck-footer">{{ page.footerTagline | default: page.title | default: site.title }}</footer>
 
+  {% include TALK.html %}
+
   {% if page.math %}{% include MATH.html %}{% endif %}
   <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/deck.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
