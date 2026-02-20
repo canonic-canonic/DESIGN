@@ -27,6 +27,14 @@
     </div>
   </nav>
 
+  <!-- TALK BAR -->
+  <div class="talk-bar" id="talkBar">
+    <div class="talk-dot"></div>
+    <span class="talk-scope">{{ page.scope | default: site.scope | upcase }}</span>
+    <input type="text" class="talk-input" id="talkInput" placeholder="{{ page.talk_placeholder | default: 'Ask about this article...' }}" autocomplete="off">
+    <button type="button" class="talk-btn" onclick="TALK.open()">TALK</button>
+  </div>
+
   <article class="post container">
     <header class="post-header">
       <div class="hero-badge">{{ page.badge | default: "JOURNAL" }}</div>
