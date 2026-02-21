@@ -1,13 +1,30 @@
-<!-- SCRIPTS | DESIGN.md 255 Map | Shared scripts for all layouts -->
+<!-- SCRIPTS | DESIGN.md 255 Map | Universal service loader -->
 {% if page.math %}{% include MATH.html %}{% endif %}
+{% if page.mermaid %}{% include MERMAID.html %}{% endif %}
 <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
 {% unless include.minimal %}
 <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
 {% endunless %}
 {% if include.deck %}<script src="{{ '/assets/js/deck.js' | relative_url }}"></script>{% endif %}
+{% if page.auth %}
+{% include AUTH.html %}
+<script src="{{ '/assets/js/auth.js' | relative_url }}"></script>
+{% endif %}
+{% if page.wallet or page.shop %}
+<script src="{{ '/assets/js/wallet.js' | relative_url }}"></script>
+{% endif %}
+{% if page.shop %}
+{% include SHOP.html %}
+<script src="{{ '/assets/js/shop.js' | relative_url }}"></script>
+{% endif %}
 {% if page.talk %}
 {% unless include.minimal and page.talk == true %}{% include TALK.html %}{% endunless %}
 <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
-<script>{% if include.deck %}DECK.init(); {% endif %}TALK.init();</script>
 {% endif %}
+<script>
+{% if page.auth %}AUTH.init(); {% endif %}
+{% if include.deck %}DECK.init(); {% endif %}
+{% if page.shop %}SHOP.init(); {% endif %}
+{% if page.talk %}TALK.init(); {% endif %}
+</script>

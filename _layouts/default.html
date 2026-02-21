@@ -80,8 +80,8 @@
 
     {{ content }}
 
-    {% include ECON.html %}
-    {% include WALLET.html %}
+    {% if page.econ %}{% include ECON.html %}{% endif %}
+    {% if page.wallet %}{% include WALLET.html %}{% endif %}
   </div>
 
   {% if cta %}

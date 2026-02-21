@@ -479,7 +479,7 @@ const TALK = {
 
             var authHeaders = { 'Content-Type': 'application/json' };
             try {
-                var sessionToken = (typeof DESIGN !== 'undefined' && DESIGN.sessionToken) ? DESIGN.sessionToken() : null;
+                var sessionToken = (typeof AUTH !== 'undefined' && AUTH.sessionToken) ? AUTH.sessionToken() : null;
                 if (sessionToken) authHeaders['Authorization'] = 'Bearer ' + sessionToken;
             } catch (_) {}
 

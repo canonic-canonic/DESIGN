@@ -1,0 +1,27 @@
+<!-- SHOP | DESIGN.md 255 Map | Composable commerce — product cards + bag + checkout -->
+{% assign mode = page.shop | default: 'catalog' %}
+<div class="shop" id="shopRoot" data-mode="{{ mode }}">
+  <div class="shop-header" id="shopHeader">
+    <span class="shop-balance" id="shopBalance"></span>
+    <button class="shop-bag-btn" id="shopBagBtn" onclick="SHOP.openBag()">
+      Bag <span class="shop-bag-count" id="shopBagCount"></span>
+    </button>
+  </div>
+  <div class="shop-products" id="shopProducts"></div>
+  <div class="shop-bag-overlay" id="shopBag">
+    <div class="shop-bag-header">
+      <span>Bag</span>
+      <button class="shop-bag-close" onclick="SHOP.closeBag()">Done</button>
+    </div>
+    <div class="shop-bag-items" id="shopBagItems"></div>
+    <div class="shop-bag-footer" id="shopBagFooter">
+      <div class="shop-bag-total" id="shopBagTotal">0 COIN</div>
+      <div class="shop-checkout-methods" id="shopCheckoutMethods">
+        <button class="shop-checkout-btn" onclick="SHOP.checkout('coin')">Pay with COIN</button>
+        <button class="shop-checkout-btn shop-checkout-card" onclick="SHOP.checkout('card')">Pay with Card</button>
+      </div>
+    </div>
+    <div class="shop-bag-empty" id="shopBagEmpty">Your bag is empty.</div>
+  </div>
+  <div class="shop-message" id="shopMessage"></div>
+</div>
