@@ -1,6 +1,6 @@
 # DESIGN-theme — VOCABULARY
 
-inherits: canonic-canonic/MAGIC/SURFACE/DESIGN/JEKYLL
+inherits: canonic-canonic/MAGIC/SURFACE/JEKYLL
 
 ---
 

@@ -1,6 +1,6 @@
 # DESIGN — CANON
 
-inherits: canonic-canonic/MAGIC/SURFACE/DESIGN/JEKYLL
+inherits: canonic-canonic/MAGIC/SURFACE/JEKYLL
 spec: DESIGN (remote_theme)
 version: 2026-02
 

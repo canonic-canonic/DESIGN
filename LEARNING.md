@@ -1,6 +1,6 @@
 # LEARNING
 
-inherits: canonic-canonic/MAGIC/SURFACE/DESIGN/JEKYLL
+inherits: canonic-canonic/MAGIC/SURFACE/JEKYLL
 
 ---
 
