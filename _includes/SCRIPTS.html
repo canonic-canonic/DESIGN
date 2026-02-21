@@ -7,7 +7,7 @@
 {% endunless %}
 {% if include.deck %}<script src="{{ '/assets/js/deck.js' | relative_url }}"></script>{% endif %}
 {% if page.talk %}
-{% unless include.minimal %}{% include TALK.html %}{% endunless %}
+{% unless include.minimal and page.talk == true %}{% include TALK.html %}{% endunless %}
 <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
 <script>{% if include.deck %}DECK.init(); {% endif %}TALK.init();</script>
 {% endif %}
