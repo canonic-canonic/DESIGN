@@ -1,5 +1,5 @@
 <!-- LAYOUT: CUSTOM | DESIGN.md 255 Map | CUSTOM_MIN surface -->
-<!-- Passthrough: minimal chrome, hand-crafted content passed through -->
+<!-- Passthrough: governed nav + minimal chrome, hand-crafted content passed through -->
 <!DOCTYPE html>
 <html lang="en" data-scope="{{ site.scope | downcase }}">
 <head>
@@ -7,8 +7,11 @@
 </head>
 <body>
 
+  {% include NAV-UNIFIED.html %}
+
   {{ content }}
 
   {% include SCRIPTS.html minimal=true %}
+  <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
 </body>
 </html>
