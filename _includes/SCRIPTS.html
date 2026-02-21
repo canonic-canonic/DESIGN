@@ -6,12 +6,8 @@
 <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
 {% endunless %}
 {% if include.deck %}<script src="{{ '/assets/js/deck.js' | relative_url }}"></script>{% endif %}
-{% if include.minimal %}{% if page.talk %}
-{% include TALK.html %}
-<script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
-<script>TALK.init();</script>
-{% endif %}{% else %}
-{% include TALK.html %}
+{% if page.talk %}
+{% unless include.minimal %}{% include TALK.html %}{% endunless %}
 <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
 <script>{% if include.deck %}DECK.init(); {% endif %}TALK.init();</script>
 {% endif %}
