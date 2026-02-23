@@ -47,19 +47,20 @@
 /* Galaxy stats block */
 .galaxy {
     background: var(--card);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.20);
     border-radius: var(--radius);
     padding: 48px;
     text-align: center;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.08), var(--shadow);
 }
 .galaxy::before {
     content: '';
     position: absolute;
     top: 50%; left: 50%;
     width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(0,255,136,0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(0,255,136,0.20) 0%, transparent 70%);
     transform: translate(-50%, -50%);
     border-radius: 50%;
 }
@@ -94,9 +95,10 @@
     background: var(--panel);
     -webkit-backdrop-filter: var(--blur-panel);
     backdrop-filter: var(--blur-panel);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.20);
     border-radius: 12px;
     padding: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 .hud-label {
     font-family: var(--mono);
@@ -119,7 +121,7 @@
     background: var(--panel);
     -webkit-backdrop-filter: var(--blur-panel);
     backdrop-filter: var(--blur-panel);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: var(--radius-pill);
     padding: 10px 20px;
     color: var(--fg);
@@ -145,9 +147,10 @@
     background: var(--panel);
     -webkit-backdrop-filter: var(--blur-panel);
     backdrop-filter: var(--blur-panel);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.20);
     border-radius: var(--radius-pill);
     padding: 8px 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 .galaxy-dock a {
     font-size: 11px;
@@ -169,7 +172,7 @@
     background: var(--panel);
     -webkit-backdrop-filter: var(--blur-panel);
     backdrop-filter: var(--blur-panel);
-    border-left: 1px solid var(--border);
+    border-left: 1px solid rgba(255, 255, 255, 0.18);
     z-index: 10;
     overflow-y: auto;
     transform: translateX(100%);
@@ -180,7 +183,7 @@
 @media (max-width: 768px) {
     .galaxy-stats { grid-template-columns: repeat(2, 1fr); }
     .galaxy-hero-text { padding: 80px 24px 24px; }
-    .galaxy-detail { width: 100%; bottom: 0; top: auto; height: auto; max-height: 50vh; transform: translateY(100%); border-left: none; border-top: 1px solid var(--border); }
+    .galaxy-detail { width: 100%; bottom: 0; top: auto; height: auto; max-height: 50vh; transform: translateY(100%); border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.18); }
     .galaxy-detail.open { transform: translateY(0); }
 }
 

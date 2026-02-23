@@ -6,7 +6,7 @@
     <div class="metric-card">
       <div class="metric-label">{{ widget.metric.label }}</div>
       <div class="metric-value">{{ widget.metric.value }}</div>
-      {% if widget.metric.change %}<div class="metric-change" style="color:{% if widget.metric.trend == 'up' %}#00ff88{% elsif widget.metric.trend == 'down' %}#ff4444{% else %}var(--dim){% endif %}">{% if widget.metric.trend == "up" %}&#9650;{% elsif widget.metric.trend == "down" %}&#9660;{% endif %} {{ widget.metric.change }}</div>{% endif %}
+      {% if widget.metric.change %}<div class="metric-change metric-trend-{{ widget.metric.trend | default: 'neutral' }}">{% if widget.metric.trend == "up" %}&#9650;{% elsif widget.metric.trend == "down" %}&#9660;{% endif %} {{ widget.metric.change }}</div>{% endif %}
     </div>
     {% endif %}
     {% if widget.figure %}

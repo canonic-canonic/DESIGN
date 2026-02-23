@@ -3,7 +3,7 @@
 {% assign label = include.label | default: "MAGIC" %}
 {% assign pct = score | times: 100 | divided_by: 255 %}
 <div class="score-meter">
-  <svg viewBox="0 0 420 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:420px;">
+  <svg viewBox="0 0 420 240" xmlns="http://www.w3.org/2000/svg" class="figure-svg">
     <!-- Background arc -->
     <path d="M 60 200 A 150 150 0 0 1 360 200" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="16" stroke-linecap="round"/>
     <!-- Score arc -->

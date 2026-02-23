@@ -40,9 +40,21 @@
         {% if section.feature.tags %}<div class="tag-cloud">
           {% for tag in section.feature.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
         </div>{% endif %}
-        {% if section.feature.figure %}<div class="chart-wrap">
-          <div data-figure="{{ section.feature.figure.type }}" data-config='{{ section.feature.figure | jsonify }}'></div>
-        </div>{% endif %}
+        {% if section.feature.figure %}
+        <div class="chart-wrap">
+          {% assign fig = section.feature.figure %}
+          {% if fig.type == "score-meter" %}{% include figures/SCORE.html score=fig.score label=fig.label %}
+          {% elsif fig.type == "pipeline" %}{% include figures/PIPELINE.html steps=fig.steps %}
+          {% elsif fig.type == "audit-trail" %}{% include figures/AUDIT.html items=fig.items %}
+          {% elsif fig.type == "flow-chain" %}{% include figures/FLOW.html nodes=fig.nodes %}
+          {% elsif fig.type == "balance" %}{% include figures/BALANCE.html left=fig.left right=fig.right tilt=fig.tilt %}
+          {% elsif fig.type == "gauge" %}{% include figures/GAUGE.html value=fig.value max=fig.max label=fig.label unit=fig.unit %}
+          {% elsif fig.type == "donut" %}{% include figures/DONUT.html segments=fig.segments total=fig.total label=fig.label %}
+          {% elsif fig.type == "area-chart" %}{% include figures/AREA.html points=fig.points label=fig.label %}
+          {% elsif fig.type == "bar-chart" %}{% include figures/BARS.html bars=fig.bars %}
+          {% endif %}
+        </div>
+        {% endif %}
       </div>
       {% endif %}
 

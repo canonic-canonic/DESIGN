@@ -20,18 +20,24 @@
           {% for b in t.bullets %}<li>{{ b }}</li>{% endfor %}
         </ul>
         {% endif %}
-        {% if t.cta %}<div style="margin-top:14px;"><a href="{{ t.cta.href }}" class="btn btn-secondary">{{ t.cta.label }}</a></div>{% endif %}
+        {% if t.cta %}<div class="switcher-cta"><a href="{{ t.cta.href }}" class="btn btn-secondary">{{ t.cta.label }}</a></div>{% endif %}
         {% if t.footnote %}<div class="switcher-footnote">{{ t.footnote }}</div>{% endif %}
       </div>
+      {% if t.figure %}
       <div class="switcher-graphic">
-        {% if t.figure %}
-        <div data-figure="{{ t.figure.type }}" data-config='{{ t.figure | jsonify }}'></div>
-        {% elsif t.graphic %}
-        {{ t.graphic }}
-        {% else %}
-        <div data-figure="flow-chain" data-nodes='["CANON","MAGIC","RUNTIME"]'></div>
+        {% assign fig = t.figure %}
+        {% if fig.type == "score-meter" %}{% include figures/SCORE.html score=fig.score label=fig.label %}
+        {% elsif fig.type == "pipeline" %}{% include figures/PIPELINE.html steps=fig.steps %}
+        {% elsif fig.type == "audit-trail" %}{% include figures/AUDIT.html items=fig.items %}
+        {% elsif fig.type == "flow-chain" %}{% include figures/FLOW.html nodes=fig.nodes %}
+        {% elsif fig.type == "balance" %}{% include figures/BALANCE.html left=fig.left right=fig.right tilt=fig.tilt %}
+        {% elsif fig.type == "gauge" %}{% include figures/GAUGE.html value=fig.value max=fig.max label=fig.label unit=fig.unit %}
+        {% elsif fig.type == "donut" %}{% include figures/DONUT.html segments=fig.segments total=fig.total label=fig.label %}
+        {% elsif fig.type == "area-chart" %}{% include figures/AREA.html points=fig.points label=fig.label %}
+        {% elsif fig.type == "bar-chart" %}{% include figures/BARS.html bars=fig.bars %}
         {% endif %}
       </div>
+      {% endif %}
     </div>
     {% endfor %}
   </div>

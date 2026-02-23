@@ -1,0 +1,244 @@
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAYER 19 — LATEX (Academic Typography for Web)
+   ═══════════════════════════════════════════════════════════════════
+
+   Opt-in academic typography for papers and books.
+   Activated by front matter: math: true or layout: paper
+   Mirrors ~/Code/white_paper LaTeX aesthetic on the web.
+
+   Features:
+   - Two-column layout (.latex-two-col)
+   - Theorem/definition/proof boxes
+   - Figure captions (academic style)
+   - Citation styling (Nature superscript)
+   - Abstract block
+   - KaTeX dark-theme override
+
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Abstract ── */
+.latex-abstract {
+    max-width: 85%;
+    margin: 0 auto 2rem;
+    padding: 1.5rem 2rem;
+    border-top: 2px solid var(--accent);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    color: var(--fg-secondary);
+}
+.latex-abstract strong {
+    font-weight: 700;
+    color: var(--fg);
+}
+
+/* ── Two-column layout ── */
+.latex-two-col {
+    column-count: 2;
+    column-gap: 2rem;
+    column-rule: 1px solid var(--border);
+}
+.latex-two-col h2,
+.latex-two-col h3,
+.latex-two-col .latex-figure,
+.latex-two-col .theorem,
+.latex-two-col .definition {
+    column-span: all;
+}
+
+/* ── Theorem boxes — tcolorbox style ── */
+.theorem, .definition, .proof-box, .lemma, .corollary, .remark {
+    background: rgba(var(--accent-rgb), 0.04);
+    border: 1px solid rgba(var(--accent-rgb), 0.15);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    font-size: 0.9375rem;
+    line-height: 1.8;
+}
+.theorem-title, .definition-title, .proof-title, .lemma-title, .corollary-title, .remark-title {
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    font-family: var(--mono);
+}
+
+.definition {
+    border-left-color: var(--knowledge);
+    background: rgba(191, 90, 242, 0.04);
+    border-color: rgba(191, 90, 242, 0.15);
+    border-left-color: var(--knowledge);
+}
+.definition .definition-title { color: var(--knowledge); }
+
+.proof-box {
+    border-left-color: var(--dim);
+    background: rgba(255, 255, 255, 0.02);
+    border-color: var(--border);
+    border-left-color: var(--dim);
+}
+.proof-box::after {
+    content: '\25A0';
+    display: block;
+    text-align: right;
+    margin-top: 0.5rem;
+    color: var(--dim);
+}
+
+.lemma {
+    border-left-color: var(--operations);
+    background: rgba(41, 151, 255, 0.04);
+    border-color: rgba(41, 151, 255, 0.15);
+    border-left-color: var(--operations);
+}
+.lemma .lemma-title { color: var(--operations); }
+
+.corollary {
+    border-left-color: var(--commerce);
+    background: rgba(255, 159, 10, 0.04);
+    border-color: rgba(255, 159, 10, 0.15);
+    border-left-color: var(--commerce);
+}
+.corollary .corollary-title { color: var(--commerce); }
+
+.remark {
+    border-left-color: var(--fg-secondary);
+    background: rgba(255, 255, 255, 0.02);
+    border-color: var(--border);
+    border-left-color: var(--fg-secondary);
+    font-style: italic;
+}
+
+/* ── Figure captions — academic style ── */
+.latex-figure {
+    margin: 2rem 0;
+    text-align: center;
+}
+.latex-figure img,
+.latex-figure svg {
+    max-width: 100%;
+    border-radius: var(--radius-sm);
+}
+.latex-figure figcaption,
+.latex-caption {
+    font-size: 0.8125rem;
+    color: var(--dim);
+    margin-top: 0.75rem;
+    line-height: 1.6;
+    font-style: italic;
+}
+.latex-caption strong {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--fg);
+}
+
+/* ── Citation styling — Nature-style superscript ── */
+.citation {
+    font-size: 0.75em;
+    vertical-align: super;
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: none;
+}
+.citation:hover { text-decoration: underline; }
+
+/* ── References section ── */
+.references {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border);
+}
+.references h2 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+}
+.references ol {
+    padding-left: 2rem;
+    font-size: 0.8125rem;
+    line-height: 1.8;
+    color: var(--fg-secondary);
+}
+.references ol li { margin-bottom: 0.5rem; }
+
+/* ── Equation numbering ── */
+.katex-display {
+    position: relative;
+}
+.eq-number {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--mono);
+    font-size: 0.8125rem;
+    color: var(--dim);
+}
+
+/* ── KaTeX dark-theme override ── */
+.katex { color: var(--fg); }
+
+/* ── Vignette boxes — dual side-by-side (like white_paper) ── */
+.latex-vignettes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+.latex-vignette {
+    background: rgba(255, 69, 58, 0.03);
+    border: 1px solid rgba(255, 69, 58, 0.15);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem 1.5rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+}
+.latex-vignette-title {
+    font-weight: 700;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--red);
+    margin-bottom: 0.5rem;
+}
+
+/* ── Academic table — booktabs style ── */
+.latex-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.875rem;
+}
+.latex-table thead th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--dim);
+    border-top: 2px solid var(--fg-secondary);
+    border-bottom: 1px solid var(--fg-secondary);
+}
+.latex-table tbody td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+.latex-table tbody tr:last-child td {
+    border-bottom: 2px solid var(--fg-secondary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .latex-two-col { column-count: 1; }
+    .latex-abstract { max-width: 100%; padding: 1rem 1.5rem; }
+    .latex-vignettes { grid-template-columns: 1fr; }
+}
+

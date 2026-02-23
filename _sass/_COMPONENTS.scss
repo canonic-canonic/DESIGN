@@ -372,6 +372,8 @@
     opacity: 0.75;
 }
 
+.switcher-cta { margin-top: 14px; }
+
 .switcher-graphic {
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -381,6 +383,17 @@
 }
 
 .switcher-graphic svg { width: 100%; height: auto; display: block; }
+
+/* Figure SVG — responsive sizing */
+.figure-svg { width: 100%; max-width: 420px; }
+
+/* Vault card — reduced opacity */
+.app-card-vault { border-color: rgba(212, 175, 55, 0.2); opacity: 0.65; }
+
+/* Metric trend colors */
+.metric-trend-up { color: var(--green); }
+.metric-trend-down { color: #ff6b63; }
+.metric-trend-neutral { color: var(--dim); }
 
 /* Feature block (vaas-style) */
 .vaas {
@@ -502,9 +515,9 @@
 }
 
 .message.error {
-    background: rgba(255, 59, 48, 0.1);
-    color: var(--red);
-    border: 1px solid rgba(255, 59, 48, 0.2);
+    background: rgba(255, 69, 58, 0.12);
+    color: #ff6b63;
+    border: 1px solid rgba(255, 69, 58, 0.25);
     border-radius: 18px;
 }
 

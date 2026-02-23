@@ -16,22 +16,84 @@
   {% include NAV-UNIFIED.html mode="post" back_href=back_href back_label=back_label scope_label=scope %}
 
   <article class="post container">
-    <header class="post-header">
-      <div class="hero-badge">{{ page.badge | default: badge_label }}</div>
-      <h1 class="gradient-text">{{ page.title }}</h1>
-      {% if page.date %}<time class="post-date">{{ page.date | date: "%B %d, %Y" }}</time>{% endif %}
-      {% if page.author %}<span class="post-author">{{ page.author }}</span>{% endif %}
+    <header class="post-header{% if page.hero.cover %} post-header-cover{% endif %}">
+      {% if page.hero.cover %}
+      <div class="post-cover">
+        <img src="{{ page.hero.cover }}" alt="{{ page.title }} cover art" loading="lazy"/>
+      </div>
+      <div class="post-header-text">
+      {% endif %}
+        <div class="hero-badge">{{ page.badge | default: badge_label }}</div>
+        <h1 class="gradient-text">{{ page.title }}</h1>
+        {% if page.hero.description %}<p class="post-description">{{ page.hero.description }}</p>{% endif %}
+        {% if page.date %}<time class="post-date">{{ page.date | date: "%B %d, %Y" }}</time>{% endif %}
+        {% if page.author %}<span class="post-author">{{ page.author }}</span>{% endif %}
+      {% if page.hero.cover %}
+      </div>
+      {% endif %}
     </header>
+
+    {% if page.downloads %}
+    <nav class="post-downloads">
+      {% for dl in page.downloads %}
+      <a href="{{ dl.href }}" class="download-btn" download>{{ dl.icon | default: "↓" }} {{ dl.label }}</a>
+      {% endfor %}
+    </nav>
+    {% endif %}
 
     {% if page.figure %}
     <figure class="post-figure">
-      <div data-figure="{{ page.figure.type }}" data-config='{{ page.figure | jsonify }}'></div>
+      {% assign fig = page.figure %}
+      {% if fig.type == "score-meter" %}{% include figures/SCORE.html score=fig.score label=fig.label %}
+      {% elsif fig.type == "pipeline" %}{% include figures/PIPELINE.html steps=fig.steps %}
+      {% elsif fig.type == "audit-trail" %}{% include figures/AUDIT.html items=fig.items %}
+      {% elsif fig.type == "flow-chain" %}{% include figures/FLOW.html nodes=fig.nodes %}
+      {% elsif fig.type == "balance" %}{% include figures/BALANCE.html left=fig.left right=fig.right tilt=fig.tilt %}
+      {% elsif fig.type == "gauge" %}{% include figures/GAUGE.html value=fig.value max=fig.max label=fig.label unit=fig.unit %}
+      {% elsif fig.type == "donut" %}{% include figures/DONUT.html segments=fig.segments total=fig.total label=fig.label %}
+      {% elsif fig.type == "area-chart" %}{% include figures/AREA.html points=fig.points label=fig.label %}
+      {% elsif fig.type == "bar-chart" %}{% include figures/BARS.html bars=fig.bars %}
+      {% endif %}
     </figure>
+    {% endif %}
+
+    {% if page.gate == "contribute" %}
+    <!-- Contribution gate -->
+    <div class="gate-contribute" id="gate">
+      <div class="gate-inner">
+        <p class="gate-text">Tell us who you are to read, explore, and contribute. Your identity is logged with provenance. Open access. Governed record.</p>
+        <form class="gate-form" id="gateForm">
+          <input type="text" id="g-name" placeholder="Full Name" required>
+          <input type="email" id="g-email" placeholder="Email" required>
+          <input type="text" id="g-affiliation" placeholder="Affiliation" required>
+          <button type="submit" class="btn">ENTER</button>
+        </form>
+      </div>
+    </div>
+    <div class="gated-content" id="gatedContent">
     {% endif %}
 
     <div class="post-body prose">
       {{ content }}
     </div>
+
+    {% if page.gate == "contribute" %}
+    <!-- Contribution form -->
+    <div class="contribute-section">
+      <h2>Contribute</h2>
+      <p class="contribute-sub">Have a story, a quote we missed, a correction, a moment? Every contribution is governed and attributed.</p>
+      <form class="gate-form" id="contribForm">
+        <input type="text" id="c-chapter" placeholder="Chapter or quote this relates to (optional)">
+        <textarea id="c-story" placeholder="Your story, quote, or correction..." required></textarea>
+        <input type="text" id="c-source" placeholder="Source (talk title, year, personal memory...)">
+        <button type="submit" class="btn">SUBMIT CONTRIBUTION</button>
+      </form>
+      <div class="contrib-success" id="contribSuccess">
+        Your contribution has been recorded with provenance. Thank you.
+      </div>
+    </div>
+    </div><!-- /gatedContent -->
+    {% endif %}
 
     {% if page.proof %}
     {% include PROOF.html type="closing" quote=page.proof.quote sig=page.proof.sig cta=page.proof.cta %}
@@ -51,5 +113,28 @@
     });
     mermaid.initialize({startOnLoad:true,theme:document.documentElement.classList.contains('dark')?'dark':'default'});
   </script>
+  {% if page.gate == "contribute" %}
+  <script>
+  (function(){
+    var KEY='canonic-gate-'+{{ page.scope | jsonify }};
+    var stored=localStorage.getItem(KEY);
+    function unlock(){document.getElementById('gate').classList.add('hidden');document.getElementById('gatedContent').classList.add('unlocked');}
+    if(stored){try{var d=JSON.parse(stored);if(d&&d.name){unlock();}}catch(e){}}
+    document.getElementById('gateForm').addEventListener('submit',function(e){
+      e.preventDefault();
+      var entry={name:document.getElementById('g-name').value.trim(),email:document.getElementById('g-email').value.trim(),affiliation:document.getElementById('g-affiliation').value.trim(),timestamp:new Date().toISOString(),scope:{{ page.scope | jsonify }}};
+      localStorage.setItem(KEY,JSON.stringify(entry));
+      unlock();
+    });
+    document.getElementById('contribForm').addEventListener('submit',function(e){
+      e.preventDefault();
+      var auth=JSON.parse(localStorage.getItem(KEY)||'{}');
+      var contrib={scope:{{ page.scope | jsonify }},contributor:auth.name||'Anonymous',email:auth.email||'',affiliation:auth.affiliation||'',chapter:document.getElementById('c-chapter').value.trim(),story:document.getElementById('c-story').value.trim(),source:document.getElementById('c-source').value.trim()};
+      function showSuccess(msg){document.getElementById('contribForm').classList.add('hidden');var s=document.getElementById('contribSuccess');if(msg)s.textContent=msg;s.classList.add('unlocked');}
+      fetch('https://api.canonic.org/contribute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(contrib)}).then(function(r){return r.json()}).then(function(d){if(d.ok){showSuccess();}}).catch(function(){var local=JSON.parse(localStorage.getItem(KEY+'-contributions')||'[]');contrib.timestamp=new Date().toISOString();contrib.offline=true;local.push(contrib);localStorage.setItem(KEY+'-contributions',JSON.stringify(local));showSuccess('Saved offline. Will sync when reconnected.');});
+    });
+  })();
+  </script>
+  {% endif %}
 </body>
 </html>

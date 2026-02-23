@@ -28,7 +28,7 @@
       </div>
       {% endif %}
       {% for p in hero.demo.products %}
-      <div class="iphone" data-demo="{{ forloop.index0 }}" {% unless forloop.first %}style="display:none"{% endunless %}>
+      <div class="iphone" data-demo="{{ forloop.index0 }}" {% unless forloop.first %}hidden{% endunless %}>
         <div class="iphone-screen">
           <div class="app-preview">
             <div class="chat-header">{{ p.productIcon }} {{ p.product }}</div>
@@ -73,13 +73,36 @@
 <script>
 window._demoSwitch = function(idx) {
   document.querySelectorAll('.iphone[data-demo]').forEach(function(el) {
-    el.style.display = el.getAttribute('data-demo') == idx ? '' : 'none';
+    el.hidden = (el.getAttribute('data-demo') != idx);
   });
   document.querySelectorAll('.demo-tab').forEach(function(el, i) {
     el.classList.toggle('active', i === idx);
   });
 };
 </script>
+
+{% elsif hero.cover %}
+<!-- Hero with cover art -->
+<div class="hero hero-cover">
+  <div class="hero-cover-inner">
+    <div class="hero-cover-image">
+      <img src="{{ hero.cover }}" alt="{{ hero.title }} cover art" loading="lazy"/>
+    </div>
+    <div class="hero-cover-text">
+      {% if hero.badge %}<div class="hero-badge">{{ hero.badge }}</div>{% endif %}
+      <h1 class="gradient-text">{{ hero.title }}</h1>
+      {% if hero.subtitle %}<p class="subtitle">{{ hero.subtitle }}</p>{% endif %}
+      {% if hero.description %}<p class="description">{{ hero.description }}</p>{% endif %}
+      {% if hero.cta %}
+      <div class="cta-buttons">
+        {% for btn in hero.cta %}
+        <a href="{{ btn.href }}" class="btn{% unless forloop.first %} btn-secondary{% endunless %}"{% if btn.talk %} onclick="TALK.open();return false"{% endif %}>{{ btn.label }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
 
 {% else %}
 <!-- Standard hero (no demo) -->

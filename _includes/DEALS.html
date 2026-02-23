@@ -2,7 +2,7 @@
 <!-- Deal/partnership card grid with vault locking + TALK integration -->
 <div class="apps-grid">
   {% for d in include.deals %}
-  <a href="{{ d.href | default: '#' }}" class="app-card"{% if d.vault %} style="border-color:rgba(212,175,55,0.2);opacity:0.65;"{% endif %}{% if d.talk %} onclick="TALK.open();return false"{% endif %}>
+  <a href="{{ d.href | default: '#' }}" class="app-card{% if d.vault %} app-card-vault{% endif %}"{% if d.talk %} onclick="TALK.open();return false"{% endif %}>
     {% if d.icon_gradient %}
     <div class="app-icon" style="background:linear-gradient(135deg,{{ d.icon_gradient[0] }},{{ d.icon_gradient[1] }});">{{ d.icon }}</div>
     {% else %}

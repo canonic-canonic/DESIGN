@@ -72,6 +72,39 @@
     margin-top: 48px;
 }
 
+/* Hero with cover art */
+.hero-cover {
+    text-align: left;
+}
+.hero-cover-inner {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    max-width: 960px;
+    margin: 0 auto;
+}
+.hero-cover-image {
+    flex: 0 0 240px;
+    img {
+        width: 240px;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
+    }
+}
+.hero-cover-text {
+    flex: 1;
+    min-width: 0;
+}
+@media (max-width: 640px) {
+    .hero-cover-inner {
+        flex-direction: column;
+        text-align: center;
+    }
+    .hero-cover-image { flex: none; }
+    .hero-cover-image img { width: 180px; }
+}
+
 /* Section — open canvas, generous breathing */
 section {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);

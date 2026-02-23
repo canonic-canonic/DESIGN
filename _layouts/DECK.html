@@ -69,6 +69,14 @@
     </div>
   </main>
 
+  {% if page.downloads %}
+  <nav class="deck-downloads">
+    {% for dl in page.downloads %}
+    <a href="{{ dl.href }}" class="download-btn" download>{{ dl.icon | default: "↓" }} {{ dl.label }}</a>
+    {% endfor %}
+  </nav>
+  {% endif %}
+
   <footer class="deck-footer">{{ page.footerTagline | default: page.title | default: site.title }}</footer>
 
   {% include SCRIPTS.html deck=true %}
