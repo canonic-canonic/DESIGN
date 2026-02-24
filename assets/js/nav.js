@@ -14,7 +14,7 @@ var NAV = (function() {
         fetch('./CANON.json')
             .then(function(r) { return r.ok ? r.json() : null; })
             .then(function(data) {
-                if (!data || !data.breadcrumbs) return;
+                if (!data || !data.breadcrumbs || data.breadcrumbs.length < 2) return;
                 var html = '';
                 for (var i = 0; i < data.breadcrumbs.length; i++) {
                     var c = data.breadcrumbs[i];
