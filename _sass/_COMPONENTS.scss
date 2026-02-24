@@ -271,9 +271,9 @@
 
 .demo-tab.active {
     color: var(--fg);
-    border-color: rgba(var(--accent-rgb, 59, 130, 246), 0.35);
-    background: rgba(var(--accent-rgb, 59, 130, 246), 0.12);
-    box-shadow: 0 10px 24px rgba(var(--accent-rgb, 59, 130, 246), 0.12);
+    border-color: rgba(var(--tab-accent-rgb, 59, 130, 246), 0.35);
+    background: rgba(var(--tab-accent-rgb, 59, 130, 246), 0.12);
+    box-shadow: 0 10px 24px rgba(var(--tab-accent-rgb, 59, 130, 246), 0.12);
 }
 
 /* Switcher — interactive narrative tabs */

@@ -23,12 +23,12 @@
       {% if hero.demo.products.size > 1 %}
       <div class="demo-tabs">
         {% for p in hero.demo.products %}
-        <button class="demo-tab{% if forloop.first %} active{% endif %}" onclick="window._demoSwitch({{ forloop.index0 }})">{{ p.productIcon }} {{ p.product }}</button>
+        <button class="demo-tab{% if forloop.first %} active{% endif %}" style="--tab-accent: {{ p.accent | default: '#3b82f6' }}; --tab-accent-rgb: {{ p.accent_rgb | default: '59,130,246' }}" onclick="window._demoSwitch({{ forloop.index0 }})">{{ p.productIcon }} {{ p.product }}</button>
         {% endfor %}
       </div>
       {% endif %}
       {% for p in hero.demo.products %}
-      <div class="iphone" data-demo="{{ forloop.index0 }}" {% unless forloop.first %}hidden{% endunless %}>
+      <div class="iphone" data-demo="{{ forloop.index0 }}" style="--demo-accent: {{ p.accent | default: '#3b82f6' }}; --demo-accent-rgb: {{ p.accent_rgb | default: '59,130,246' }}" {% unless forloop.first %}hidden{% endunless %}>
         <div class="iphone-screen">
           <div class="app-preview">
             <div class="chat-header">{{ p.productIcon }} {{ p.product }}</div>
@@ -77,6 +77,11 @@ window._demoSwitch = function(idx) {
   });
   document.querySelectorAll('.demo-tab').forEach(function(el, i) {
     el.classList.toggle('active', i === idx);
+    if (i === idx) {
+      var s = getComputedStyle(el);
+      el.closest('.device-container').style.setProperty('--active-tab-accent', s.getPropertyValue('--tab-accent'));
+      el.closest('.device-container').style.setProperty('--active-tab-accent-rgb', s.getPropertyValue('--tab-accent-rgb'));
+    }
   });
 };
 </script>
