@@ -1,10 +1,22 @@
 <!-- BARS | DESIGN.md 255 Map -->
-<svg viewBox="0 0 420 {{ include.bars | size | times: 40 | plus: 20 }}" xmlns="http://www.w3.org/2000/svg" class="figure-svg">
-  {% assign max_val = 0 %}
-  {% for bar in include.bars %}{% if bar.value > max_val %}{% assign max_val = bar.value %}{% endif %}{% endfor %}
+{% assign bar_count = include.bars | size %}
+{% assign svg_h = bar_count | times: 40 | plus: 20 %}
+{% assign max_val = 0 %}
+{% assign numeric = true %}
+{% for bar in include.bars %}
+  {% assign test_num = bar.value | plus: 0 %}
+  {% if test_num == 0 and bar.value != 0 and bar.value != "0" %}{% assign numeric = false %}{% endif %}
+  {% if numeric and test_num > max_val %}{% assign max_val = test_num %}{% endif %}
+{% endfor %}
+<svg viewBox="0 0 420 {{ svg_h }}" xmlns="http://www.w3.org/2000/svg" class="figure-svg">
   {% for bar in include.bars %}
   {% assign y = forloop.index0 | times: 40 | plus: 10 %}
-  {% assign width = bar.value | times: 280 | divided_by: max_val %}
+  {% if numeric and max_val > 0 %}
+    {% assign bar_num = bar.value | plus: 0 %}
+    {% assign width = bar_num | times: 280 | divided_by: max_val %}
+  {% else %}
+    {% assign width = 180 %}
+  {% endif %}
   <text x="0" y="{{ y | plus: 14 }}" fill="var(--fg-secondary)" font-size="12" font-family="var(--mono)">{{ bar.label }}</text>
   <rect x="120" y="{{ y }}" width="{{ width }}" height="24" rx="4" fill="rgba(var(--accent-rgb),0.35)"/>
   <text x="{{ width | plus: 128 }}" y="{{ y | plus: 16 }}" fill="var(--accent)" font-size="12" font-weight="700" font-family="var(--mono)">{{ bar.value }}</text>

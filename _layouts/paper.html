@@ -1,0 +1,121 @@
+<!-- LAYOUT: paper | Academic papers & books | DESIGN.md 255 Map -->
+<!-- Standalone (no nested includes — avoids Liquid stack overflow on long documents) -->
+<!-- Uses same CSS classes as post.html; same 17-type figure dispatch as DECK.html -->
+{% assign scope_key = page.scope | default: site.scope | downcase %}
+{% assign scope_up = page.scope | default: site.scope | upcase %}
+{% assign fleet = site.data.fleet %}
+{% assign accent = page.accent | default: site.accent | default: "#60a5fa" %}
+{% assign accent_rgb = page.accent_rgb | default: site.accent_rgb | default: "59,130,246" %}
+<!DOCTYPE html>
+<html lang="en" data-scope="{{ scope_key }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
+  <title>{{ page.title }} | {{ site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
+  <style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
+  {% if page.math %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false
+    });"></script>
+  {% endif %}
+</head>
+<body class="post-page">
+
+  <!-- NAV: inline (same classes as NAV-UNIFIED.html post mode) -->
+  <header class="nav" id="nav" role="navigation">
+    <div class="nav-left">
+      <button class="nav-brand" id="navBrand" type="button" aria-label="Fleet menu" aria-expanded="false">
+        <span class="nav-mark">{{ fleet.brand.mark | default: "∩" }}</span>
+        <span class="nav-fleet">{{ fleet.brand.label | default: "CANONIC" }}</span>
+      </button>
+    </div>
+    <div class="nav-center">
+      <a href="{{ page.back_href | default: '/PAPERS/' | relative_url }}" class="nav-back">&larr; {{ page.back_label | default: scope_up }}</a>
+    </div>
+    <div class="nav-right">
+      {% if page.talk %}<button class="nav-talk" type="button" onclick="TALK.open()" aria-label="Open TALK">
+        <span class="nav-dot"></span>
+        <span class="nav-talk-label">TALK</span>
+      </button>{% endif %}
+      <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">&#9790;</button>
+    </div>
+    {% if fleet.sites %}
+    <div class="nav-dropdown" id="navDropdown">
+      <div class="nav-dropdown-section">
+        <div class="nav-dropdown-label">FLEET</div>
+        <div class="nav-dropdown-links">
+          {% for s in fleet.sites %}<a href="{{ s.url }}"{% if s.scope == site.scope %} class="active"{% endif %}>{{ s.label | default: s.scope }}</a>{% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </header>
+
+  <!-- ARTICLE: same classes as post.html -->
+  <article class="post container">
+    <header class="post-header">
+      <div class="hero-badge">{{ page.badge | default: scope_up }}</div>
+      <h1 class="gradient-text">{{ page.title }}</h1>
+      {% if page.date %}<time class="post-date">{{ page.date | date: "%B %d, %Y" }}</time>{% endif %}
+      {% if page.author %}<span class="post-author">{{ page.author }}</span>{% endif %}
+    </header>
+
+    {% if page.figure %}
+    <figure class="post-figure">
+      {% assign fig = page.figure %}
+      {% if fig.type == "score-meter" %}{% include figures/SCORE.html score=fig.score label=fig.label %}
+      {% elsif fig.type == "pipeline" %}{% include figures/PIPELINE.html steps=fig.steps %}
+      {% elsif fig.type == "audit-trail" %}{% include figures/AUDIT.html items=fig.items %}
+      {% elsif fig.type == "flow-chain" %}{% include figures/FLOW.html nodes=fig.nodes %}
+      {% elsif fig.type == "balance" %}{% include figures/BALANCE.html left=fig.left right=fig.right tilt=fig.tilt %}
+      {% elsif fig.type == "gauge" %}{% include figures/GAUGE.html value=fig.value max=fig.max label=fig.label unit=fig.unit %}
+      {% elsif fig.type == "donut" %}{% include figures/DONUT.html segments=fig.segments total=fig.total label=fig.label %}
+      {% elsif fig.type == "area-chart" %}{% include figures/AREA.html points=fig.points label=fig.label prefix=fig.prefix suffix=fig.suffix %}
+      {% elsif fig.type == "bar-chart" %}{% include figures/BARS.html bars=fig.bars %}
+      {% elsif fig.type == "timeline" %}{% include figures/TIMELINE.html items=fig.items %}
+      {% elsif fig.type == "hero-stats" %}{% include figures/HERO-STATS.html items=fig.items footer=fig.footer %}
+      {% elsif fig.type == "architecture" %}{% include figures/ARCHITECTURE.html layers=fig.layers label=fig.label %}
+      {% elsif fig.type == "funnel" %}{% include figures/FUNNEL.html left=fig.left left_label=fig.left_label left_items=fig.left_items bridge=fig.bridge bridge_label=fig.bridge_label bridge_sub=fig.bridge_sub right=fig.right right_label=fig.right_label right_items=fig.right_items result=fig.result %}
+      {% elsif fig.type == "tier-cards" %}{% include figures/TIER-CARDS.html cards=fig.cards %}
+      {% elsif fig.type == "app-grid" %}{% include figures/APP-GRID.html apps=fig.apps %}
+      {% elsif fig.type == "wallet-hero" %}{% include figures/WALLET-HERO.html id=fig.id balance=fig.balance actions=fig.actions %}
+      {% elsif fig.type == "transactions" %}{% include figures/TRANSACTIONS.html id=fig.id items=fig.items %}
+      {% endif %}
+    </figure>
+    {% endif %}
+
+    <div class="post-body prose">
+      {{ content }}
+    </div>
+  </article>
+
+  <!-- FOOTER: inline (same classes as FOOTER.html) -->
+  <footer id="footer">
+    {% if fleet.sites %}{% for s in fleet.sites %}{% unless forloop.first %} · {% endunless %}<a href="{{ s.url }}">{{ s.label }}</a>{% endfor %}
+     · <a href="#" onclick="TALK.open();return false">TALK</a>
+    <br><br>{{ page.footerTagline | default: "CANONIC" }}
+    {% endif %}
+  </footer>
+
+  <!-- SCRIPTS: inline (same as SCRIPTS.html — avoids deep include chain) -->
+  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
+  {% if page.talk %}
+  {% include TALK.html %}
+  <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
+  <script>TALK.init();</script>
+  {% endif %}
+  {% include MERMAID.html %}
+</body>
+</html>
