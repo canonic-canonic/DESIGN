@@ -112,6 +112,21 @@
     background: rgba(255, 255, 255, 0.08);
 }
 
+/* Double-fleet separator */
+.nav-fleet-sep {
+    display: flex;
+    align-items: center;
+    padding: 0 2px;
+}
+.nav-fleet-sep::before {
+    content: "";
+    display: block;
+    width: 1px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 1px;
+}
+
 /* Post mode: back + scope badge */
 .nav-back {
     color: var(--dim);
@@ -322,6 +337,9 @@ a.nav-crumb:hover { color: var(--accent); }
 }
 [data-theme="light"] .nav-fleet-tabs a.active {
     background: rgba(0, 0, 0, 0.06);
+}
+[data-theme="light"] .nav-fleet-sep::before {
+    background: rgba(0, 0, 0, 0.15);
 }
 [data-theme="light"] .nav-crumb { color: rgba(0, 0, 0, 0.45); }
 [data-theme="light"] .nav-crumb--current { color: var(--fg); }

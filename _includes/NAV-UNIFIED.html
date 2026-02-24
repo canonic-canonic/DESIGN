@@ -1,5 +1,5 @@
 <!-- NAV | ONE PRIMITIVE | DESIGN.md 255 Map -->
-<!-- Fleet tabs (primary) + breadcrumbs + scope links (secondary) + TALK + theme -->
+<!-- Double-fleet tabs (primary) + breadcrumbs + scope links (secondary) + TALK + theme -->
 <!-- Modes: default (fleet-tabs+breadcrumbs), post (back+badge), deck (title+counter+timer) -->
 {% assign fleet = site.data.fleet %}
 {% assign scope_key = page.scope | default: site.scope | downcase %}
@@ -18,7 +18,7 @@
     </a>
   </div>
 
-  <!-- CENTER: Fleet scope tabs (primary) / post-back / deck controls -->
+  <!-- CENTER: Double-fleet scope tabs (primary) / post-back / deck controls -->
   <div class="nav-center">
     {% if mode == "post" %}
       {% if include.back_href %}<a href="{{ include.back_href | relative_url }}" class="nav-back">&larr; {{ include.back_label | default: "Back" }}</a>{% endif %}
@@ -30,8 +30,13 @@
     {% else %}
       {% if fleet.sites %}
       <ul class="nav-fleet-tabs">
+        {% assign prev_fleet = "" %}
         {% for s in fleet.sites %}
-        <li><a href="{{ s.url }}"{% if s.scope == scope_up %} class="active"{% endif %}{% if s.accent %} style="--tab-accent: {{ s.accent }}"{% endif %}>{{ s.label | default: s.scope }}</a></li>
+        {% if s.fleet != prev_fleet and prev_fleet != "" %}
+        <li class="nav-fleet-sep" aria-hidden="true"></li>
+        {% endif %}
+        <li><a href="{{ s.url }}"{% if s.scope == scope_up %} class="active"{% endif %}{% if s.accent %} style="--tab-accent: {{ s.accent }}"{% endif %}{% if s.tagline %} title="{{ s.tagline }}"{% endif %}>{{ s.label | default: s.scope }}</a></li>
+        {% assign prev_fleet = s.fleet %}
         {% endfor %}
       </ul>
       {% else %}
