@@ -7,6 +7,8 @@
 (function () {
   'use strict';
   var A = 'rgba(var(--accent-rgb,59,130,246),';
+  function isLight() { return document.documentElement.dataset.theme === 'light'; }
+  function fg(a) { return isLight() ? 'rgba(0,0,0,' + a + ')' : 'rgba(255,255,255,' + a + ')'; }
 
   var FIGURES = {
     'pipeline': function (el) {
@@ -14,13 +16,13 @@
       var n = steps.length; if (!n) return;
       var w = 420, h = 180, padX = 50, stepW = (w - padX * 2) / n, cy = h / 2;
       var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
-      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="rgba(255,255,255,0.02)"/>';
+      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="' + fg(0.02) + '"/>';
       steps.forEach(function (s, i) {
         var cx = padX + stepW * i + stepW / 2;
-        var fill = i === n - 1 ? A + '0.25)' : 'rgba(255,255,255,0.04)';
-        var stroke = i === n - 1 ? A + '0.7)' : 'rgba(255,255,255,0.15)';
+        var fill = i === n - 1 ? A + '0.25)' : fg(0.04);
+        var stroke = i === n - 1 ? A + '0.7)' : fg(0.15);
         svg += '<circle cx="' + cx + '" cy="' + cy + '" r="28" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5"/>';
-        svg += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="11" fill="rgba(255,255,255,0.75)" font-family="var(--mono)">' + s + '</text>';
+        svg += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="11" fill="' + fg(0.75) + '" font-family="var(--mono)">' + s + '</text>';
         if (i < n - 1) {
           var x1 = cx + 30, x2 = padX + stepW * (i + 1) + stepW / 2 - 30;
           svg += '<line x1="' + x1 + '" y1="' + cy + '" x2="' + x2 + '" y2="' + cy + '" stroke="' + A + '0.35)" stroke-width="1.5"/>';
@@ -37,12 +39,12 @@
       var w = 420, h = 240, blockH = 36, gap = 10;
       var totalH = n * (blockH + gap) - gap, startY = (h - totalH) / 2;
       var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
-      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="rgba(255,255,255,0.02)"/>';
+      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="' + fg(0.02) + '"/>';
       items.forEach(function (item, i) {
         var y = startY + i * (blockH + gap);
         var alpha = (0.08 + (i / n) * 0.12).toFixed(2);
-        svg += '<rect x="100" y="' + y + '" width="220" height="' + blockH + '" rx="8" fill="rgba(255,255,255,' + alpha + ')" stroke="' + A + (0.15 + i * 0.1).toFixed(2) + ')" stroke-width="1"/>';
-        svg += '<text x="210" y="' + (y + blockH / 2 + 4) + '" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.7)" font-family="var(--mono)">' + item + '</text>';
+        svg += '<rect x="100" y="' + y + '" width="220" height="' + blockH + '" rx="8" fill="' + fg(alpha) + '" stroke="' + A + (0.15 + i * 0.1).toFixed(2) + ')" stroke-width="1"/>';
+        svg += '<text x="210" y="' + (y + blockH / 2 + 4) + '" text-anchor="middle" font-size="12" fill="' + fg(0.7) + '" font-family="var(--mono)">' + item + '</text>';
         if (i < n - 1) svg += '<line x1="210" y1="' + (y + blockH) + '" x2="210" y2="' + (y + blockH + gap) + '" stroke="' + A + '0.3)" stroke-width="1.5" stroke-dasharray="3 2"/>';
         svg += '<text x="86" y="' + (y + blockH / 2 + 4) + '" text-anchor="end" font-size="10" fill="' + A + '0.4)" font-family="var(--mono)">#' + (i + 1) + '</text>';
       });
@@ -55,7 +57,7 @@
       var n = nodes.length; if (!n) return;
       var w = 420, h = 180, padX = 40, segW = (w - padX * 2) / (n - 1 || 1), cy = h / 2;
       var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
-      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="rgba(255,255,255,0.02)"/>';
+      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="' + fg(0.02) + '"/>';
       if (n > 1) {
         var d = 'M' + padX + ' ' + cy;
         for (var i = 1; i < n; i++) {
@@ -67,7 +69,7 @@
       nodes.forEach(function (nd, i) {
         var x = padX + segW * i;
         svg += '<circle cx="' + x + '" cy="' + cy + '" r="22" fill="' + A + '0.2)" stroke="' + A + '0.5)" stroke-width="1.5"/>';
-        svg += '<text x="' + x + '" y="' + (cy + 42) + '" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.6)" font-family="var(--mono)">' + nd + '</text>';
+        svg += '<text x="' + x + '" y="' + (cy + 42) + '" text-anchor="middle" font-size="10" fill="' + fg(0.6) + '" font-family="var(--mono)">' + nd + '</text>';
       });
       svg += '</svg>';
       el.innerHTML = svg;
@@ -76,7 +78,7 @@
     'area-chart': function (el) {
       var points = JSON.parse(el.dataset.points || '[]');
       if (!points.length) return;
-      var label = el.dataset.label || '', prefix = el.dataset.prefix || '', suffix = el.dataset.suffix || '';
+      var prefix = el.dataset.prefix || '', suffix = el.dataset.suffix || '';
       var w = 420, h = 240, padL = 50, padR = 20, padT = 30, padB = 40;
       var cW = w - padL - padR, cH = h - padT - padB;
       var maxY = 0;
@@ -86,7 +88,7 @@
       function py(v) { return padT + cH - (v / maxY) * cH; }
       var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
       svg += '<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + A + '0.4)"/><stop offset="100%" stop-color="' + A + '0.02)"/></linearGradient></defs>';
-      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="rgba(255,255,255,0.02)"/>';
+      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="' + fg(0.02) + '"/>';
       var aD = 'M' + px(0).toFixed(1) + ' ' + py(points[0].y).toFixed(1);
       for (var i = 1; i < points.length; i++) {
         var cp = (px(i - 1) + px(i)) / 2;
@@ -99,8 +101,8 @@
       points.forEach(function (p, i) {
         var x = px(i), y = py(p.y);
         svg += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4" fill="' + A + '1)"/>';
-        svg += '<text x="' + x.toFixed(1) + '" y="' + (y - 10).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="rgba(255,255,255,0.8)" font-family="var(--mono)">' + prefix + p.y + suffix + '</text>';
-        svg += '<text x="' + x.toFixed(1) + '" y="' + (h - 8) + '" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.4)" font-family="var(--mono)">' + p.x + '</text>';
+        svg += '<text x="' + x.toFixed(1) + '" y="' + (y - 10).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="' + fg(0.8) + '" font-family="var(--mono)">' + prefix + p.y + suffix + '</text>';
+        svg += '<text x="' + x.toFixed(1) + '" y="' + (h - 8) + '" text-anchor="middle" font-size="10" fill="' + fg(0.4) + '" font-family="var(--mono)">' + p.x + '</text>';
       });
       svg += '</svg>';
       el.innerHTML = svg;
@@ -116,11 +118,11 @@
       var sp = ap(sa), ep = ap(sa - ts), fp = ap(sa - ts * pct);
       var la = pct > 0.5 ? 1 : 0;
       var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
-      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="rgba(255,255,255,0.02)"/>';
-      svg += '<path d="M' + sp[0] + ' ' + sp[1] + ' A' + r + ' ' + r + ' 0 1 1 ' + ep[0] + ' ' + ep[1] + '" stroke="rgba(255,255,255,0.08)" stroke-width="14" fill="none" stroke-linecap="round"/>';
+      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="' + fg(0.02) + '"/>';
+      svg += '<path d="M' + sp[0] + ' ' + sp[1] + ' A' + r + ' ' + r + ' 0 1 1 ' + ep[0] + ' ' + ep[1] + '" stroke="' + fg(0.08) + '" stroke-width="14" fill="none" stroke-linecap="round"/>';
       if (pct > 0.001) svg += '<path d="M' + sp[0] + ' ' + sp[1] + ' A' + r + ' ' + r + ' 0 ' + la + ' 1 ' + fp[0] + ' ' + fp[1] + '" stroke="' + A + '0.85)" stroke-width="14" fill="none" stroke-linecap="round"/>';
       svg += '<text x="' + cx + '" y="' + (cy - 16) + '" text-anchor="middle" font-size="40" font-weight="800" fill="' + A + '0.95)">' + value + unit + '</text>';
-      svg += '<text x="' + cx + '" y="' + (cy + 8) + '" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.4)" font-family="var(--mono)" letter-spacing="0.15em">' + label + '</text>';
+      svg += '<text x="' + cx + '" y="' + (cy + 8) + '" text-anchor="middle" font-size="10" fill="' + fg(0.4) + '" font-family="var(--mono)" letter-spacing="0.15em">' + label + '</text>';
       svg += '</svg>';
       el.innerHTML = svg;
     },
@@ -133,7 +135,7 @@
       if (!total) segments.forEach(function (s) { total += s.value; });
       var w = 420, h = 300, cx = w / 2, cy = 130, r = 80, ir = 50;
       var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
-      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="rgba(255,255,255,0.02)"/>';
+      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="' + fg(0.02) + '"/>';
       var angle = -Math.PI / 2;
       segments.forEach(function (seg, i) {
         var pct = total > 0 ? seg.value / total : 0;
@@ -149,15 +151,15 @@
         svg += '<path d="M' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' A' + r + ' ' + r + ' 0 ' + lg + ' 1 ' + x2.toFixed(1) + ' ' + y2.toFixed(1) + ' L' + ix1.toFixed(1) + ' ' + iy1.toFixed(1) + ' A' + ir + ' ' + ir + ' 0 ' + lg + ' 0 ' + ix2.toFixed(1) + ' ' + iy2.toFixed(1) + ' Z" fill="' + A + alpha.toFixed(2) + ')"/>';
         angle += pct * Math.PI * 2;
       });
-      svg += '<text x="' + cx + '" y="' + (cy - 6) + '" text-anchor="middle" font-size="20" font-weight="800" fill="rgba(255,255,255,0.9)">' + total + '</text>';
-      svg += '<text x="' + cx + '" y="' + (cy + 12) + '" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.4)" font-family="var(--mono)" letter-spacing="0.15em">' + label + '</text>';
+      svg += '<text x="' + cx + '" y="' + (cy - 6) + '" text-anchor="middle" font-size="20" font-weight="800" fill="' + fg(0.9) + '">' + total + '</text>';
+      svg += '<text x="' + cx + '" y="' + (cy + 12) + '" text-anchor="middle" font-size="9" fill="' + fg(0.4) + '" font-family="var(--mono)" letter-spacing="0.15em">' + label + '</text>';
       var ly = cy + r + 28;
       segments.slice(0, 8).forEach(function (seg, i) {
         var lx = i % 2 === 0 ? 30 : w / 2 + 10;
         var y = ly + Math.floor(i / 2) * 18;
         var a2 = Math.max(0.25, 1 - i * 0.12);
         svg += '<rect x="' + lx + '" y="' + (y - 6) + '" width="8" height="8" rx="2" fill="' + A + a2.toFixed(2) + ')"/>';
-        svg += '<text x="' + (lx + 14) + '" y="' + y + '" font-size="10" fill="rgba(255,255,255,0.6)" font-family="var(--mono)">' + seg.label + '</text>';
+        svg += '<text x="' + (lx + 14) + '" y="' + y + '" font-size="10" fill="' + fg(0.6) + '" font-family="var(--mono)">' + seg.label + '</text>';
       });
       svg += '</svg>';
       el.innerHTML = svg;
@@ -171,13 +173,13 @@
       var lx = cx - bLen * Math.cos(rad), ly = (baseY - 20) + bLen * Math.sin(rad);
       var rx = cx + bLen * Math.cos(rad), ry = (baseY - 20) - bLen * Math.sin(rad);
       var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
-      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="rgba(255,255,255,0.02)"/>';
-      svg += '<polygon points="' + (cx - 12) + ',' + baseY + ' ' + (cx + 12) + ',' + baseY + ' ' + cx + ',' + (baseY - 16) + '" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>';
-      svg += '<line x1="' + lx.toFixed(1) + '" y1="' + ly.toFixed(1) + '" x2="' + rx.toFixed(1) + '" y2="' + ry.toFixed(1) + '" stroke="rgba(255,255,255,0.25)" stroke-width="2.5" stroke-linecap="round"/>';
+      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="' + fg(0.02) + '"/>';
+      svg += '<polygon points="' + (cx - 12) + ',' + baseY + ' ' + (cx + 12) + ',' + baseY + ' ' + cx + ',' + (baseY - 16) + '" fill="' + fg(0.1) + '" stroke="' + fg(0.2) + '" stroke-width="1"/>';
+      svg += '<line x1="' + lx.toFixed(1) + '" y1="' + ly.toFixed(1) + '" x2="' + rx.toFixed(1) + '" y2="' + ry.toFixed(1) + '" stroke="' + fg(0.25) + '" stroke-width="2.5" stroke-linecap="round"/>';
       svg += '<circle cx="' + lx.toFixed(1) + '" cy="' + ly.toFixed(1) + '" r="18" fill="' + A + '0.2)" stroke="' + A + '0.5)" stroke-width="1.5"/>';
-      svg += '<text x="' + lx.toFixed(1) + '" y="' + (ly + 4).toFixed(1) + '" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.7)" font-family="var(--mono)">' + left + '</text>';
-      svg += '<circle cx="' + rx.toFixed(1) + '" cy="' + ry.toFixed(1) + '" r="18" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>';
-      svg += '<text x="' + rx.toFixed(1) + '" y="' + (ry + 4).toFixed(1) + '" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.4)" font-family="var(--mono)">' + right + '</text>';
+      svg += '<text x="' + lx.toFixed(1) + '" y="' + (ly + 4).toFixed(1) + '" text-anchor="middle" font-size="9" fill="' + fg(0.7) + '" font-family="var(--mono)">' + left + '</text>';
+      svg += '<circle cx="' + rx.toFixed(1) + '" cy="' + ry.toFixed(1) + '" r="18" fill="' + fg(0.04) + '" stroke="' + fg(0.15) + '" stroke-width="1.5"/>';
+      svg += '<text x="' + rx.toFixed(1) + '" y="' + (ry + 4).toFixed(1) + '" text-anchor="middle" font-size="9" fill="' + fg(0.4) + '" font-family="var(--mono)">' + right + '</text>';
       svg += '</svg>';
       el.innerHTML = svg;
     }
@@ -196,4 +198,12 @@
   } else {
     renderAll();
   }
+
+  // Re-render when theme toggles
+  new MutationObserver(function (mutations) {
+    mutations.forEach(function (m) {
+      if (m.attributeName === 'data-theme') renderAll();
+    });
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 })();
+
