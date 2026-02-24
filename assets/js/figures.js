@@ -185,9 +185,22 @@
     }
   };
 
+  // Hydrate data-config JSON blob into individual data-* attributes
+  function hydrate(el) {
+    if (!el.dataset.config) return;
+    try {
+      var cfg = JSON.parse(el.dataset.config);
+      Object.keys(cfg).forEach(function (k) {
+        if (k === 'type') return; // already in data-figure
+        el.dataset[k] = typeof cfg[k] === 'object' ? JSON.stringify(cfg[k]) : cfg[k];
+      });
+    } catch (e) { /* malformed config — skip */ }
+  }
+
   // Auto-render all figure elements on DOM ready
   function renderAll() {
     document.querySelectorAll('[data-figure]').forEach(function (el) {
+      hydrate(el);
       var type = el.dataset.figure;
       if (FIGURES[type]) FIGURES[type](el);
     });
