@@ -1,6 +1,6 @@
 <!-- NAV | ONE PRIMITIVE | DESIGN.md 255 Map -->
-<!-- Replaces: ECO.html + bare <nav> + talk-bar -->
-<!-- Modes: default (scope+links), post (back+badge), deck (title+counter+timer) -->
+<!-- Fleet tabs (primary) + breadcrumbs + scope links (secondary) + TALK + theme -->
+<!-- Modes: default (fleet-tabs+breadcrumbs), post (back+badge), deck (title+counter+timer) -->
 {% assign fleet = site.data.fleet %}
 {% assign scope_key = page.scope | default: site.scope | downcase %}
 {% assign scope_up = page.scope | default: site.scope | upcase %}
@@ -10,15 +10,15 @@
 
 <header class="nav{% if mode == 'deck' %} nav--deck{% endif %}" id="nav" role="navigation">
 
-  <!-- LEFT: Fleet identity -->
+  <!-- LEFT: Fleet identity (home link) -->
   <div class="nav-left">
-    <button class="nav-brand" id="navBrand" type="button" aria-label="Fleet menu" aria-expanded="false">
+    <a class="nav-brand" href="{{ fleet.brand.url | default: '/' | relative_url }}" aria-label="Home">
       <span class="nav-mark">{{ fleet.brand.mark | default: "∩" }}</span>
       <span class="nav-fleet">{{ fleet.brand.label | default: "CANONIC" }}</span>
-    </button>
+    </a>
   </div>
 
-  <!-- CENTER: Scope context -->
+  <!-- CENTER: Fleet scope tabs (primary) / post-back / deck controls -->
   <div class="nav-center">
     {% if mode == "post" %}
       {% if include.back_href %}<a href="{{ include.back_href | relative_url }}" class="nav-back">&larr; {{ include.back_label | default: "Back" }}</a>{% endif %}
@@ -28,10 +28,10 @@
       <span class="nav-deck-counter"><span id="deckCurr">1</span> / {{ include.slide_count | default: "?" }}</span>
       <span class="nav-deck-timer" id="deckTimer">0:00</span>
     {% else %}
-      {% if nav_items %}
-      <ul class="nav-links">
-        {% for item in nav_items %}
-        <li><a href="{{ item.href }}"{% if item.type == "flagship" %} class="active"{% endif %}>{{ item.label }}</a></li>
+      {% if fleet.sites %}
+      <ul class="nav-fleet-tabs">
+        {% for s in fleet.sites %}
+        <li><a href="{{ s.url }}"{% if s.scope == scope_up %} class="active"{% endif %}{% if s.accent %} style="--tab-accent: {{ s.accent }}"{% endif %}>{{ s.label | default: s.scope }}</a></li>
         {% endfor %}
       </ul>
       {% else %}
@@ -46,29 +46,19 @@
       <span class="nav-dot"></span>
       <span class="nav-talk-label">TALK</span>
     </button>
-    <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">☾</button>
+    <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">&#9790;</button>
   </div>
 
-  <!-- DROPDOWN: Fleet + Scope (MAX state) -->
-  {% if fleet.sites %}
-  <div class="nav-dropdown" id="navDropdown">
-    <div class="nav-dropdown-section">
-      <div class="nav-dropdown-label">FLEET</div>
-      <div class="nav-dropdown-links">
-        {% for s in fleet.sites %}
-        <a href="{{ s.url }}"{% if s.scope == site.scope %} class="active"{% endif %}>{{ s.label | default: s.scope }}</a>
-        {% endfor %}
-      </div>
-    </div>
+  <!-- SUB-ROW: Breadcrumbs + Scope-local links -->
+  {% if mode == "default" %}
+  <div class="nav-sub" id="navSub">
+    <nav class="nav-breadcrumbs" id="navBreadcrumbs" aria-label="Breadcrumb"></nav>
     {% if nav_items %}
-    <div class="nav-dropdown-section">
-      <div class="nav-dropdown-label">{{ scope_up }}</div>
-      <div class="nav-dropdown-links">
-        {% for item in nav_items %}
-        <a href="{{ item.href }}">{{ item.label }}</a>
-        {% endfor %}
-      </div>
-    </div>
+    <ul class="nav-links">
+      {% for item in nav_items %}
+      <li><a href="{{ item.href }}"{% if item.type == "flagship" %} class="active"{% endif %}>{{ item.label }}</a></li>
+      {% endfor %}
+    </ul>
     {% endif %}
   </div>
   {% endif %}

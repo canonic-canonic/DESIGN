@@ -83,8 +83,9 @@
     /* ── Focus ── */
     --focus-ring: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
 
-    /* ── Header geometry (ONE bar — NAV primitive) ── */
+    /* ── Header geometry (ONE bar — NAV primitive + sub-row) ── */
     --nav-h: 44px;
-    --header-offset: var(--nav-h);
+    --nav-sub-h: 24px;
+    --header-offset: calc(var(--nav-h) + var(--nav-sub-h));
 }
 
