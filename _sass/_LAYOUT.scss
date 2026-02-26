@@ -54,8 +54,8 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--glass-subtle);
+    border: 1px solid var(--glass-border);
     padding: 8px 20px;
     border-radius: 100px;
     font-size: 12px;
@@ -89,7 +89,7 @@
         width: 240px;
         height: auto;
         border-radius: 8px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
+        box-shadow: var(--shadow), 0 0 0 1px var(--glass-border);
     }
 }
 .hero-cover-text {
@@ -107,8 +107,8 @@
 
 /* Section — open canvas, generous breathing */
 section {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: linear-gradient(180deg, var(--glass-subtle) 0%, transparent 100%);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-xl);
     padding: var(--space-xl) var(--space-lg);
     margin-bottom: var(--space-md);
@@ -171,7 +171,7 @@ footer {
     font-size: 12px;
     margin-top: 80px;
     padding: 32px;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid var(--glass-subtle);
 }
 
 footer a { color: var(--accent); opacity: 0.8; }

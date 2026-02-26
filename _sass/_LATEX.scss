@@ -70,15 +70,15 @@
 
 .definition {
     border-left-color: var(--knowledge);
-    background: rgba(191, 90, 242, 0.04);
-    border-color: rgba(191, 90, 242, 0.15);
+    background: rgba(var(--knowledge-rgb), 0.04);
+    border-color: rgba(var(--knowledge-rgb), 0.15);
     border-left-color: var(--knowledge);
 }
 .definition .definition-title { color: var(--knowledge); }
 
 .proof-box {
     border-left-color: var(--dim);
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--glass-subtle);
     border-color: var(--border);
     border-left-color: var(--dim);
 }
@@ -92,23 +92,23 @@
 
 .lemma {
     border-left-color: var(--operations);
-    background: rgba(41, 151, 255, 0.04);
-    border-color: rgba(41, 151, 255, 0.15);
+    background: rgba(var(--operations-rgb), 0.04);
+    border-color: rgba(var(--operations-rgb), 0.15);
     border-left-color: var(--operations);
 }
 .lemma .lemma-title { color: var(--operations); }
 
 .corollary {
     border-left-color: var(--commerce);
-    background: rgba(255, 159, 10, 0.04);
-    border-color: rgba(255, 159, 10, 0.15);
+    background: rgba(var(--commerce-rgb), 0.04);
+    border-color: rgba(var(--commerce-rgb), 0.15);
     border-left-color: var(--commerce);
 }
 .corollary .corollary-title { color: var(--commerce); }
 
 .remark {
     border-left-color: var(--fg-secondary);
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--glass-subtle);
     border-color: var(--border);
     border-left-color: var(--fg-secondary);
     font-style: italic;
@@ -193,8 +193,8 @@
     margin: 2rem 0;
 }
 .latex-vignette {
-    background: rgba(255, 69, 58, 0.03);
-    border: 1px solid rgba(255, 69, 58, 0.15);
+    background: rgba(var(--red-rgb), 0.03);
+    border: 1px solid rgba(var(--red-rgb), 0.15);
     border-radius: var(--radius-sm);
     padding: 1.25rem 1.5rem;
     font-size: 0.875rem;

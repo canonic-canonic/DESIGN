@@ -26,38 +26,38 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 12px;
-    padding: 8px 0;
-    margin-bottom: 16px;
+    gap: var(--radius);
+    padding: var(--space-xs) 0;
+    margin-bottom: var(--space-sm);
 }
 
 .shop-balance {
-    font-family: 'SF Mono', ui-monospace, Monaco, Consolas, monospace;
+    font-family: var(--mono);
     font-size: 13px;
-    color: var(--fg-secondary, #6b7280);
+    color: var(--fg-secondary, var(--dim));
     display: none;
 }
 
 .shop-bag-btn {
     background: transparent;
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
     padding: 6px 14px;
     font-size: 13px;
     font-weight: 600;
-    color: var(--fg, #111);
+    color: var(--fg);
     cursor: pointer;
     transition: border-color 200ms ease;
 
     &:hover {
-        border-color: var(--accent, #0071e3);
+        border-color: var(--accent);
     }
 }
 
 .shop-bag-count {
     display: none;
-    background: var(--accent, #0071e3);
-    color: #fff;
+    background: var(--accent);
+    color: var(--bg);
     font-size: 11px;
     font-weight: 700;
     border-radius: 50%;
@@ -73,12 +73,12 @@
 .shop-products {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 20px;
-    margin: 16px 0 32px;
+    gap: var(--radius-xl);
+    margin: var(--space-sm) 0 32px;
 }
 
 .shop-empty {
-    color: var(--fg-secondary, #6b7280);
+    color: var(--fg-secondary, var(--dim));
     font-size: 14px;
     text-align: center;
     padding: 40px 0;
@@ -86,16 +86,16 @@
 
 /* ── Product card — Apple-minimal ── */
 .shop-card {
-    border-radius: 12px;
+    border-radius: var(--radius);
     overflow: hidden;
-    background: var(--card, #fff);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
     transition: box-shadow 200ms ease, transform 200ms ease;
     display: flex;
     flex-direction: column;
 
     &:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        box-shadow: var(--shadow);
         transform: translateY(-2px);
     }
 }
@@ -108,11 +108,11 @@
 }
 
 .shop-card-gradient {
-    background: linear-gradient(135deg, var(--accent, #0071e3) 0%, #1a1a2e 100%);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--card) 100%);
 }
 
 .shop-card-body {
-    padding: 14px 16px 8px;
+    padding: 14px var(--space-sm) var(--space-xs);
     flex: 1;
 }
 
@@ -121,7 +121,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--fg-secondary, #6b7280);
+    color: var(--fg-secondary, var(--dim));
     margin-bottom: 4px;
 }
 
@@ -130,14 +130,14 @@
     font-weight: 600;
     line-height: 1.3;
     margin-bottom: 6px;
-    color: var(--fg, #111);
+    color: var(--fg);
 }
 
 .shop-card-synopsis {
     font-size: 13px;
-    color: var(--fg-secondary, #6b7280);
+    color: var(--fg-secondary, var(--dim));
     line-height: 1.5;
-    margin-bottom: 8px;
+    margin-bottom: var(--space-xs);
 }
 
 .shop-card-status {
@@ -145,37 +145,37 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--fg-secondary, #6b7280);
+    color: var(--fg-secondary, var(--dim));
     margin-bottom: 4px;
 }
 
 .shop-card-price {
-    font-family: 'SF Mono', ui-monospace, Monaco, Consolas, monospace;
+    font-family: var(--mono);
     font-size: 15px;
     font-weight: 700;
-    color: var(--fg, #111);
+    color: var(--fg);
 }
 
 /* ── Single CTA per card ── */
 .shop-card-cta {
     width: 100%;
-    padding: 12px;
+    padding: var(--radius);
     border: none;
-    border-top: 1px solid var(--border, #e5e7eb);
+    border-top: 1px solid var(--border);
     background: transparent;
     font-size: 14px;
     font-weight: 600;
-    color: var(--accent, #0071e3);
+    color: var(--accent);
     cursor: pointer;
     transition: background 200ms ease;
 
     &:hover {
-        background: rgba(0, 113, 227, 0.06);
+        background: rgba(var(--accent-rgb), 0.06);
     }
 }
 
 .shop-card-cta-free {
-    color: var(--fg, #111);
+    color: var(--fg);
 }
 
 /* ── Bag overlay — slide from right (like TALK overlay) ── */
@@ -186,13 +186,13 @@
     width: 380px;
     max-width: 90vw;
     height: 100vh;
-    background: var(--bg, #fff);
-    border-left: 1px solid var(--border, #e5e7eb);
+    background: var(--bg);
+    border-left: 1px solid var(--border);
     z-index: 1000;
     display: flex;
     flex-direction: column;
     transition: right 200ms ease;
-    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-lg);
 
     &.open {
         right: 0;
@@ -203,8 +203,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border, #e5e7eb);
+    padding: var(--space-sm) 20px;
+    border-bottom: 1px solid var(--border);
     font-size: 17px;
     font-weight: 600;
 }
@@ -214,22 +214,22 @@
     border: none;
     font-size: 14px;
     font-weight: 600;
-    color: var(--accent, #0071e3);
+    color: var(--accent);
     cursor: pointer;
 }
 
 .shop-bag-items {
     flex: 1;
     overflow-y: auto;
-    padding: 12px 20px;
+    padding: var(--radius) 20px;
 }
 
 .shop-bag-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border, #e5e7eb);
+    padding: var(--radius) 0;
+    border-bottom: 1px solid var(--border);
 }
 
 .shop-bag-item-title {
@@ -238,50 +238,50 @@
 }
 
 .shop-bag-item-price {
-    font-family: 'SF Mono', ui-monospace, Monaco, Consolas, monospace;
+    font-family: var(--mono);
     font-size: 13px;
-    color: var(--fg-secondary, #6b7280);
+    color: var(--fg-secondary, var(--dim));
 }
 
 .shop-bag-item-remove {
     background: transparent;
     border: none;
     font-size: 13px;
-    color: var(--fg-secondary, #6b7280);
+    color: var(--fg-secondary, var(--dim));
     cursor: pointer;
 
     &:hover {
-        color: #ef4444;
+        color: var(--red);
     }
 }
 
 .shop-bag-footer {
-    padding: 16px 20px;
-    border-top: 1px solid var(--border, #e5e7eb);
+    padding: var(--space-sm) 20px;
+    border-top: 1px solid var(--border);
 }
 
 .shop-bag-total {
-    font-family: 'SF Mono', ui-monospace, Monaco, Consolas, monospace;
+    font-family: var(--mono);
     font-size: 20px;
     font-weight: 700;
-    margin-bottom: 12px;
+    margin-bottom: var(--radius);
 }
 
 .shop-checkout-methods {
     display: flex;
-    gap: 8px;
+    gap: var(--space-xs);
 }
 
 .shop-checkout-btn {
     flex: 1;
-    padding: 12px;
+    padding: var(--radius);
     border: none;
     border-radius: 10px;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    background: var(--accent, #0071e3);
-    color: #fff;
+    background: var(--accent);
+    color: var(--bg);
     transition: opacity 200ms ease;
 
     &:hover {
@@ -290,14 +290,14 @@
 }
 
 .shop-checkout-card {
-    background: var(--fg, #111);
+    background: var(--fg);
 }
 
 .shop-bag-empty {
     display: none;
     text-align: center;
     padding: 60px 20px;
-    color: var(--fg-secondary, #6b7280);
+    color: var(--fg-secondary, var(--dim));
     font-size: 15px;
 }
 
@@ -305,7 +305,7 @@
 .shop-message {
     display: none;
     position: fixed;
-    top: 16px;
+    top: var(--space-sm);
     left: 50%;
     transform: translateX(-50%);
     padding: 10px 20px;
@@ -313,7 +313,7 @@
     font-size: 14px;
     font-weight: 500;
     z-index: 1001;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow);
 }
 
 .shop-message-success {
@@ -327,8 +327,8 @@
 }
 
 .shop-message-info {
-    background: var(--fg, #111);
-    color: #fff;
+    background: var(--fg);
+    color: var(--bg);
 }
 
 /* ── Inline mode: compact cards ── */
@@ -338,5 +338,5 @@
 
 [data-mode="inline"] .shop-products {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
+    gap: var(--space-sm);
 }

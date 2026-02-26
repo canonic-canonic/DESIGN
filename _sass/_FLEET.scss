@@ -3,7 +3,7 @@
 .nav-links a.nav-flagship {
     color: var(--accent);
     border: 1px solid rgba(var(--accent-rgb), 0.32);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     padding: 6px 10px;
     font-size: 11px;
     letter-spacing: 0.04em;
@@ -25,10 +25,10 @@ section[id],
 }
 .dashboard-wide { grid-column: 1 / -1; }
 .dashboard-widget {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
-    padding: 24px;
+    background: var(--glass-subtle);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
     min-height: 180px;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -87,13 +87,13 @@ section[id],
 
 /* Light theme adjustments */
 [data-theme="light"] .dashboard-widget {
-    background: rgba(0,0,0,0.015);
-    border-color: rgba(0,0,0,0.08);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    background: var(--glass-subtle);
+    border-color: var(--glass-border);
+    box-shadow: var(--shadow-sm);
 }
 [data-theme="light"] .dashboard-widget:hover {
     border-color: rgba(var(--accent-rgb), 0.32);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: var(--shadow-sm);
 }
 
 /* ── Layer: Wallet Hero (Coinbase / PayPal style) ────────────── */
@@ -133,8 +133,8 @@ section[id],
     align-items: center;
     justify-content: center;
     padding: 10px 24px;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 12px;
+    border: 1px solid var(--glass-strong);
+    border-radius: var(--radius);
     font-size: 13px;
     font-weight: 600;
     color: var(--fg);
@@ -154,26 +154,26 @@ section[id],
 }
 .wallet-action-primary {
     background: var(--accent);
-    color: #000;
+    color: var(--bg);
     border-color: var(--accent);
     font-weight: 700;
 }
 .wallet-action-primary:hover {
     opacity: 0.88;
-    color: #000;
+    color: var(--bg);
 }
 [data-theme="light"] .wallet-action-btn {
-    border-color: rgba(0,0,0,0.15);
+    border-color: var(--glass-strong);
 }
 [data-theme="light"] .wallet-action-btn:hover {
     border-color: var(--accent);
     background: rgba(var(--accent-rgb), 0.04);
 }
 [data-theme="light"] .wallet-action-primary {
-    color: #fff;
+    color: var(--bg);
 }
 [data-theme="light"] .wallet-action-primary:hover {
-    color: #fff;
+    color: var(--bg);
 }
 
 /* ── Layer: Transaction List ─────────────────────────────────── */
@@ -188,7 +188,7 @@ section[id],
     gap: 12px;
     align-items: center;
     padding: 14px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid var(--glass-border);
     font-size: 13px;
     transition: background 0.15s;
 }
@@ -207,9 +207,9 @@ section[id],
     text-transform: uppercase;
     letter-spacing: 0.06em;
     padding: 3px 8px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     white-space: nowrap;
-    background: rgba(255,255,255,0.06);
+    background: var(--glass-border);
     color: var(--fg);
 }
 /* Type-specific badge colors — vivid for both light and dark */
@@ -264,13 +264,13 @@ html:not([data-theme="light"]) .tx-debit { color: #f87171; }
     font-size: 13px;
 }
 [data-theme="light"] .tx-row {
-    border-color: rgba(0,0,0,0.06);
+    border-color: var(--glass-border);
 }
 [data-theme="light"] .tx-row:hover {
     background: rgba(var(--accent-rgb), 0.04);
 }
 [data-theme="light"] .tx-badge {
-    background: rgba(0,0,0,0.04);
+    background: var(--glass-hover);
 }
 
 /* ── Layer: Checkout Form ────────────────────────────────────── */
@@ -285,9 +285,9 @@ html:not([data-theme="light"]) .tx-debit { color: #f87171; }
 .checkout-input {
     width: 100%;
     padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.03);
+    border-radius: var(--radius);
+    border: 1px solid var(--glass-hover);
+    background: var(--glass-subtle);
     color: var(--fg);
     font: inherit;
     font-size: 14px;
@@ -298,8 +298,8 @@ html:not([data-theme="light"]) .tx-debit { color: #f87171; }
     border-color: var(--accent);
 }
 [data-theme="light"] .checkout-input {
-    border-color: rgba(0,0,0,0.12);
-    background: rgba(0,0,0,0.02);
+    border-color: var(--glass-hover);
+    background: var(--glass-subtle);
 }
 [data-theme="light"] .checkout-input:focus {
     border-color: var(--accent);
@@ -317,8 +317,8 @@ html:not([data-theme="light"]) .tx-debit { color: #f87171; }
     align-items: center;
     gap: 6px;
     padding: 16px 8px;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
     text-decoration: none;
     color: var(--fg);
     transition: border-color 0.2s, background 0.2s, transform 0.1s;
@@ -341,13 +341,13 @@ html:not([data-theme="light"]) .tx-debit { color: #f87171; }
     text-align: center;
 }
 [data-theme="light"] .app-grid .app-icon {
-    border-color: rgba(0,0,0,0.08);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border-color: var(--glass-border);
+    box-shadow: var(--shadow-sm);
 }
 [data-theme="light"] .app-grid .app-icon:hover {
     border-color: var(--accent);
     background: rgba(var(--accent-rgb), 0.04);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: var(--shadow-sm);
 }
 
 /* Responsive */

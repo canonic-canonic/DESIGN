@@ -15,10 +15,10 @@
 
 @keyframes pulse-border {
     0%, 100% {
-        box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 0 0 4px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 0 0 1px var(--glass-hover), 0 0 0 4px rgba(var(--accent-rgb), 0.3);
     }
     50% {
-        box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 0 0 8px rgba(59, 130, 246, 0.15);
+        box-shadow: 0 0 0 1px var(--glass-hover), 0 0 0 8px rgba(var(--accent-rgb), 0.15);
     }
 }
 

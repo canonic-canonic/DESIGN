@@ -7,9 +7,9 @@ body.auth-gated > *:not(#authGate):not(script):not(style) { display: none !impor
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: var(--bg, #000);
-  color: var(--fg, #f5f5f7);
-  font-family: -apple-system, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
 }
 
 body.auth-gated .auth-gate { display: flex; }
@@ -17,28 +17,28 @@ body.auth-gated .auth-gate { display: flex; }
 .auth-box {
   text-align: center;
   max-width: 400px;
-  padding: 40px 24px;
+  padding: 40px var(--space-md);
 }
 
 .auth-box h2 {
   font-size: 20px;
   font-weight: 800;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-xs);
   letter-spacing: 0.05em;
 }
 
 .auth-box p {
-  color: var(--fg-secondary, #86868b);
+  color: var(--fg-secondary, var(--dim));
   font-size: 14px;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-md);
 }
 
 .auth-btn {
   display: inline-block;
-  padding: 12px 24px;
-  background: var(--accent, #3b82f6);
-  color: #fff;
-  border-radius: 8px;
+  padding: var(--radius) var(--space-md);
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: var(--radius-sm);
   text-decoration: none;
   font-weight: 700;
   font-size: 14px;
@@ -49,7 +49,7 @@ body.auth-gated .auth-gate { display: flex; }
 .auth-btn:hover { opacity: 0.85; }
 
 .auth-error {
-  color: #ff453a;
+  color: var(--red);
   font-size: 12px;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-sm);
 }
