@@ -118,10 +118,55 @@
   <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
   {% if page.talk %}
-  {% include TALK.html %}
+  <!-- TALK (inlined) -->
+  <div class="talk-overlay" id="talkOverlay" data-position="{{ page.talk | default: 'side' }}">
+    <div class="talk-overlay-header">
+      <div class="talk-dot"></div>
+      <span class="talk-scope">{{ site.talk_label | default: "TALK" }}</span>
+      <select id="talkProviderSelect" onchange="TALK.switchProvider(this.value)" class="talk-provider-select">
+        <option value="auto">AUTO</option>
+        <option value="anthropic">ANTHROPIC</option>
+        <option value="runpod">RUNPOD</option>
+        <option value="vastai">VAST.AI</option>
+        <option value="deepseek">DEEPSEEK</option>
+      </select>
+      <span id="talkProviderLabel" class="talk-provider-label">AUTO</span>
+      <button type="button" class="talk-overlay-close" onclick="TALK.close()">ESC</button>
+    </div>
+    <div class="talk-messages" id="talkMessages"></div>
+    <div class="talk-input-row">
+      <input type="text" id="talkChatInput" placeholder="{{ page.talk_placeholder | default: 'Ask anything...' }}" autocomplete="off">
+      <button type="button" id="talkSend" onclick="TALK.send()">SEND</button>
+    </div>
+  </div>
   <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
   <script>TALK.init();</script>
   {% endif %}
-  {% include MERMAID.html %}
+
+  <!-- Mermaid (inlined, theme-reactive) -->
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    const sources=new Map();
+    document.querySelectorAll('code.language-mermaid').forEach(c=>{
+      const d=document.createElement('div');
+      d.classList.add('mermaid');
+      d.textContent=c.textContent;
+      sources.set(d,c.textContent);
+      c.parentElement.replaceWith(d);
+    });
+    function getTheme(){return document.documentElement.getAttribute('data-theme')==='light'?'default':'dark';}
+    mermaid.initialize({startOnLoad:true,theme:getTheme()});
+    new MutationObserver(function(){
+      mermaid.initialize({startOnLoad:false,theme:getTheme()});
+      document.querySelectorAll('.mermaid').forEach(function(el){
+        const src=sources.get(el)||el.getAttribute('data-mermaid-source')||el.textContent;
+        if(!src)return;
+        el.removeAttribute('data-processed');
+        el.innerHTML=src;
+        sources.set(el,src);
+      });
+      mermaid.run({nodes:document.querySelectorAll('.mermaid')});
+    }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  </script>
 </body>
 </html>
