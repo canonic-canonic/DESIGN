@@ -47,10 +47,12 @@
 
   <!-- RIGHT: TALK + Theme -->
   <div class="nav-right">
+    {% unless page.layout == "CUSTOM" %}
     <button class="nav-talk" type="button" onclick="TALK.open()" aria-label="Open TALK">
       <span class="nav-dot"></span>
       <span class="nav-talk-label">TALK</span>
     </button>
+    {% endunless %}
     <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">&#9790;</button>
   </div>
 

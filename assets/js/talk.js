@@ -83,42 +83,62 @@ const TALK = {
     },
 
     // ── Plugins (optional, governed by CANON.json flags) ────────────
-    initPlugins() {
+    // Plugin map: CANON.json boolean flag → script path.
+    // Dynamic loading: if CANON.json declares `"omics": true` and the page hasn't
+    // already loaded the script, TALK loads it at runtime.
+    PLUGIN_MAP: {
+        mcode:  '/plugins/mcode.js',
+        trials: '/plugins/trials.js',
+        omics:  '/plugins/omics.js'
+    },
+
+    loadScript(src) {
+        return new Promise(function(resolve) {
+            var s = document.createElement('script');
+            s.src = src;
+            s.onload = resolve;
+            s.onerror = resolve; // fail-closed: missing plugin must not break TALK
+            document.head.appendChild(s);
+        });
+    },
+
+    async initPlugins() {
         // No hardcoded behavior. Plugins must be explicitly enabled by CANON.json.
         this.plugins = [];
+        if (!this.canon) return;
 
-        // mCODE (clinical): enabled only when the scope CANON.json declares `"mcode": true`
-        // and the page has loaded the plugin.
-        if (this.canon && this.canon.mcode) {
-            // Support both `window.MCODE` and global bindings (classic scripts).
-            var mcodePlugin = null;
+        // Discover which plugins CANON.json enables and dynamically load missing ones.
+        var names = Object.keys(this.PLUGIN_MAP);
+        var toLoad = [];
+        for (var i = 0; i < names.length; i++) {
+            if (!this.canon[names[i]]) continue;
+            var globalName = names[i].toUpperCase();
+            // Skip if the page already loaded the script (e.g., CUSTOM layout <script> tags).
             try {
-                if (typeof window !== 'undefined') {
-                    if (typeof window.MCODE !== 'undefined') mcodePlugin = window.MCODE;
-                    else if (typeof MCODE !== 'undefined') mcodePlugin = MCODE;
-                }
+                if (typeof window !== 'undefined' && typeof window[globalName] !== 'undefined') continue;
             } catch {}
-
-            if (mcodePlugin) this.plugins.push(mcodePlugin);
+            toLoad.push(this.loadScript(this.PLUGIN_MAP[names[i]]));
         }
 
-        // TRIALS (clinical matching): enabled only when the scope CANON.json declares `"trials": true`
-        // and the page has loaded the plugin.
-        if (this.canon && this.canon.trials) {
-            var trialsPlugin = null;
+        // Wait for any dynamic script loads to complete.
+        if (toLoad.length) await Promise.allSettled(toLoad);
+
+        // Discover loaded plugins from window globals.
+        for (var j = 0; j < names.length; j++) {
+            if (!this.canon[names[j]]) continue;
+            var gName = names[j].toUpperCase();
+            var plugin = null;
             try {
-                if (typeof window !== 'undefined') {
-                    if (typeof window.TRIALS !== 'undefined') trialsPlugin = window.TRIALS;
-                    else if (typeof TRIALS !== 'undefined') trialsPlugin = TRIALS;
+                if (typeof window !== 'undefined' && typeof window[gName] !== 'undefined') {
+                    plugin = window[gName];
                 }
             } catch {}
-
-            if (trialsPlugin) this.plugins.push(trialsPlugin);
+            if (plugin) this.plugins.push(plugin);
         }
 
         // Initialize plugins. Fail-closed: plugin failures must not break TALK.
-        for (var i = 0; i < this.plugins.length; i++) {
-            var p = this.plugins[i];
+        for (var k = 0; k < this.plugins.length; k++) {
+            var p = this.plugins[k];
             try {
                 if (p && typeof p.init === 'function') p.init(this);
             } catch (e) {
@@ -447,12 +467,13 @@ const TALK = {
         input.value = '';
 
         // Optional plugin hook: beforeSend (e.g., mCODE extraction + state attach)
+        // Await supports async plugins (OMICS live API). Sync plugins resolve immediately.
         var config = {};
         for (var i = 0; i < this.plugins.length; i++) {
             var p = this.plugins[i];
             try {
                 if (p && p.hooks && typeof p.hooks.beforeSend === 'function') {
-                    var out = p.hooks.beforeSend({ text: text, config: config, talk: this });
+                    var out = await p.hooks.beforeSend({ text: text, config: config, talk: this });
                     if (out && typeof out.text === 'string') text = out.text;
                 }
             } catch (e) {
@@ -474,6 +495,10 @@ const TALK = {
                 if (config && config.trials) {
                     sys += '\n\nLIVE_TRIALS_CONTEXT (from ClinicalTrials.gov panel, governed):\n' + JSON.stringify(config.trials);
                     sys += '\n\nRules: Treat LIVE_TRIALS_CONTEXT as the only trial list you can see right now. If the user asks for a specific institution/location and the context is not filtered, ask for ZIP/city/radius and explain the limitation.';
+                }
+                if (config && config.omics) {
+                    sys += '\n\nLIVE_OMICS_CONTEXT (from NCBI E-utilities + PharmGKB, governed):\n' + JSON.stringify(config.omics);
+                    sys += '\n\nRules: Treat LIVE_OMICS_CONTEXT as live database results. Cite accession numbers. Declare evidence tier (GOLD/SILVER/BRONZE) for each finding. If context is empty for a queried entity, state that no results were found rather than hallucinating.';
                 }
             } catch {}
 

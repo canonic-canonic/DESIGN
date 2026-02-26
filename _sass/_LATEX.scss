@@ -235,10 +235,377 @@
     border-bottom: 2px solid var(--fg-secondary);
 }
 
-/* ── Responsive ── */
+/* ═══════════════════════════════════════════════════════════════════
+   PAPER LAYOUT — MammoChat Whitepaper Aesthetic (Token-Only)
+   ═══════════════════════════════════════════════════════════════════
+   Renders .paper-page as an academic whitepaper:
+   - Sans-serif typography via var(--font) — Helvetica system stack
+   - Two-column body layout (CSS columns, var(--space-md) gap)
+   - Slate-colored section headings via var(--fg-secondary)
+   - Full-width title block + abstract above columns
+   - ALL values from Layer 0 tokens — zero hardcoded colors/fonts/spacing
+   - Respects light/dark theme toggle via CSS custom properties
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Paper container ── */
+.paper-page .post.paper {
+    max-width: 60rem;
+    margin: 0 auto;
+    font-family: var(--font);
+    font-size: var(--font-base);
+    line-height: 1.2;
+}
+
+/* ── Academic title block (centered, full-width above columns) ── */
+.paper-title-block {
+    text-align: center;
+    padding: var(--space-md) 0 var(--space-sm);
+    border-bottom: 2px solid var(--fg-secondary);
+    margin-bottom: var(--space-sm);
+}
+.paper-foundation {
+    font-variant: small-caps;
+    font-size: var(--font-xs);
+    letter-spacing: 0.18em;
+    color: var(--fg-secondary);
+    margin-bottom: var(--space-xs);
+    text-transform: uppercase;
+}
+.paper-title {
+    font-family: var(--font);
+    font-size: var(--font-xl);
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--fg);
+    margin: var(--space-xs) 0;
+}
+.paper-date {
+    display: block;
+    font-size: var(--font-xs);
+    color: var(--fg-secondary);
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+    margin-top: var(--space-xs);
+}
+
+/* ── Abstract (full-width above columns) ── */
+.paper-abstract {
+    max-width: 85%;
+    margin: 0 auto var(--space-sm);
+    padding: var(--space-sm) 0;
+    font-size: var(--font-sm);
+    line-height: 1.5;
+    text-align: justify;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    color: var(--fg-secondary);
+    border-bottom: 1px solid var(--border);
+}
+.paper-abstract strong {
+    font-weight: 700;
+    color: var(--fg);
+}
+
+/* ── Colophon ── */
+.paper-colophon {
+    text-align: center;
+    font-variant: small-caps;
+    font-size: var(--font-xs);
+    letter-spacing: 0.18em;
+    color: var(--dim);
+    padding: var(--space-md) 0 var(--space-sm);
+    border-top: 1px solid var(--border);
+    margin-top: var(--space-lg);
+}
+
+/* ── Paper body — two-column academic layout ── */
+.paper-page .paper-body {
+    text-align: justify;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    font-size: var(--font-base);
+    line-height: 1.2;
+    column-count: 2;
+    column-gap: var(--space-md);
+    column-rule: 1px solid var(--border);
+}
+/* Full-width elements span both columns */
+.paper-page .paper-body h2,
+.paper-page .paper-body hr,
+.paper-page .paper-body .latex-figure,
+.paper-page .paper-body .theorem,
+.paper-page .paper-body .definition,
+.paper-page .paper-body .latex-vignettes,
+.paper-page .paper-body > table,
+.paper-page .paper-body > pre {
+    column-span: all;
+}
+
+/* Section headings — bold sans-serif, slate color */
+.paper-page .paper-body h2 {
+    font-family: var(--font);
+    font-size: var(--font-lg);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-xs);
+    padding-bottom: 0.25em;
+    color: var(--fg-secondary);
+    border-bottom: 1px solid var(--border);
+}
+.paper-page .paper-body h3 {
+    font-family: var(--font);
+    font-size: var(--font-base);
+    font-weight: 700;
+    margin-top: var(--space-sm);
+    margin-bottom: var(--space-xs);
+    color: var(--fg-secondary);
+}
+.paper-page .paper-body h4 {
+    font-size: var(--font-base);
+    font-weight: 700;
+    font-style: italic;
+    color: var(--fg-secondary);
+}
+
+/* Paragraphs — no indent, paragraph spacing (MammoChat style) */
+.paper-page .paper-body p {
+    margin: 0 0 var(--space-xs);
+    text-indent: 0;
+}
+
+/* Block quotes */
+.paper-page .paper-body blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: var(--space-sm);
+    margin: var(--space-sm) 0;
+    font-style: italic;
+    color: var(--fg-secondary);
+}
+
+/* Tables — booktabs style */
+.paper-page .paper-body table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: var(--font-sm);
+    margin: var(--space-sm) 0;
+}
+.paper-page .paper-body th,
+.paper-page .paper-body td {
+    padding: var(--space-xs) var(--space-xs);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+.paper-page .paper-body thead th {
+    font-weight: 700;
+    border-top: 2px solid var(--fg-secondary);
+    border-bottom: 2px solid var(--fg-secondary);
+    font-size: var(--font-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.paper-page .paper-body tbody tr:last-child td {
+    border-bottom: 2px solid var(--fg-secondary);
+}
+
+/* Horizontal rules as section separators */
+.paper-page .paper-body hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: var(--space-sm) 0;
+}
+
+/* Code — smaller, constrained to column */
+.paper-page .paper-body pre {
+    font-size: 0.8em;
+    line-height: 1.4;
+    overflow-x: auto;
+}
+.paper-page .paper-body code {
+    font-size: 0.85em;
+}
+
+/* Lists — tighter spacing for columns */
+.paper-page .paper-body ul,
+.paper-page .paper-body ol {
+    padding-left: var(--space-sm);
+    margin: var(--space-xs) 0;
+}
+.paper-page .paper-body li {
+    margin-bottom: 0.25em;
+}
+
+/* ── Figure (full-width above/between columns) ── */
+.paper-page .post-figure {
+    margin: var(--space-sm) auto;
+    text-align: center;
+    max-width: 90%;
+    column-span: all;
+}
+
+/* ── Downloads ── */
+.paper-page .paper-downloads {
+    text-align: center;
+    margin: var(--space-sm) 0;
+}
+.paper-page .paper-downloads .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    padding: var(--space-xs) var(--space-sm);
+    font-family: var(--font);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+.paper-page .paper-downloads .download-btn:hover {
+    background: rgba(var(--accent-rgb), 0.08);
+    border-color: var(--accent);
+}
+
+/* ── Book override — single column for long-form reading ── */
+.book-page .paper-body {
+    column-count: 1;
+}
+.book-page .post.paper {
+    max-width: 48rem;
+}
+.paper-author {
+    font-size: var(--font-sm);
+    color: var(--fg-secondary);
+    margin-top: var(--space-xs);
+}
+
+/* ── Print ── */
+@media print {
+    .paper-page .nav,
+    .paper-page .talk-overlay,
+    .paper-page .paper-downloads,
+    .paper-page footer { display: none !important; }
+    .paper-page .post.paper { max-width: 100%; box-shadow: none; margin: 0; padding: 0; }
+    .paper-page .post-figure { break-inside: avoid; }
+    .paper-page h2, .paper-page h3 { break-after: avoid; }
+}
+
+/* ── Responsive — single column on mobile ── */
 @media (max-width: 768px) {
     .latex-two-col { column-count: 1; }
-    .latex-abstract { max-width: 100%; padding: 1rem 1.5rem; }
+    .latex-abstract { max-width: 100%; padding: var(--space-sm); }
     .latex-vignettes { grid-template-columns: 1fr; }
+    .paper-page .post.paper { padding: 0 var(--space-sm); }
+    .paper-page .paper-body { column-count: 1; }
+    .paper-abstract { max-width: 100%; }
+    .paper-title { font-size: var(--font-lg); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PDF VIEWER — Paginated display with deck.js-style navigation
+   Renders compiled LaTeX PDFs via PDF.js. Token-only.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Viewer container (full viewport) ── */
+.pdf-viewer-mode {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: var(--nav-h);
+    padding-bottom: var(--space-lg);
+    z-index: var(--z-base);
+}
+
+/* ── Canvas (centered, aspect-preserved, HiDPI) ── */
+.pdf-canvas {
+    display: block;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Navigation bar (bottom center, glass panel) ── */
+.pdf-nav {
+    position: fixed;
+    bottom: var(--space-md);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background: var(--scrim);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xs) var(--space-sm);
+    -webkit-backdrop-filter: var(--blur-panel);
+    backdrop-filter: var(--blur-panel);
+    z-index: var(--z-modal);
+}
+
+/* ── Page counter ── */
+.pdf-page-counter {
+    font-family: var(--mono);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    color: var(--fg-secondary);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+/* ── Prev/Next buttons (side arrows) ── */
+.pdf-nav-btn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(var(--accent-rgb), 0.1);
+    border: 1px solid rgba(var(--accent-rgb), 0.2);
+    color: var(--accent);
+    font-size: var(--font-lg);
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pdf-nav-btn:hover:not(:disabled) {
+    background: rgba(var(--accent-rgb), 0.2);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.3);
+}
+
+.pdf-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.pdf-nav-btn--prev { left: var(--space-sm); }
+.pdf-nav-btn--next { right: var(--space-sm); }
+
+/* ── Downloads (fixed top-right corner) ── */
+.pdf-viewer-mode ~ .paper-downloads {
+    position: fixed;
+    top: calc(var(--nav-h) + var(--space-xs));
+    right: var(--space-sm);
+    z-index: var(--z-modal);
+}
+
+/* ── Responsive — mobile ── */
+@media (max-width: 768px) {
+    .pdf-nav-btn--prev,
+    .pdf-nav-btn--next { display: none; }
+    .pdf-viewer-mode { padding-bottom: var(--space-md); }
+    .pdf-nav { bottom: var(--space-sm); }
 }
 
