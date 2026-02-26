@@ -70,6 +70,12 @@
       {% if page.author %}<span class="post-author">{{ page.author }}</span>{% endif %}
     </header>
 
+    {% if page.pdf %}
+    <nav class="paper-downloads">
+      <a href="{{ page.pdf | relative_url }}" class="download-btn" download>&#8615; PDF</a>
+    </nav>
+    {% endif %}
+
     {% if page.figure %}
     <figure class="post-figure">
       {% assign fig = page.figure %}
