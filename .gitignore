@@ -1,0 +1,6 @@
+# Secrets — never commit
+TALK/.secrets
+**/.secrets
+
+# OS
+.DS_Store
