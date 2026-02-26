@@ -567,6 +567,23 @@ const TALK = {
                 this.add(reply, 'assistant');
             }
             this.messages.push({ role: 'assistant', content: reply });
+
+            // LEDGER: persist conversation turn server-side (GOV: TALK/CANON.md)
+            // Fire-and-forget — ledger failure must not break chat
+            try {
+                fetch('https://api.canonic.org/talk/ledger', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        scope: this.scope || 'UNGOVERNED',
+                        user_message: text,
+                        assistant_message: reply,
+                        trace_id: data.trace_id || null,
+                        provider_used: data.provider_used || null,
+                        elapsed_ms: data.elapsed_ms || null
+                    })
+                }).catch(function() {});
+            } catch (le) { /* ledger write must not break chat */ }
         } catch (e) {
             if (typing) typing.remove();
             this.add('Connection issue. Try again in a moment.', 'error');
