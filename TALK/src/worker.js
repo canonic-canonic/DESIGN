@@ -549,7 +549,7 @@ export default {
 
     // OMICS — governed proxy for NCBI E-utilities + PharmGKB (browser CORS bypass)
     if (path.startsWith('/omics/')) {
-      return omicsProxy(request);
+      return omicsProxy(request, env);
     }
 
     return json({ error: 'Not found' }, 404);
@@ -563,7 +563,7 @@ const OMICS_UPSTREAMS = {
   '/omics/pharmgkb/': 'https://api.pharmgkb.org/v1/data/',
 };
 
-async function omicsProxy(request) {
+async function omicsProxy(request, env) {
   if (request.method !== 'GET') {
     return json({ error: 'Method not allowed' }, 405);
   }
@@ -581,6 +581,18 @@ async function omicsProxy(request) {
         'Content-Type': res.headers.get('Content-Type') || 'application/json',
         'Cache-Control': 'public, max-age=3600',
       });
+
+      // LEDGER: record every proxy query (GOV: OMICS/CANON.md — every analysis ledgered)
+      const source = prefix.includes('ncbi') ? 'ncbi' : 'pharmgkb';
+      appendToLedger(env, 'OMICS', `OMICS:${source}`, {
+        source,
+        query_path: rest,
+        query_params: url.search,
+        upstream_status: res.status,
+        ip: request.headers.get('CF-Connecting-IP') || 'unknown',
+        work_ref: `omics:${source}:${Date.now()}`
+      }).catch(function() {}); // fire-and-forget
+
       return new Response(body, { status: res.status, headers });
     }
   }
@@ -1994,12 +2006,24 @@ async function shopStripeWebhook(request, env) {
     }
   }
 
+  // LEDGER: every Stripe event is INTEL (GOV: LEDGER/CANON.md)
+  const ledgerResult = await appendToLedger(env, 'SHOP', 'SHOP', {
+    stripe_event_id: evt && evt.id ? evt.id : '',
+    stripe_type: typ,
+    session_id: obj && obj.id ? obj.id : '',
+    status: obj && obj.status ? obj.status : '',
+    payment_status: obj && obj.payment_status ? obj.payment_status : '',
+    wallet_event: mapped,
+    work_ref: evt && evt.id ? evt.id : '',
+  });
+
   return json({
     ok: true,
     stripe_event_id: evt && evt.id ? evt.id : '',
     stripe_type: typ,
     wallet_event: mapped,
     relayed,
+    ledger: ledgerResult,
   });
 }
 
@@ -2149,12 +2173,14 @@ async function authGitHub(request, env) {
       expirationTtl: 7 * 24 * 60 * 60, // 7 days in seconds
     });
 
-    // Ledger auth event
-    await env.TALK_KV.put(
-      `auth:login:${user.login}:${Date.now()}`,
-      JSON.stringify({ user: user.login, github_uid: user.id, ts: session.ts }),
-      { expirationTtl: 30 * 24 * 60 * 60 } // 30 day retention
-    );
+    // LEDGER: auth login is INTEL (GOV: LEDGER/CANON.md)
+    await appendToLedger(env, 'AUTH', 'AUTH', {
+      event: 'login',
+      user: user.login,
+      github_uid: user.id,
+      provider: 'github',
+      work_ref: `login:${user.login}`,
+    });
   }
 
   return json({
@@ -2206,12 +2232,12 @@ async function authLogout(request, env) {
     if (raw) {
       const session = JSON.parse(raw);
       await env.TALK_KV.delete(`session:${token}`);
-      // Ledger logout
-      await env.TALK_KV.put(
-        `auth:logout:${session.user}:${Date.now()}`,
-        JSON.stringify({ user: session.user, ts: new Date().toISOString() }),
-        { expirationTtl: 30 * 24 * 60 * 60 }
-      );
+      // LEDGER: auth logout is INTEL (GOV: LEDGER/CANON.md)
+      await appendToLedger(env, 'AUTH', 'AUTH', {
+        event: 'logout',
+        user: session.user,
+        work_ref: `logout:${session.user}`,
+      });
     }
   }
 
@@ -2324,7 +2350,18 @@ async function emailSend(request, env) {
   }
 
   const data = await res.json();
-  return json({ sent: true, id: data.id, to: recipient, subject });
+
+  // LEDGER: every email send is INTEL (GOV: LEDGER/CANON.md)
+  const ledgerResult = await appendToLedger(env, 'EMAIL', body.scope || 'EMAIL', {
+    to: recipient,
+    cc: payload.cc || null,
+    bcc: payload.bcc || null,
+    subject,
+    from: sender,
+    work_ref: data.id, // resend_id
+  });
+
+  return json({ sent: true, id: data.id, to: recipient, subject, ledger: ledgerResult });
 }
 
 // ── HASH — Content addressing for ledger chain integrity ───────────
@@ -2351,6 +2388,37 @@ async function checkRate(env, prefix, key, maxPerHour) {
   if (count >= maxPerHour) return true; // rate limited
   await env.TALK_KV.put(rateKey, String(count + 1), { expirationTtl: 3600 });
   return false;
+}
+
+// ── LEDGER APPEND — Unified hash-chained append for all stream types ───────────
+// GOV: LEDGER/CANON.md — every record gets id + prev + type + scope
+// Types: GRADIENT | TALK | CONTRIBUTE | EMAIL | PROVISION | AUTH | SHOP
+
+async function appendToLedger(env, type, scope, fields) {
+  if (!env.TALK_KV) return null;
+  const key = `ledger:${type}:${scope}`;
+  let ledger = [];
+  try {
+    const raw = await env.TALK_KV.get(key);
+    if (raw) ledger = JSON.parse(raw);
+  } catch {}
+
+  const ts = new Date().toISOString();
+  const prev = ledger.length ? ledger[ledger.length - 1].id : '000000000000';
+  const id = await sha256(`${ts}:${type}:${scope}:${prev}:${JSON.stringify(fields)}`);
+
+  const entry = { id, prev, ts, type, scope, ...fields };
+  ledger.push(entry);
+
+  if (ledger.length > 1000) {
+    const epoch = Math.floor(Date.now() / 1000);
+    const overflow = ledger.slice(0, ledger.length - 1000);
+    await env.TALK_KV.put(`${key}:archive:${epoch}`, JSON.stringify(overflow));
+    ledger = ledger.slice(-1000);
+  }
+
+  await env.TALK_KV.put(key, JSON.stringify(ledger));
+  return { id, ts, entries: ledger.length };
 }
 
 // ── TALK LEDGER — Server-side session logging ───────────
@@ -2472,6 +2540,14 @@ async function talkSend(request, env) {
   outbox.push(entry);
   if (outbox.length > 500) outbox = outbox.slice(-500);
   await env.TALK_KV.put(outKey, JSON.stringify(outbox));
+
+  // LEDGER: every cross-user message is INTEL (GOV: LEDGER/CANON.md)
+  await appendToLedger(env, 'TALK', `MSG:${from}:${to}`, {
+    from,
+    to,
+    message_id: id,
+    work_ref: id,
+  });
 
   return json({ ok: true, id, from, to, ts });
 }
