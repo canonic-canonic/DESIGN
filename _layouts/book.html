@@ -1,0 +1,239 @@
+<!-- LAYOUT: book | STANDALONE | DESIGN.md 255 Map -->
+<!-- Extends PAPER class. Adds: cover, PARTS/CHAPTERS in TOC, chapter nav, contribute gate. -->
+<!-- STANDALONE: No includes — Liquid stack overflow on content >44KB. -->
+{% assign scope_key = page.scope | default: site.scope | downcase %}
+{% assign sd = site.data[scope_key] %}
+{% assign scope_up = page.scope | default: site.scope | upcase %}
+{% assign back_label = page.back_label | default: sd.back_label | default: scope_up %}
+{% assign back_href = page.back_href | default: sd.back_href %}
+{% assign badge_label = page.badge | default: sd.badge_label | default: scope_up %}
+{% assign accent = page.accent | default: sd.accent | default: site.accent %}
+{% assign accent_rgb = page.accent_rgb | default: sd.accent_rgb | default: site.accent_rgb %}
+{% assign fleet = site.data.fleet %}
+<!DOCTYPE html>
+<html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
+<head>
+  <!-- HEAD (inlined) -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
+  <title>{{ page.title | default: sd.name | default: site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
+  <style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
+  {% if page.math %}
+  <!-- KaTeX (conditional for books) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false
+    });"></script>
+  {% endif %}
+</head>
+<body class="post-page paper-page book-page">
+
+  <!-- NAV (inlined, post mode) -->
+  <header class="nav" id="nav" role="navigation">
+    <div class="nav-left">
+      <a class="nav-brand" href="{{ fleet.brand.url | default: '/' | relative_url }}" aria-label="Home">
+        <span class="nav-mark">{{ fleet.brand.mark | default: "\u2229" }}</span>
+        <span class="nav-fleet">{{ fleet.brand.label | default: "CANONIC" }}</span>
+      </a>
+    </div>
+    <div class="nav-center">
+      {% if back_href %}<a href="{{ back_href | relative_url }}" class="nav-back">&larr; {{ back_label | default: "Back" }}</a>{% endif %}
+    </div>
+    <div class="nav-right">
+      <button class="nav-talk" type="button" onclick="TALK.open()" aria-label="Open TALK">
+        <span class="nav-dot"></span>
+        <span class="nav-talk-label">TALK</span>
+      </button>
+      <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">&#9790;</button>
+    </div>
+  </header>
+
+  <article class="post paper book container">
+    <!-- Academic title block -->
+    <header class="paper-title-block">
+      <div class="paper-foundation">CANONIC Foundation</div>
+      <h1 class="paper-title">{{ page.title }}</h1>
+      {% if page.author %}<div class="paper-author">{{ page.author }}</div>{% endif %}
+      {% if page.date %}<time class="paper-date">{{ page.date | date: "%B %d, %Y" }}</time>{% endif %}
+    </header>
+
+    {% if page.pdf %}
+    <!-- ═══ PDF VIEWER MODE (paginated, deck.js-style) ═══ -->
+    <nav class="paper-downloads">
+      <a href="{{ page.pdf | relative_url }}" class="download-btn" download>&#8615; PDF</a>
+    </nav>
+  </article>
+
+  <div class="pdf-viewer-mode" id="pdfViewer">
+    <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
+    <button type="button" class="pdf-nav-btn pdf-nav-btn--prev" id="pdfPrev" aria-label="Previous page">&larr;</button>
+    <button type="button" class="pdf-nav-btn pdf-nav-btn--next" id="pdfNext" aria-label="Next page">&rarr;</button>
+    <nav class="pdf-nav">
+      <span class="pdf-page-counter">
+        <span id="pdfCurr">1</span> / <span id="pdfTotal">0</span>
+      </span>
+    </nav>
+  </div>
+
+    {% else %}
+    <!-- ═══ MARKDOWN FALLBACK (scrolling, single-column) ═══ -->
+
+    <!-- Contribute gate (books like ATULISMS use this) -->
+    {% if page.gate == "contribute" %}
+    <div class="gate-contribute" id="gate">
+      <div class="gate-inner">
+        <p class="gate-text">Tell us who you are to read, explore, and contribute. Your identity is logged with provenance. Open access. Governed record.</p>
+        <form class="gate-form" id="gateForm">
+          <input type="text" id="g-name" placeholder="Full Name" required>
+          <input type="email" id="g-email" placeholder="Email" required>
+          <input type="text" id="g-affiliation" placeholder="Affiliation" required>
+          <button type="submit" class="btn">ENTER</button>
+        </form>
+      </div>
+    </div>
+    <div class="gated-content" id="gatedContent">
+    {% endif %}
+
+    {% if page.abstract %}
+    <!-- Abstract -->
+    <div class="paper-abstract">
+      <strong>Abstract.</strong> {{ page.abstract }}
+    </div>
+    {% endif %}
+
+    <!-- Book body (single-column, academic typography) -->
+    <div class="paper-body book-body prose">
+      {{ content }}
+    </div>
+
+    <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
+
+    {% if page.gate == "contribute" %}
+    <!-- Contribution form -->
+    <div class="contribute-section">
+      <h2>Contribute</h2>
+      <p class="contribute-sub">Have a story, a quote we missed, a correction, a moment? Every contribution is governed and attributed.</p>
+      <form class="gate-form" id="contribForm">
+        <input type="text" id="c-chapter" placeholder="Chapter or quote this relates to (optional)">
+        <textarea id="c-story" placeholder="Your story, quote, or correction..." required></textarea>
+        <input type="text" id="c-source" placeholder="Source (talk title, year, personal memory...)">
+        <button type="submit" class="btn">SUBMIT CONTRIBUTION</button>
+      </form>
+      <div class="contrib-success" id="contribSuccess">
+        Your contribution has been recorded with provenance. Thank you.
+      </div>
+    </div>
+    </div><!-- /gatedContent -->
+    {% endif %}
+  </article>
+    {% endif %}<!-- /pdf conditional -->
+
+  <!-- FOOTER (inlined) -->
+  <footer id="footer">
+    {% if fleet.sites %}
+    {% for s in fleet.sites %}{% unless forloop.first %} &middot; {% endunless %}<a href="{{ s.url }}">{{ s.label }}</a>{% endfor %}
+     &middot; <a href="#" onclick="TALK.open();return false">TALK</a>
+    <br><br>{{ page.footerTagline | default: site.tagline | default: "CANONIC" }}
+    {% endif %}
+  </footer>
+
+  <!-- SCRIPTS (inlined) -->
+  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
+  {% if page.talk %}
+  <!-- TALK (inlined) -->
+  <div class="talk-overlay" id="talkOverlay" data-position="{{ page.talk | default: 'side' }}">
+    <div class="talk-overlay-header">
+      <div class="talk-dot"></div>
+      <span class="talk-scope">{{ site.talk_label | default: "TALK" }}</span>
+      <select id="talkProviderSelect" onchange="TALK.switchProvider(this.value)" class="talk-provider-select">
+        <option value="auto">AUTO</option>
+        <option value="anthropic">ANTHROPIC</option>
+        <option value="runpod">RUNPOD</option>
+        <option value="vastai">VAST.AI</option>
+        <option value="deepseek">DEEPSEEK</option>
+      </select>
+      <span id="talkProviderLabel" class="talk-provider-label">AUTO</span>
+      <button type="button" class="talk-overlay-close" onclick="TALK.close()">ESC</button>
+    </div>
+    <div class="talk-messages" id="talkMessages"></div>
+    <div class="talk-input-row">
+      <input type="text" id="talkChatInput" placeholder="{{ page.talk_placeholder | default: 'Ask anything...' }}" autocomplete="off">
+      <button type="button" id="talkSend" onclick="TALK.send()">SEND</button>
+    </div>
+  </div>
+  <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
+  <script>TALK.init();</script>
+  {% endif %}
+
+  <!-- Mermaid (theme-reactive) -->
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    const sources=new Map();
+    document.querySelectorAll('code.language-mermaid').forEach(c=>{
+      const d=document.createElement('div');
+      d.classList.add('mermaid');
+      d.textContent=c.textContent;
+      sources.set(d,c.textContent);
+      c.parentElement.replaceWith(d);
+    });
+    function getTheme(){return document.documentElement.getAttribute('data-theme')==='light'?'default':'dark';}
+    mermaid.initialize({startOnLoad:true,theme:getTheme()});
+    new MutationObserver(function(){
+      mermaid.initialize({startOnLoad:false,theme:getTheme()});
+      document.querySelectorAll('.mermaid').forEach(function(el){
+        const src=sources.get(el)||el.getAttribute('data-mermaid-source')||el.textContent;
+        if(!src)return;
+        el.removeAttribute('data-processed');
+        el.innerHTML=src;
+        sources.set(el,src);
+      });
+      mermaid.run({nodes:document.querySelectorAll('.mermaid')});
+    }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  </script>
+
+  {% if page.gate == "contribute" %}
+  <!-- Contribute gate script (inlined from post.html) -->
+  <script>
+  (function(){
+    var KEY='canonic-gate-'+{{ page.scope | jsonify }};
+    var stored=localStorage.getItem(KEY);
+    function unlock(){document.getElementById('gate').classList.add('hidden');document.getElementById('gatedContent').classList.add('unlocked');}
+    if(stored){try{var d=JSON.parse(stored);if(d&&d.name){unlock();}}catch(e){}}
+    document.getElementById('gateForm').addEventListener('submit',function(e){
+      e.preventDefault();
+      var entry={name:document.getElementById('g-name').value.trim(),email:document.getElementById('g-email').value.trim(),affiliation:document.getElementById('g-affiliation').value.trim(),timestamp:new Date().toISOString(),scope:{{ page.scope | jsonify }}};
+      localStorage.setItem(KEY,JSON.stringify(entry));
+      unlock();
+    });
+    document.getElementById('contribForm').addEventListener('submit',function(e){
+      e.preventDefault();
+      var auth=JSON.parse(localStorage.getItem(KEY)||'{}');
+      var contrib={scope:{{ page.scope | jsonify }},contributor:auth.name||'Anonymous',email:auth.email||'',affiliation:auth.affiliation||'',chapter:document.getElementById('c-chapter').value.trim(),story:document.getElementById('c-story').value.trim(),source:document.getElementById('c-source').value.trim()};
+      function showSuccess(msg){document.getElementById('contribForm').classList.add('hidden');var s=document.getElementById('contribSuccess');if(msg)s.textContent=msg;s.classList.add('unlocked');}
+      fetch('https://api.canonic.org/contribute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(contrib)}).then(function(r){return r.json()}).then(function(d){if(d.ok){showSuccess();}}).catch(function(){var local=JSON.parse(localStorage.getItem(KEY+'-contributions')||'[]');contrib.timestamp=new Date().toISOString();contrib.offline=true;local.push(contrib);localStorage.setItem(KEY+'-contributions',JSON.stringify(local));showSuccess('Saved offline. Will sync when reconnected.');});
+    });
+  })();
+  </script>
+  {% endif %}
+
+  {% if page.pdf %}
+  <!-- PDF.js + pdf-viewer.js (conditional) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+  <script src="{{ '/assets/js/pdf-viewer.js' | relative_url }}"></script>
+  <script>PDFVIEWER.init('{{ page.pdf | relative_url }}');</script>
+  {% endif %}
+
+</body>
+</html>
