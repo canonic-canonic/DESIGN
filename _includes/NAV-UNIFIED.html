@@ -45,7 +45,7 @@
     {% endif %}
   </div>
 
-  <!-- RIGHT: TALK + Theme -->
+  <!-- RIGHT: TALK + Downloads + View + Theme (four inline control dimensions) -->
   <div class="nav-right">
     {% unless page.layout == "custom" %}
     <button class="nav-talk" type="button" onclick="TALK.open()" aria-label="Open TALK">
@@ -53,6 +53,17 @@
       <span class="nav-talk-label">TALK</span>
     </button>
     {% endunless %}
+    {% if page.downloads %}
+    {% for dl in page.downloads %}
+    <a href="{{ dl.href | relative_url }}" class="nav-ctrl nav-dl" download title="Download {{ dl.label }}">&#8615; {{ dl.label }}</a>
+    {% endfor %}
+    {% endif %}
+    {% if page.view and page.view != "html" %}
+    <button class="nav-ctrl nav-view" type="button"
+      data-view="{{ page.view }}" onclick="CONTROLS.view(this)" title="Toggle view">
+      {{ page.view | upcase }}
+    </button>
+    {% endif %}
     <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">&#9790;</button>
   </div>
 

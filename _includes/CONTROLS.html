@@ -1,26 +1,3 @@
-<!-- CONTROLS | Unified control bar | Reads front matter only — zero layout logic -->
-<!-- Three dimensions: talk position, download assets, view mode -->
-<!-- GOV declares (SURFACE.json) → Compiler emits (front matter) → Theme renders (this file) -->
-{% if page.talk or page.downloads or page.view %}
-<nav class="controls-bar" id="controlsBar">
-  {% if page.talk %}
-  <button class="controls-btn controls-talk" type="button"
-    data-position="{{ page.talk }}" onclick="CONTROLS.talk(this)" aria-label="TALK position">
-    <span class="controls-dot"></span> TALK {{ page.talk | upcase }}
-  </button>
-  {% endif %}
-  {% if page.downloads %}
-  <div class="controls-downloads">
-    {% for dl in page.downloads %}
-    <a href="{{ dl.href | relative_url }}" class="controls-btn controls-dl" download>&#8615; {{ dl.label }}</a>
-    {% endfor %}
-  </div>
-  {% endif %}
-  {% if page.view and page.view != "html" %}
-  <button class="controls-btn controls-view" type="button"
-    data-view="{{ page.view }}" onclick="CONTROLS.view(this)" aria-label="Toggle view mode">
-    {{ page.view | upcase }}
-  </button>
-  {% endif %}
-</nav>
-{% endif %}
+<!-- CONTROLS | Inline in nav-right zone | No separate bar -->
+<!-- Four dimensions: [TALK] [⬇ PDF] [LATEX] [☽] -->
+<!-- GOV declares (SURFACE.json) → Compiler emits (front matter) → NAV-UNIFIED.html renders inline -->

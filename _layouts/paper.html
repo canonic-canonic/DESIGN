@@ -47,6 +47,17 @@
         <span class="nav-dot"></span>
         <span class="nav-talk-label">TALK</span>
       </button>{% endif %}
+      {% if page.downloads %}
+      {% for dl in page.downloads %}
+      <a href="{{ dl.href | relative_url }}" class="nav-ctrl nav-dl" download title="Download {{ dl.label }}">&#8615; {{ dl.label }}</a>
+      {% endfor %}
+      {% endif %}
+      {% if page.view and page.view != "html" %}
+      <button class="nav-ctrl nav-view" type="button"
+        data-view="{{ page.view }}" onclick="CONTROLS.view(this)" title="Toggle view">
+        {{ page.view | upcase }}
+      </button>
+      {% endif %}
       <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">&#9790;</button>
     </div>
     {% if fleet.sites %}
@@ -70,30 +81,7 @@
       {% if page.author %}<span class="post-author">{{ page.author }}</span>{% endif %}
     </header>
 
-    <!-- CONTROLS (inlined — standalone layout, no includes) -->
-    {% if page.talk or page.downloads or page.view %}
-    <nav class="controls-bar" id="controlsBar">
-      {% if page.talk %}
-      <button class="controls-btn controls-talk" type="button"
-        data-position="{{ page.talk }}" onclick="CONTROLS.talk(this)" aria-label="TALK position">
-        <span class="controls-dot"></span> TALK {{ page.talk | upcase }}
-      </button>
-      {% endif %}
-      {% if page.downloads %}
-      <div class="controls-downloads">
-        {% for dl in page.downloads %}
-        <a href="{{ dl.href | relative_url }}" class="controls-btn controls-dl" download>&#8615; {{ dl.label }}</a>
-        {% endfor %}
-      </div>
-      {% endif %}
-      {% if page.view and page.view != "html" %}
-      <button class="controls-btn controls-view" type="button"
-        data-view="{{ page.view }}" onclick="CONTROLS.view(this)" aria-label="Toggle view mode">
-        {{ page.view | upcase }}
-      </button>
-      {% endif %}
-    </nav>
-    {% endif %}
+    <!-- Controls now rendered inline in nav-right zone above -->
 
     {% if page.figure %}
     <figure class="post-figure">
