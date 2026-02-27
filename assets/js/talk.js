@@ -318,6 +318,21 @@ const TALK = {
         var inList = false;
         var listType = null;
         var inBlockquote = false;
+        var inTable = false;
+        var tableHeader = false;
+
+        var closeTable = function() {
+            if (inTable) { result.push('</tbody></table>'); inTable = false; tableHeader = false; }
+        };
+
+        var parseTableRow = function(line, tag) {
+            var cells = line.replace(/^\|/, '').replace(/\|$/, '').split('|');
+            var row = '<tr>';
+            for (var c = 0; c < cells.length; c++) {
+                row += '<' + tag + '>' + cells[c].trim() + '</' + tag + '>';
+            }
+            return row + '</tr>';
+        };
 
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i];
@@ -326,6 +341,7 @@ const TALK = {
             if (codeMatch) {
                 if (inList) { result.push('</' + listType + '>'); inList = false; listType = null; }
                 if (inBlockquote) { result.push('</blockquote>'); inBlockquote = false; }
+                closeTable();
                 result.push(codeBlocks[parseInt(codeMatch[1])]);
                 continue;
             }
@@ -333,8 +349,38 @@ const TALK = {
             if (/^[-*_]{3,}$/.test(line.trim())) {
                 if (inList) { result.push('</' + listType + '>'); inList = false; listType = null; }
                 if (inBlockquote) { result.push('</blockquote>'); inBlockquote = false; }
+                closeTable();
                 result.push('<hr>');
                 continue;
+            }
+
+            // Table rows: lines containing | with content
+            var isTableRow = /^\|.+\|$/.test(line.trim());
+            var isSeparator = /^\|[\s:]*[-\u2014]+[\s:]*(\|[\s:]*[-\u2014]+[\s:]*)*\|$/.test(line.trim());
+
+            if (isTableRow) {
+                if (inList) { result.push('</' + listType + '>'); inList = false; listType = null; }
+                if (inBlockquote) { result.push('</blockquote>'); inBlockquote = false; }
+
+                if (isSeparator) {
+                    // Separator row — marks transition from header to body
+                    if (inTable) { tableHeader = true; }
+                    continue;
+                }
+
+                if (!inTable) {
+                    // First row — open table, treat as header
+                    result.push('<table><thead>');
+                    result.push(parseTableRow(line, 'th'));
+                    result.push('</thead><tbody>');
+                    inTable = true;
+                    tableHeader = true;
+                } else {
+                    result.push(parseTableRow(line, 'td'));
+                }
+                continue;
+            } else {
+                closeTable();
             }
 
             var bqMatch = line.match(/^&gt;\s?(.*)$/);
@@ -371,6 +417,7 @@ const TALK = {
         }
         if (inList) result.push('</' + listType + '>');
         if (inBlockquote) result.push('</blockquote>');
+        closeTable();
         return result.join('');
     },
 
