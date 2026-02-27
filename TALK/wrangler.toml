@@ -17,6 +17,7 @@ routes = [
 ]
 
 [vars]
+CORS_ALLOWED_ORIGINS = "https://canonic-canonic.github.io,https://hadleylab-canonic.github.io,https://hadleylab-dexter.github.io,https://api.canonic.org,https://*.canonic.org"
 PROVIDER = "anthropic"
 FALLBACK_PROVIDER = "anthropic"
 PROVIDER_CHAIN = "anthropic,runpod,vastai"

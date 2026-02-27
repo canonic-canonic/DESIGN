@@ -31,16 +31,52 @@
  * MAGIC | CANONIC | 2026-02
  */
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
+const CORS_DEFAULTS = {
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-function addCors(headers) {
+function corsOrigin(request, env) {
+  const raw = env && env.CORS_ALLOWED_ORIGINS ? String(env.CORS_ALLOWED_ORIGINS) : '*';
+  const allowed = raw.split(',').map(s => s.trim());
+  if (allowed.includes('*')) return '*';
+  const origin = request.headers.get('Origin') || '';
+  for (const a of allowed) {
+    if (a === origin) return origin;
+    if (a.startsWith('https://*.') && origin.startsWith('https://') && origin.endsWith(a.slice(9))) return origin;
+  }
+  return null;
+}
+
+function addCors(headers, origin) {
   const h = new Headers(headers || {});
-  for (const [k, v] of Object.entries(CORS)) h.set(k, v);
+  const o = origin !== undefined ? origin : _reqOrigin;
+  if (o) h.set('Access-Control-Allow-Origin', o);
+  for (const [k, v] of Object.entries(CORS_DEFAULTS)) h.set(k, v);
   return h;
+}
+
+/**
+ * fetchWithRetry — exponential backoff wrapper for external fetches.
+ * Retries on network errors and 5xx responses. Respects timeoutMs per attempt.
+ */
+async function fetchWithRetry(url, opts = {}, { maxRetries = 3, baseMs = 500, timeoutMs = 10000 } = {}) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...opts, signal: controller.signal });
+      clearTimeout(timer);
+      if (res.ok || res.status < 500 || attempt === maxRetries) return res;
+      // 5xx — retry
+    } catch (e) {
+      clearTimeout(timer);
+      if (attempt === maxRetries) throw e;
+    }
+    // Exponential backoff with jitter
+    const delay = baseMs * Math.pow(2, attempt) * (0.5 + Math.random() * 0.5);
+    await new Promise(r => setTimeout(r, delay));
+  }
 }
 
 function coerceContentToText(content) {
@@ -309,7 +345,7 @@ async function stripeApiRequest(env, method, path, formFields) {
     body = params.toString();
   }
   try {
-    const res = await fetch(stripeApiBase(env) + path, { method, headers, body });
+    const res = await fetchWithRetry(stripeApiBase(env) + path, { method, headers, body }, { maxRetries: 2, timeoutMs: 15000 });
     const raw = await res.text();
     let data;
     try { data = JSON.parse(raw); } catch { data = { raw }; }
@@ -441,17 +477,24 @@ function walletEventFromStripeSession(session, coinToCents) {
   };
 }
 
+// Global per-request origin — set at top of fetch handler, read by json() and addCors()
+let _reqOrigin = '*';
+
 function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json', ...CORS },
-  });
+  const headers = { 'Content-Type': 'application/json', ...CORS_DEFAULTS };
+  if (_reqOrigin) headers['Access-Control-Allow-Origin'] = _reqOrigin;
+  return new Response(JSON.stringify(data), { status, headers });
 }
 
 export default {
   async fetch(request, env) {
+    const _t0 = Date.now();
+    _reqOrigin = corsOrigin(request, env);
+
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: CORS });
+      const h = { ...CORS_DEFAULTS };
+      if (_reqOrigin) h['Access-Control-Allow-Origin'] = _reqOrigin;
+      return new Response(null, { status: 204, headers: h });
     }
 
     const url = new URL(request.url);
@@ -459,6 +502,7 @@ export default {
     // Normalize `/v1/v1/*` -> `/v1/*`.
     let path = url.pathname;
     if (path.startsWith('/v1/v1/')) path = path.slice(3);
+    const _ip = request.headers.get('CF-Connecting-IP') || 'unknown';
     env = envForLane(url.hostname, env);
 
     if (path === '/health') {
@@ -473,6 +517,8 @@ export default {
       return oaiModels(request, env);
     }
     if ((path === '/v1/chat/completions' || path === '/chat/completions') && request.method === 'POST') {
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      if (await checkRate(env, 'oai', ip, 120)) return json({ error: 'Rate limited' }, 429);
       return oaiChatCompletions(request, env);
     }
     if ((path === '/v1/responses' || path === '/responses') && request.method === 'POST') {
@@ -487,6 +533,8 @@ export default {
     }
 
     if (path === '/auth/github' && request.method === 'POST') {
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      if (await checkRate(env, 'auth', ip, 20)) return json({ error: 'Rate limited' }, 429);
       return authGitHub(request, env);
     }
 
@@ -503,14 +551,20 @@ export default {
     }
 
     if (path === '/chat' && request.method === 'POST') {
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      if (await checkRate(env, 'chat', ip, 60)) return json({ error: 'Rate limited' }, 429);
       return chat(request, env);
     }
 
     if (path === '/email/send' && request.method === 'POST') {
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      if (await checkRate(env, 'email', ip, 10)) return json({ error: 'Rate limited' }, 429);
       return emailSend(request, env);
     }
 
     if (path === '/shop/checkout' && request.method === 'POST') {
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      if (await checkRate(env, 'checkout', ip, 20)) return json({ error: 'Rate limited' }, 429);
       return shopCheckout(request, env);
     }
 
@@ -549,9 +603,12 @@ export default {
 
     // OMICS — governed proxy for NCBI E-utilities + PharmGKB (browser CORS bypass)
     if (path.startsWith('/omics/')) {
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      if (await checkRate(env, 'omics', ip, 200)) return json({ error: 'Rate limited' }, 429);
       return omicsProxy(request, env);
     }
 
+    console.log(JSON.stringify({ ts: new Date().toISOString(), path, method: request.method, ip: _ip, status: 404, latency_ms: Date.now() - _t0 }));
     return json({ error: 'Not found' }, 404);
   },
 };
@@ -580,7 +637,7 @@ async function omicsProxy(request, env) {
       const headers = addCors({
         'Content-Type': res.headers.get('Content-Type') || 'application/json',
         'Cache-Control': 'public, max-age=3600',
-      });
+      }, _reqOrigin);
 
       // LEDGER: record every proxy query (GOV: OMICS/CANON.md — every analysis ledgered)
       const source = prefix.includes('ncbi') ? 'ncbi' : 'pharmgkb';
@@ -1851,6 +1908,8 @@ async function chat(request, env) {
         schema_ok: typeof parsed === 'string' && parsed.length > 0,
       },
     });
+    // Structured trace (Cloudflare dashboard — GOV: TALK/CANON.md)
+    console.log(JSON.stringify({ ts: new Date().toISOString(), path: '/chat', provider: name, status: 200, latency_ms: Date.now() - startedAt, scope, trace_id }));
     return json({
       message: parsed || 'No response.',
       scope,
@@ -1864,6 +1923,7 @@ async function chat(request, env) {
     });
   }
 
+  console.log(JSON.stringify({ ts: new Date().toISOString(), path: '/chat', provider: 'NONE', status: 502, latency_ms: Date.now() - startedAt, scope, trace_id, chain }));
   return json(
     {
       error: 'All providers failed',
@@ -2121,8 +2181,8 @@ async function authGitHub(request, env) {
     return json({ error: 'GitHub OAuth not configured' }, 500);
   }
 
-  // Exchange code for access token
-  const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+  // Exchange code for access token (retry with backoff — GOV: API/CANON.md)
+  const tokenRes = await fetchWithRetry('https://github.com/login/oauth/access_token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -2134,21 +2194,21 @@ async function authGitHub(request, env) {
       code,
       redirect_uri,
     }),
-  });
+  }, { maxRetries: 2, timeoutMs: 10000 });
 
   const tokenData = await tokenRes.json();
   if (tokenData.error) {
     return json({ error: tokenData.error_description || tokenData.error }, 401);
   }
 
-  // Fetch user profile
-  const userRes = await fetch('https://api.github.com/user', {
+  // Fetch user profile (retry with backoff — GOV: API/CANON.md)
+  const userRes = await fetchWithRetry('https://api.github.com/user', {
     headers: {
       'Authorization': `Bearer ${tokenData.access_token}`,
       'User-Agent': 'CANONIC-KYC',
       'Accept': 'application/json',
     },
-  });
+  }, { maxRetries: 2, timeoutMs: 10000 });
 
   if (!userRes.ok) {
     return json({ error: 'Failed to fetch GitHub user' }, 502);
@@ -2335,14 +2395,14 @@ async function emailSend(request, env) {
   if (reply_to) payload.reply_to = reply_to;
   if (body.attachments) payload.attachments = body.attachments;
 
-  const res = await fetch('https://api.resend.com/emails', {
+  const res = await fetchWithRetry('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${env.RESEND_API_KEY}`,
     },
     body: JSON.stringify(payload),
-  });
+  }, { maxRetries: 2, timeoutMs: 10000 });
 
   if (!res.ok) {
     const errBody = await res.text();
