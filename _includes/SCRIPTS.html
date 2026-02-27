@@ -22,6 +22,7 @@
 {% unless include.minimal and page.talk == true %}{% include TALK.html %}{% endunless %}
 <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
 {% endif %}
+<script src="{{ '/assets/js/controls.js' | relative_url }}"></script>
 <script>
 {% if page.auth %}AUTH.init(); {% endif %}
 {% if include.deck %}DECK.init(); {% endif %}

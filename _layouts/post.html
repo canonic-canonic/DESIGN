@@ -33,13 +33,7 @@
       {% endif %}
     </header>
 
-    {% if page.downloads %}
-    <nav class="post-downloads">
-      {% for dl in page.downloads %}
-      <a href="{{ dl.href }}" class="download-btn" download>{{ dl.icon | default: "↓" }} {{ dl.label }}</a>
-      {% endfor %}
-    </nav>
-    {% endif %}
+    {% include CONTROLS.html %}
 
     {% if page.figure %}
     <figure class="post-figure">

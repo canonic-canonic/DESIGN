@@ -70,9 +70,28 @@
       {% if page.author %}<span class="post-author">{{ page.author }}</span>{% endif %}
     </header>
 
-    {% if page.pdf %}
-    <nav class="paper-downloads">
-      <a href="{{ page.pdf | relative_url }}" class="download-btn" download>&#8615; PDF</a>
+    <!-- CONTROLS (inlined — standalone layout, no includes) -->
+    {% if page.talk or page.downloads or page.view %}
+    <nav class="controls-bar" id="controlsBar">
+      {% if page.talk %}
+      <button class="controls-btn controls-talk" type="button"
+        data-position="{{ page.talk }}" onclick="CONTROLS.talk(this)" aria-label="TALK position">
+        <span class="controls-dot"></span> TALK {{ page.talk | upcase }}
+      </button>
+      {% endif %}
+      {% if page.downloads %}
+      <div class="controls-downloads">
+        {% for dl in page.downloads %}
+        <a href="{{ dl.href | relative_url }}" class="controls-btn controls-dl" download>&#8615; {{ dl.label }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if page.view and page.view != "html" %}
+      <button class="controls-btn controls-view" type="button"
+        data-view="{{ page.view }}" onclick="CONTROLS.view(this)" aria-label="Toggle view mode">
+        {{ page.view | upcase }}
+      </button>
+      {% endif %}
     </nav>
     {% endif %}
 
@@ -117,6 +136,7 @@
   <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/controls.js' | relative_url }}"></script>
   {% if page.talk %}
   <!-- TALK (inlined) -->
   <div class="talk-overlay" id="talkOverlay" data-position="{{ page.talk | default: 'side' }}">
