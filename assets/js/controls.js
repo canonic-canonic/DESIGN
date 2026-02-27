@@ -24,17 +24,16 @@ var CONTROLS = (function() {
         var mode = btn.dataset.view;
         var next = mode === 'latex' ? 'html' : 'latex';
         var pdfViewer = document.getElementById('pdfViewer');
-        var prose = document.querySelector('.post-body, .paper-body, .book-body');
+        var htmlView = document.querySelector('.view-html');
 
         if (next === 'html') {
             if (pdfViewer) pdfViewer.style.display = 'none';
-            if (prose) prose.style.display = '';
+            if (htmlView) htmlView.style.display = '';
         } else {
             if (pdfViewer) pdfViewer.style.display = '';
-            if (prose) prose.style.display = 'none';
+            if (htmlView) htmlView.style.display = 'none';
         }
 
-        // Sync all view buttons (nav-right .nav-view + any legacy .controls-view)
         document.querySelectorAll('.nav-view, .controls-view').forEach(function(b) {
             b.dataset.view = next;
             b.textContent = next.toUpperCase();

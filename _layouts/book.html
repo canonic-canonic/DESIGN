@@ -77,12 +77,11 @@
       {% if page.date %}<time class="paper-date">{{ page.date | date: "%B %d, %Y" }}</time>{% endif %}
     </header>
 
-    {% if page.pdf %}
-    <!-- ═══ PDF VIEWER MODE (paginated, deck.js-style) ═══ -->
-    <!-- Controls now rendered inline in nav-right zone above -->
   </article>
 
-  <div class="pdf-viewer-mode" id="pdfViewer">
+  {% if page.pdf %}
+  <!-- ═══ PDF VIEWER (dual-view: shown when view=latex) ═══ -->
+  <div class="pdf-viewer-mode" id="pdfViewer"{% unless page.view == "latex" %} style="display:none"{% endunless %}>
     <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
     <button type="button" class="pdf-nav-btn pdf-nav-btn--prev" id="pdfPrev" aria-label="Previous page">&larr;</button>
     <button type="button" class="pdf-nav-btn pdf-nav-btn--next" id="pdfNext" aria-label="Next page">&rarr;</button>
@@ -92,11 +91,12 @@
       </span>
     </nav>
   </div>
+  {% endif %}
 
-    {% else %}
-    <!-- ═══ MARKDOWN FALLBACK (scrolling, single-column) ═══ -->
+  <!-- ═══ HTML VIEW (dual-view: shown when view=html or no PDF) ═══ -->
+  <div class="view-html"{% if page.pdf and page.view == "latex" %} style="display:none"{% endif %}>
+  <article class="post paper book container">
 
-    <!-- Contribute gate (books like ATULISMS use this) -->
     {% if page.gate == "contribute" %}
     <div class="gate-contribute" id="gate">
       <div class="gate-inner">
@@ -113,13 +113,11 @@
     {% endif %}
 
     {% if page.abstract %}
-    <!-- Abstract -->
     <div class="paper-abstract">
       <strong>Abstract.</strong> {{ page.abstract }}
     </div>
     {% endif %}
 
-    <!-- Book body (single-column, academic typography) -->
     <div class="paper-body book-body prose">
       {{ content }}
     </div>
@@ -127,7 +125,6 @@
     <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
 
     {% if page.gate == "contribute" %}
-    <!-- Contribution form -->
     <div class="contribute-section">
       <h2>Contribute</h2>
       <p class="contribute-sub">Have a story, a quote we missed, a correction, a moment? Every contribution is governed and attributed.</p>
@@ -143,8 +140,9 @@
     </div>
     </div><!-- /gatedContent -->
     {% endif %}
+
   </article>
-    {% endif %}<!-- /pdf conditional -->
+  </div><!-- /view-html -->
 
   <!-- FOOTER (inlined) -->
   <footer id="footer">
