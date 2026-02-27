@@ -26,14 +26,14 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: var(--radius);
+    gap: var(--space-xs-sm);
     padding: var(--space-xs) 0;
     margin-bottom: var(--space-sm);
 }
 
 .shop-balance {
     font-family: var(--mono);
-    font-size: 13px;
+    font-size: var(--font-sm);
     color: var(--fg-secondary, var(--dim));
     display: none;
 }
@@ -42,12 +42,12 @@
     background: transparent;
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
-    padding: 6px 14px;
-    font-size: 13px;
+    padding: var(--space-2xs) var(--space-xs-sm);
+    font-size: var(--font-sm);
     font-weight: 600;
     color: var(--fg);
     cursor: pointer;
-    transition: border-color 200ms ease;
+    transition: var(--transition-base);
 
     &:hover {
         border-color: var(--accent);
@@ -58,14 +58,14 @@
     display: none;
     background: var(--accent);
     color: var(--bg);
-    font-size: 11px;
+    font-size: var(--font-xs);
     font-weight: 700;
     border-radius: 50%;
     min-width: 18px;
     height: 18px;
     line-height: 18px;
     text-align: center;
-    margin-left: 4px;
+    margin-left: var(--space-2xs);
     display: inline-block;
 }
 
@@ -73,15 +73,15 @@
 .shop-products {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: var(--radius-xl);
-    margin: var(--space-sm) 0 32px;
+    gap: var(--space-sm-md);
+    margin: var(--space-sm) 0 var(--space-md-lg);
 }
 
 .shop-empty {
     color: var(--fg-secondary, var(--dim));
-    font-size: 14px;
+    font-size: var(--font-sm);
     text-align: center;
-    padding: 40px 0;
+    padding: var(--space-lg) 0;
 }
 
 /* ── Product card — Apple-minimal ── */
@@ -90,7 +90,7 @@
     overflow: hidden;
     background: var(--card);
     box-shadow: var(--shadow-sm);
-    transition: box-shadow 200ms ease, transform 200ms ease;
+    transition: box-shadow var(--transition-base) ease, transform var(--transition-base) ease;
     display: flex;
     flex-direction: column;
 
@@ -112,46 +112,46 @@
 }
 
 .shop-card-body {
-    padding: 14px var(--space-sm) var(--space-xs);
+    padding: var(--space-xs-sm) var(--space-sm) var(--space-xs);
     flex: 1;
 }
 
 .shop-card-eyebrow {
-    font-size: 11px;
+    font-size: var(--font-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--fg-secondary, var(--dim));
-    margin-bottom: 4px;
+    margin-bottom: var(--space-2xs);
 }
 
 .shop-card-title {
-    font-size: 17px;
+    font-size: var(--font-lg);
     font-weight: 600;
     line-height: 1.3;
-    margin-bottom: 6px;
+    margin-bottom: var(--space-2xs);
     color: var(--fg);
 }
 
 .shop-card-synopsis {
-    font-size: 13px;
+    font-size: var(--font-sm);
     color: var(--fg-secondary, var(--dim));
     line-height: 1.5;
     margin-bottom: var(--space-xs);
 }
 
 .shop-card-status {
-    font-size: 11px;
+    font-size: var(--font-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--fg-secondary, var(--dim));
-    margin-bottom: 4px;
+    margin-bottom: var(--space-2xs);
 }
 
 .shop-card-price {
     font-family: var(--mono);
-    font-size: 15px;
+    font-size: var(--font-base);
     font-weight: 700;
     color: var(--fg);
 }
@@ -159,15 +159,15 @@
 /* ── Single CTA per card ── */
 .shop-card-cta {
     width: 100%;
-    padding: var(--radius);
+    padding: var(--space-xs-sm);
     border: none;
     border-top: 1px solid var(--border);
     background: transparent;
-    font-size: 14px;
+    font-size: var(--font-sm);
     font-weight: 600;
     color: var(--accent);
     cursor: pointer;
-    transition: background 200ms ease;
+    transition: var(--transition-base);
 
     &:hover {
         background: rgba(var(--accent-rgb), 0.06);
@@ -188,10 +188,10 @@
     height: 100vh;
     background: var(--bg);
     border-left: 1px solid var(--border);
-    z-index: 1000;
+    z-index: var(--z-nav);
     display: flex;
     flex-direction: column;
-    transition: right 200ms ease;
+    transition: var(--transition-base);
     box-shadow: var(--shadow-lg);
 
     &.open {
@@ -203,16 +203,16 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--space-sm) 20px;
+    padding: var(--space-sm) var(--space-sm-md);
     border-bottom: 1px solid var(--border);
-    font-size: 17px;
+    font-size: var(--font-lg);
     font-weight: 600;
 }
 
 .shop-bag-close {
     background: transparent;
     border: none;
-    font-size: 14px;
+    font-size: var(--font-sm);
     font-weight: 600;
     color: var(--accent);
     cursor: pointer;
@@ -221,32 +221,32 @@
 .shop-bag-items {
     flex: 1;
     overflow-y: auto;
-    padding: var(--radius) 20px;
+    padding: var(--space-xs-sm) var(--space-sm-md);
 }
 
 .shop-bag-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--radius) 0;
+    padding: var(--space-xs-sm) 0;
     border-bottom: 1px solid var(--border);
 }
 
 .shop-bag-item-title {
-    font-size: 15px;
+    font-size: var(--font-base);
     font-weight: 500;
 }
 
 .shop-bag-item-price {
     font-family: var(--mono);
-    font-size: 13px;
+    font-size: var(--font-sm);
     color: var(--fg-secondary, var(--dim));
 }
 
 .shop-bag-item-remove {
     background: transparent;
     border: none;
-    font-size: 13px;
+    font-size: var(--font-sm);
     color: var(--fg-secondary, var(--dim));
     cursor: pointer;
 
@@ -256,15 +256,15 @@
 }
 
 .shop-bag-footer {
-    padding: var(--space-sm) 20px;
+    padding: var(--space-sm) var(--space-sm-md);
     border-top: 1px solid var(--border);
 }
 
 .shop-bag-total {
     font-family: var(--mono);
-    font-size: 20px;
+    font-size: var(--font-xl);
     font-weight: 700;
-    margin-bottom: var(--radius);
+    margin-bottom: var(--space-xs-sm);
 }
 
 .shop-checkout-methods {
@@ -274,15 +274,15 @@
 
 .shop-checkout-btn {
     flex: 1;
-    padding: var(--radius);
+    padding: var(--space-xs-sm);
     border: none;
-    border-radius: 10px;
-    font-size: 15px;
+    border-radius: var(--radius);
+    font-size: var(--font-base);
     font-weight: 600;
     cursor: pointer;
     background: var(--accent);
     color: var(--bg);
-    transition: opacity 200ms ease;
+    transition: var(--transition-base);
 
     &:hover {
         opacity: 0.9;
@@ -296,9 +296,9 @@
 .shop-bag-empty {
     display: none;
     text-align: center;
-    padding: 60px 20px;
+    padding: var(--space-xl) var(--space-sm-md);
     color: var(--fg-secondary, var(--dim));
-    font-size: 15px;
+    font-size: var(--font-base);
 }
 
 /* ── Flash message ── */
@@ -308,22 +308,22 @@
     top: var(--space-sm);
     left: 50%;
     transform: translateX(-50%);
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-size: 14px;
+    padding: var(--space-xs-sm) var(--space-sm-md);
+    border-radius: var(--radius);
+    font-size: var(--font-sm);
     font-weight: 500;
-    z-index: 1001;
+    z-index: var(--z-modal);
     box-shadow: var(--shadow);
 }
 
 .shop-message-success {
-    background: #065f46;
-    color: #d1fae5;
+    background: rgba(var(--success-rgb), 0.9);
+    color: var(--fg);
 }
 
 .shop-message-error {
-    background: #7f1d1d;
-    color: #fecaca;
+    background: rgba(var(--error-rgb), 0.5);
+    color: var(--fg);
 }
 
 .shop-message-info {

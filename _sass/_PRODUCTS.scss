@@ -16,14 +16,14 @@
     letter-spacing: 0.1em;
     color: var(--accent);
     font-weight: 600;
-    margin-bottom: 12px;
+    margin-bottom: var(--space-xs-sm);
 }
 
 .section-title {
     font-size: clamp(24px, 3vw, 36px);
     font-weight: 700;
     letter-spacing: -0.02em;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-sm-md);
 }
 
 /* Apps grid */
@@ -46,8 +46,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    margin-bottom: 12px;
+    font-size: var(--font-xl);
+    margin-bottom: var(--space-xs-sm);
     color: var(--fg);
 }
 
@@ -55,9 +55,9 @@
 .app-badge {
     display: inline-block;
     margin-top: var(--space-xs);
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-size: 10px;
+    padding: 3px var(--space-xs);
+    border-radius: var(--radius-xs);
+    font-size: var(--font-2xs);
     font-weight: 700;
 }
 
@@ -67,9 +67,9 @@
     top: -12px; right: -12px;
     background: var(--pink);
     color: var(--fg);
-    padding: 4px 12px;
+    padding: var(--space-2xs) var(--space-xs-sm);
     border-radius: var(--radius-xl);
-    font-size: 11px;
+    font-size: var(--font-xs);
     font-weight: 600;
 }
 
@@ -77,10 +77,10 @@
 .primitive-card {
     background: var(--card);
     border: 1px solid var(--border);
-    padding: 32px;
+    padding: var(--space-md-lg);
     border-radius: var(--radius-lg);
     text-align: center;
-    transition: border-color 0.2s var(--spring), transform 0.2s var(--spring);
+    transition: border-color var(--transition-base) var(--spring), transform var(--transition-base) var(--spring);
     position: relative;
 }
 .primitive-card:hover {
@@ -95,8 +95,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
-    margin: 0 auto 20px;
+    font-size: var(--font-2xl, 28px);
+    margin: 0 auto var(--space-sm-md);
     color: var(--fg);
 }
 
@@ -114,6 +114,6 @@
 
 /* Governance banner — responsive */
 @media (max-width: 768px) {
-    .governance-banner { flex-direction: column; padding: 32px; }
+    .governance-banner { flex-direction: column; padding: var(--space-md-lg); }
 }
 

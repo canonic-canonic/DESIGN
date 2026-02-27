@@ -26,12 +26,12 @@
     letter-spacing: -0.03em;
 }
 .galaxy-hero-text .subtitle {
-    font-size: 20px;
+    font-size: var(--font-sm-md, 20px);
     color: var(--dim);
     margin-top: var(--space-sm);
 }
 .galaxy-hero-text .description {
-    font-size: 15px;
+    font-size: var(--font-base);
     color: var(--dim);
     max-width: 600px;
     margin: var(--space-sm) auto 0;
@@ -64,7 +64,7 @@
     transform: translate(-50%, -50%);
     border-radius: 50%;
 }
-.galaxy h2 { position: relative; font-size: 24px; margin-bottom: var(--space-xs); color: var(--accent); }
+.galaxy h2 { position: relative; font-size: var(--font-xl); margin-bottom: var(--space-xs); color: var(--accent); }
 .galaxy p { position: relative; }
 .galaxy-stats {
     display: grid;
@@ -75,16 +75,16 @@
 }
 .galaxy-val {
     font-family: var(--mono);
-    font-size: 24px;
+    font-size: var(--font-xl);
     font-weight: 700;
     color: var(--accent);
 }
 .galaxy-lbl {
-    font-size: 11px;
+    font-size: var(--font-xs);
     color: var(--dim);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-top: 4px;
+    margin-top: var(--space-2xs);
 }
 
 /* Galaxy HUD overlay (top-left) */
@@ -102,12 +102,12 @@
 }
 .hud-label {
     font-family: var(--mono);
-    font-size: 10px;
+    font-size: var(--font-2xs);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--dim);
     text-align: center;
-    margin-top: 4px;
+    margin-top: var(--space-2xs);
 }
 
 /* Galaxy search overlay (top-center) */
@@ -123,13 +123,13 @@
     backdrop-filter: var(--blur-panel);
     border: 1px solid var(--glass-strong);
     border-radius: var(--radius-pill);
-    padding: 10px 20px;
+    padding: var(--space-xs) var(--space-sm-md);
     color: var(--fg);
-    font-size: 13px;
+    font-size: var(--font-sm);
     font-family: var(--font);
     width: 240px;
     outline: none;
-    transition: width 0.3s var(--ease-out);
+    transition: width var(--transition-slow) var(--ease-out);
 }
 .galaxy-search input:focus {
     width: 360px;
@@ -153,13 +153,13 @@
     box-shadow: var(--shadow);
 }
 .galaxy-dock a {
-    font-size: 11px;
+    font-size: var(--font-xs);
     font-weight: 600;
     color: var(--dim);
     text-decoration: none;
-    padding: 4px 12px;
+    padding: var(--space-2xs) var(--space-xs-sm);
     border-radius: var(--radius-pill);
-    transition: all 0.2s ease;
+    transition: all var(--transition-base) ease;
 }
 .galaxy-dock a:hover { color: var(--accent); background: var(--glass-border); }
 
@@ -176,7 +176,7 @@
     z-index: 10;
     overflow-y: auto;
     transform: translateX(100%);
-    transition: transform 0.3s var(--ease-out);
+    transition: transform var(--transition-slow) var(--ease-out);
 }
 .galaxy-detail.open { transform: translateX(0); }
 

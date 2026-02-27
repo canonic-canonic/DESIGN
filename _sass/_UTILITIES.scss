@@ -10,7 +10,7 @@
 .uppercase {
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    font-size: 11px;
+    font-size: var(--font-xs);
 }
 
 .gradient-text {
@@ -40,7 +40,7 @@
 .paradigm {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    gap: var(--space-md);
 }
 
 .paradigm-old {
@@ -56,10 +56,10 @@
 /* Lineage — flow display */
 .lineage {
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: var(--font-sm);
     color: var(--dim);
     text-align: center;
-    padding: 20px;
+    padding: var(--space-sm-md);
 }
 
 .lineage .arrow { color: var(--accent); }

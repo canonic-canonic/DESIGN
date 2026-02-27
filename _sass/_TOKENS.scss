@@ -42,7 +42,9 @@
     --operations-rgb: 41, 151, 255;
     --commerce-rgb: 255, 159, 10;
     --knowledge-rgb: 191, 90, 242;
+    --governance-rgb: 255, 214, 10;
     --services-rgb: 236, 72, 153;
+    --dim-rgb: 161, 161, 166;
     --red-rgb: 255, 69, 58;
 
     /* ── Fleet aliases (composable from categories) ── */
@@ -56,9 +58,30 @@
     --blue-light: #60a5fa;
     --pink-light: #f472b6;
 
+    /* ── Status colors ── */
+    --success: #22c55e;
+    --success-rgb: 34, 197, 94;
+    --error: #ff453a;
+    --error-rgb: 255, 69, 58;
+    --warning: #f59e0b;
+    --warning-rgb: 245, 158, 11;
+
+    /* ── Transaction colors (FLEET + POST ledgers) ── */
+    --tx-mint: #059669;
+    --tx-mint-rgb: 5, 150, 105;
+    --tx-work: #2563eb;
+    --tx-work-rgb: 37, 99, 235;
+    --tx-transfer: #d97706;
+    --tx-transfer-rgb: 217, 119, 6;
+    --tx-spend: #dc2626;
+    --tx-spend-rgb: 220, 38, 38;
+    --tx-donation: #7c3aed;
+    --tx-donation-rgb: 124, 58, 237;
+
     /* ── Typography (DESIGN.md §Typography) ── */
     --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
     --mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    --font-2xs: 10px;
     --font-xs: 11px;
     --font-sm: 13px;
     --font-base: 15px;
@@ -69,13 +92,18 @@
     --font-hero: clamp(48px, 7vw, 80px);
 
     /* ── Spacing ── */
+    --space-2xs: 4px;
     --space-xs: 8px;
+    --space-xs-sm: 12px;
     --space-sm: 16px;
+    --space-sm-md: 20px;
     --space-md: 24px;
+    --space-md-lg: 32px;
     --space-lg: 48px;
     --space-xl: 80px;
 
     /* ── Radius ── */
+    --radius-xs: 4px;
     --radius-sm: 8px;
     --radius: 12px;
     --radius-lg: 16px;

@@ -7,8 +7,8 @@
     :root {
         --nav-h: 42px;
     }
-    .container { padding: 24px; }
-    .hero { padding: calc(var(--header-offset) + 36px) 24px 60px; }
+    .container { padding: var(--space-md); }
+    .hero { padding: calc(var(--header-offset) + 36px) var(--space-md) var(--space-xl); }
     .stats { grid-template-columns: repeat(2, 1fr); }
     .grid-3, .grid-4, .grid-5 { grid-template-columns: repeat(2, 1fr); }
     .paradigm { grid-template-columns: 1fr; }
@@ -19,8 +19,11 @@
 }
 
 @media (max-width: 640px) {
-    .container { padding: 16px; }
+    .container { padding: var(--space-sm); }
     .grid, .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
+    .card-grid { grid-template-columns: 1fr !important; }
+    .apps-grid { grid-template-columns: 1fr; }
+    section { padding: var(--space-lg) var(--space-sm); }
     .message { max-width: 90%; }
     .fab { width: 48px; height: 48px; font-size: 20px; bottom: 16px; right: 16px; }
     .slide { padding: 0 5vw; }
@@ -31,7 +34,7 @@
         --nav-h: 40px;
     }
     .container { padding: var(--space-xs); }
-    .hero { padding: calc(var(--header-offset) + 20px) var(--space-xs) 40px; }
+    .hero { padding: calc(var(--header-offset) + 20px) var(--space-xs) var(--space-lg); }
     .hero-content h1 { font-size: clamp(28px, 8vw, 40px); }
     .stats { grid-template-columns: 1fr; }
     .stat { padding: var(--space-sm); }

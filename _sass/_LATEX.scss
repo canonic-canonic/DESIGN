@@ -21,7 +21,7 @@
 .latex-abstract {
     max-width: 85%;
     margin: 0 auto 2rem;
-    padding: 1.5rem 2rem;
+    padding: var(--space-md) var(--space-md-lg);
     border-top: 2px solid var(--accent);
     border-bottom: 1px solid var(--border);
     font-size: 0.9375rem;
@@ -36,7 +36,7 @@
 /* ── Two-column layout ── */
 .latex-two-col {
     column-count: 2;
-    column-gap: 2rem;
+    column-gap: var(--space-md-lg);
     column-rule: 1px solid var(--border);
 }
 .latex-two-col h2,
@@ -53,8 +53,8 @@
     border: 1px solid rgba(var(--accent-rgb), 0.15);
     border-left: 4px solid var(--accent);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    padding: 1.25rem 1.5rem;
-    margin: 1.5rem 0;
+    padding: var(--space-sm-md) var(--space-md);
+    margin: var(--space-md) 0;
     font-size: 0.9375rem;
     line-height: 1.8;
 }
@@ -196,7 +196,7 @@
     background: rgba(var(--red-rgb), 0.03);
     border: 1px solid rgba(var(--red-rgb), 0.15);
     border-radius: var(--radius-sm);
-    padding: 1.25rem 1.5rem;
+    padding: var(--space-sm-md) var(--space-md);
     font-size: 0.875rem;
     line-height: 1.7;
 }
@@ -527,7 +527,7 @@
 .pdf-canvas {
     display: block;
     border-radius: var(--radius-sm);
-    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-lg);
 }
 
 /* ── Navigation bar (bottom center, glass panel) ── */

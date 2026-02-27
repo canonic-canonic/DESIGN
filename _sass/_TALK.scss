@@ -34,7 +34,7 @@
 }
 
 .talk-scope {
-    font-size: 10px;
+    font-size: var(--font-2xs);
     font-weight: 700;
     letter-spacing: 0.12em;
     color: var(--dim);
@@ -54,13 +54,13 @@
     background: var(--panel);
     -webkit-backdrop-filter: var(--blur-overlay);
     backdrop-filter: var(--blur-overlay);
-    z-index: 2000;
+    z-index: var(--z-modal);
     display: flex;
     flex-direction: column;
     transform: translateX(100%);
     opacity: 0;
     pointer-events: none;
-    transition: transform 0.4s var(--spring), opacity 0.25s var(--ease-out);
+    transition: transform var(--transition-slow) var(--spring), opacity var(--transition-slow) var(--ease-out);
     border-left: 1px solid var(--glass-border);
     box-shadow: var(--shadow-lg);
 }
@@ -79,7 +79,7 @@
     right: 420px;
     background: var(--scrim);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity var(--transition-slow);
     pointer-events: none;
     z-index: -1;
 }
@@ -92,8 +92,8 @@
 .talk-overlay-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 18px 24px;
+    gap: var(--space-xs-sm);
+    padding: var(--space-sm) var(--space-md);
     border-bottom: 1px solid var(--glass-border);
     flex-shrink: 0;
     background: var(--glass-subtle);
@@ -105,7 +105,7 @@
 }
 
 .talk-overlay-header .talk-scope {
-    font-size: 11px;
+    font-size: var(--font-xs);
     font-weight: 700;
     letter-spacing: 0.14em;
     color: var(--fg);
@@ -117,18 +117,18 @@
     background: var(--card);
     color: var(--fg);
     border: 1px solid var(--glass-strong);
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
     padding: 2px 6px;
-    font-size: 11px;
+    font-size: var(--font-xs);
     margin-left: auto;
     cursor: pointer;
     width: auto;
 }
 
 .talk-provider-label {
-    font-size: 10px;
+    font-size: var(--font-2xs);
     opacity: 0.5;
-    margin-left: 4px;
+    margin-left: var(--space-2xs);
 }
 
 .talk-overlay-close {
@@ -136,14 +136,14 @@
     background: var(--glass-subtle);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
-    padding: 6px 14px;
+    padding: var(--space-2xs) var(--space-xs-sm);
     color: var(--dim);
     cursor: pointer;
-    font-size: 11px;
+    font-size: var(--font-xs);
     font-family: var(--mono);
     font-weight: 600;
     letter-spacing: 0.05em;
-    transition: all 0.2s var(--spring);
+    transition: all var(--transition-base) var(--spring);
 }
 
 .talk-overlay-close:hover {
@@ -157,10 +157,10 @@
 .talk-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 28px 24px;
+    padding: var(--space-md) var(--space-md);
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-sm);
     scroll-behavior: smooth;
 }
 
@@ -169,7 +169,7 @@
     background: rgba(var(--accent-rgb, 59, 130, 246), 0.06);
     border: 1px solid rgba(var(--accent-rgb, 59, 130, 246), 0.12);
     border-radius: var(--radius-lg);
-    padding: 20px 24px;
+    padding: var(--space-sm-md) var(--space-md);
     font-size: var(--font-sm);
     line-height: 1.7;
     color: var(--fg);
@@ -179,8 +179,8 @@
 /* ── Talk Input — the draw ── */
 .talk-input-row {
     display: flex;
-    gap: 10px;
-    padding: 20px 24px;
+    gap: var(--space-xs-sm);
+    padding: var(--space-sm-md) var(--space-md);
     border-top: 1px solid var(--glass-border);
     flex-shrink: 0;
     background: var(--glass-subtle);
@@ -191,13 +191,13 @@
     background: var(--glass-border);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius);
-    padding: 14px 18px;
+    padding: var(--space-xs-sm) var(--space-sm);
     color: var(--fg);
     font-family: var(--font);
     font-size: var(--font-sm);
     outline: none;
     width: auto;
-    transition: all 0.25s var(--ease-out);
+    transition: all var(--transition-slow) var(--ease-out);
 }
 
 .talk-input-row input:focus {
@@ -216,12 +216,12 @@
     color: var(--fg);
     border: none;
     border-radius: var(--radius);
-    padding: 14px 22px;
+    padding: var(--space-xs-sm) var(--space-md);
     font-size: var(--font-sm);
     font-weight: 700;
     font-family: var(--font);
     cursor: pointer;
-    transition: all 0.2s var(--spring);
+    transition: all var(--transition-base) var(--spring);
     letter-spacing: 0.05em;
     flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(var(--accent-rgb, 59, 130, 246), 0.2);
@@ -273,8 +273,8 @@
     /* Mobile: full-width panel */
     .talk-overlay { width: 100vw; border-left: none; }
     .talk-overlay::before { display: none; }
-    .talk-messages { padding: 20px 16px; }
-    .talk-input-row { padding: 16px; }
+    .talk-messages { padding: var(--space-sm-md) var(--space-sm); }
+    .talk-input-row { padding: var(--space-sm); }
 }
 
 @media (prefers-reduced-motion: reduce) {

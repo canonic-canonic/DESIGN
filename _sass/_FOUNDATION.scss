@@ -31,7 +31,7 @@
     border-color: var(--accent);
     transform: translateY(-2px);
 }
-.q-card h3 { font-size: var(--font-lg); font-weight: 600; margin-bottom: 4px; }
+.q-card h3 { font-size: var(--font-lg); font-weight: 600; margin-bottom: var(--space-2xs); }
 
 /* Sector cards */
 .sector {
@@ -47,14 +47,14 @@
     transform: translateY(-2px);
 }
 .sector-icon { font-size: 32px; margin-bottom: var(--space-xs); }
-.sector h3 { font-size: var(--font-sm); font-weight: 600; margin-bottom: 4px; }
+.sector h3 { font-size: var(--font-sm); font-weight: 600; margin-bottom: var(--space-2xs); }
 
 /* Shop / library cards */
 .shop-card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 28px;
+    padding: var(--space-md);
     transition: border-color 0.25s var(--spring), transform 0.25s var(--spring);
 }
 .shop-card:hover {
@@ -83,7 +83,7 @@
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    margin-bottom: 12px;
+    margin-bottom: var(--space-xs-sm);
 }
 .magic-validation-title {
     font-size: var(--font-2xl);
@@ -92,9 +92,9 @@
     line-height: 1.2;
 }
 .magic-validation-desc { color: var(--dim); line-height: 1.7; font-size: var(--font-base); }
-.magic-validation-tags { display: flex; gap: 10px; margin-top: var(--space-sm); flex-wrap: wrap; }
+.magic-validation-tags { display: flex; gap: var(--space-xs); margin-top: var(--space-sm); flex-wrap: wrap; }
 .magic-validation-tag {
-    padding: 6px 14px;
+    padding: var(--space-2xs) var(--space-xs-sm);
     background: rgba(var(--accent-rgb), 0.12);
     color: var(--accent);
     border-radius: var(--radius-sm);
@@ -105,8 +105,8 @@
 
 /* CTA section */
 .cta-section { text-align: center; }
-.cta-title { font-size: var(--font-2xl); font-weight: 700; margin-bottom: 12px; }
-.cta-desc { font-size: var(--font-lg); color: var(--dim); margin-bottom: 32px; }
+.cta-title { font-size: var(--font-2xl); font-weight: 700; margin-bottom: var(--space-xs-sm); }
+.cta-desc { font-size: var(--font-lg); color: var(--dim); margin-bottom: var(--space-md-lg); }
 
 /* MAGIC validation + governance-banner responsive */
 @media (max-width: 768px) {

@@ -1,0 +1,422 @@
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAYER 10.5 — CHAT (Full-Page Chat Surface Primitive)
+   ═══════════════════════════════════════════════════════════════════
+
+   CUSTOM layout chat applications (MammoChat, OncoChat, OmicsChat, etc.)
+   These are full-page surfaces, distinct from the TALK slide-out panel.
+   All styling via design tokens. No external CSS dependencies.
+
+   HTML contract:
+   <header>
+     <div class="header-left">
+       <span class="logo">ICON</span>
+       <div>
+         <h1>AppName</h1>
+         <div class="subtitle">Tagline</div>
+         <div class="tagline">Description</div>
+       </div>
+     </div>
+     <div class="header-controls">
+       <select>...</select>
+       <span class="learning-badge">INTEL: ...</span>
+       <span class="magic-badge">MAGIC 255</span>
+     </div>
+   </header>
+   <main class="with-sidebar">
+     <div class="chat-column">
+       <div id="talkMessages"></div>
+       <div class="input-area">
+         <input ...>
+         <button>Send</button>
+       </div>
+     </div>
+     <aside class="mcode-sidebar">...</aside>
+   </main>
+   <div class="disclaimer">...</div>
+
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Chat header ── */
+body > header,
+.chat-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) var(--space-md);
+    margin-top: var(--header-offset);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs-sm);
+}
+
+.header-left .logo {
+    font-size: var(--font-xl);
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.header-left h1 {
+    font-size: var(--font-lg);
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.header-left .subtitle {
+    font-size: var(--font-sm);
+    color: var(--dim);
+    line-height: 1.3;
+}
+
+.header-left .tagline {
+    font-size: var(--font-2xs);
+    color: var(--dim);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+
+.header-controls select {
+    background: var(--glass);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-2xs) var(--space-xs);
+    font-size: var(--font-xs);
+    font-family: var(--font);
+    cursor: pointer;
+    width: auto;
+}
+
+/* ── Badges ── */
+.learning-badge {
+    font-size: var(--font-2xs);
+    font-weight: 600;
+    padding: var(--space-2xs) var(--space-xs);
+    border-radius: var(--radius-pill);
+    background: rgba(var(--accent-rgb), 0.12);
+    color: var(--accent);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    font-family: var(--mono);
+}
+
+.magic-badge {
+    font-size: var(--font-2xs);
+    font-weight: 700;
+    padding: var(--space-2xs) var(--space-xs);
+    border-radius: var(--radius-pill);
+    background: rgba(var(--governance-rgb, 255, 214, 10), 0.15);
+    color: var(--governance);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    font-family: var(--mono);
+}
+
+/* ── Chat layout ── */
+.with-sidebar {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    height: calc(100vh - var(--header-offset) - 72px);
+    overflow: hidden;
+}
+
+.chat-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.chat-column #talkMessages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    scroll-behavior: smooth;
+}
+
+.input-area {
+    display: flex;
+    gap: var(--space-xs-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    background: var(--bg);
+}
+
+.input-area input {
+    flex: 1;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-xs-sm) var(--space-sm);
+    color: var(--fg);
+    font-family: var(--font);
+    font-size: var(--font-sm);
+    outline: none;
+    transition: var(--transition-base);
+}
+
+.input-area input:focus {
+    border-color: rgba(var(--accent-rgb), 0.4);
+    box-shadow: var(--focus-ring);
+}
+
+.input-area input::placeholder {
+    color: var(--dim);
+    opacity: 0.5;
+}
+
+.input-area button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: var(--space-xs-sm) var(--space-md);
+    font-size: var(--font-sm);
+    font-weight: 700;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: var(--transition-base);
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+}
+
+.input-area button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.25);
+}
+
+.input-area button:active {
+    transform: translateY(0) scale(0.97);
+}
+
+/* ── mCODE Sidebar ── */
+.mcode-sidebar {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--border);
+    background: var(--glass-subtle);
+    overflow-y: auto;
+    height: 100%;
+}
+
+.mcode-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-sm);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.mcode-header-icon {
+    font-size: var(--font-lg);
+    line-height: 1;
+}
+
+.mcode-header-text {
+    font-size: var(--font-sm);
+    font-weight: 700;
+    color: var(--fg);
+    flex: 1;
+}
+
+.mcode-header-badge {
+    font-size: var(--font-2xs);
+    font-weight: 600;
+    padding: 2px var(--space-xs);
+    border-radius: var(--radius-pill);
+    background: rgba(var(--accent-rgb), 0.12);
+    color: var(--accent);
+    font-family: var(--mono);
+}
+
+.mcode-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    padding: var(--space-2xs);
+    color: var(--dim);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-base);
+}
+
+.mcode-toggle:hover {
+    background: var(--glass);
+    color: var(--fg);
+}
+
+.mcode-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-sm);
+}
+
+.mcode-section {
+    margin-bottom: var(--space-sm);
+}
+
+.mcode-section-title {
+    font-size: var(--font-2xs);
+    font-weight: 700;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: var(--space-xs);
+}
+
+.mcode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xs);
+}
+
+.mcode-item {
+    padding: var(--space-xs);
+    background: var(--glass);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border);
+}
+
+.mcode-item.full {
+    grid-column: 1 / -1;
+}
+
+.mcode-item-label {
+    font-size: var(--font-2xs);
+    color: var(--dim);
+    margin-bottom: 2px;
+}
+
+.mcode-item-value {
+    font-size: var(--font-xs);
+    color: var(--fg);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xs);
+}
+
+.mcode-export {
+    margin: var(--space-sm);
+    padding: var(--space-xs-sm) var(--space-sm);
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--accent);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-base);
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.mcode-export:hover {
+    background: var(--glass-hover);
+    border-color: rgba(var(--accent-rgb), 0.3);
+}
+
+/* ── Disclaimer ── */
+.disclaimer {
+    font-size: var(--font-2xs);
+    color: var(--dim);
+    text-align: center;
+    padding: var(--space-xs) var(--space-md);
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+}
+
+.disclaimer a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.disclaimer a:hover {
+    text-decoration: underline;
+}
+
+/* ── No-sidebar layout (MedChat style) ── */
+main:not(.with-sidebar) .chat-column,
+main:not(.with-sidebar) {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+main:not(.with-sidebar) #talkMessages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    min-height: calc(100vh - var(--header-offset) - 200px);
+}
+
+/* ── Chat — responsive ── */
+@media (max-width: 768px) {
+    .with-sidebar {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+
+    .mcode-sidebar {
+        border-left: none;
+        border-top: 1px solid var(--border);
+        max-height: 300px;
+    }
+
+    body > header,
+    .chat-header-bar {
+        padding: var(--space-xs) var(--space-sm);
+    }
+
+    .header-left h1 {
+        font-size: var(--font-base);
+    }
+}
+
+@media (max-width: 640px) {
+    .mcode-sidebar {
+        display: none;
+    }
+
+    .mcode-sidebar.open {
+        display: flex;
+        position: fixed;
+        inset: 0;
+        z-index: var(--z-modal);
+        max-height: 100vh;
+        background: var(--bg);
+    }
+
+    .input-area {
+        padding: var(--space-xs) var(--space-sm);
+    }
+
+    .header-controls {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}

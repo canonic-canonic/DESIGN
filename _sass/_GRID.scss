@@ -6,18 +6,18 @@
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    gap: var(--space-sm-md);
 }
 
-.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-sm-md); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm-md); }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-sm-md); }
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-sm-md); }
 
 .stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 16px;
-    margin-bottom: 48px;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
 }
 

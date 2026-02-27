@@ -17,11 +17,11 @@ body.auth-gated .auth-gate { display: flex; }
 .auth-box {
   text-align: center;
   max-width: 400px;
-  padding: 40px var(--space-md);
+  padding: var(--space-lg) var(--space-md);
 }
 
 .auth-box h2 {
-  font-size: 20px;
+  font-size: var(--font-sm-md, 20px);
   font-weight: 800;
   margin-bottom: var(--space-xs);
   letter-spacing: 0.05em;
@@ -29,7 +29,7 @@ body.auth-gated .auth-gate { display: flex; }
 
 .auth-box p {
   color: var(--fg-secondary, var(--dim));
-  font-size: 14px;
+  font-size: var(--font-sm);
   margin-bottom: var(--space-md);
 }
 
@@ -41,15 +41,15 @@ body.auth-gated .auth-gate { display: flex; }
   border-radius: var(--radius-sm);
   text-decoration: none;
   font-weight: 700;
-  font-size: 14px;
+  font-size: var(--font-sm);
   font-family: inherit;
-  transition: opacity 0.2s;
+  transition: opacity var(--transition-base);
 }
 
 .auth-btn:hover { opacity: 0.85; }
 
 .auth-error {
   color: var(--red);
-  font-size: 12px;
+  font-size: var(--font-2xs);
   margin-bottom: var(--space-sm);
 }

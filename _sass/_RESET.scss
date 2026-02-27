@@ -41,7 +41,7 @@ h6 { font-size: clamp(11px, 1.2vw, 16px); }
 a {
     color: var(--accent);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all var(--transition-base);
 }
 
 a:hover { opacity: 0.8; }
@@ -66,14 +66,14 @@ pre {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    padding: 16px;
+    padding: var(--space-sm);
     overflow-x: auto;
 }
 
 code {
     background: var(--card);
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
 }
 
 pre code {
@@ -87,14 +87,14 @@ table {
 }
 
 th, td {
-    padding: 14px 0;
+    padding: var(--space-xs-sm) 0;
     text-align: left;
     border-bottom: 1px solid var(--border);
-    font-size: 13px;
+    font-size: var(--font-sm);
 }
 
 th {
-    font-size: 10px;
+    font-size: var(--font-2xs);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--dim);
@@ -104,7 +104,7 @@ th {
 hr {
     border: none;
     border-top: 1px solid var(--border);
-    margin: 32px 0;
+    margin: var(--space-md-lg) 0;
 }
 
 img { max-width: 100%; display: block; }
