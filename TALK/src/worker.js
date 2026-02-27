@@ -2477,7 +2477,32 @@ async function talkLedgerWrite(request, env) {
   }
 
   await env.TALK_KV.put(key, JSON.stringify(ledger));
-  return json({ ok: true, id, scope, entries: ledger.length, ts });
+
+  // NOTIFY: direct mapping — scope → targets, inline at write time (no polling)
+  // notify[] comes from CANON.json via talk.js — GOV tree is source of truth
+  const notify = Array.isArray(body.notify) ? body.notify : [];
+  for (const target of notify) {
+    if (!target || typeof target !== 'string') continue;
+    const inboxKey = `inbox:${target}`;
+    let inbox = [];
+    try {
+      const raw = await env.TALK_KV.get(inboxKey);
+      if (raw) inbox = JSON.parse(raw);
+    } catch {}
+    inbox.push({
+      id,
+      ts,
+      from: scope,
+      to: target,
+      message: user_message,
+      context: assistant_message || null,
+      read: false,
+    });
+    if (inbox.length > 500) inbox = inbox.slice(-500);
+    await env.TALK_KV.put(inboxKey, JSON.stringify(inbox));
+  }
+
+  return json({ ok: true, id, scope, entries: ledger.length, ts, notified: notify });
 }
 
 async function talkLedgerRead(request, env) {

@@ -331,8 +331,107 @@
     color: var(--bg);
 }
 
+/* ── Filter bar ── */
+.shop-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+    padding: var(--space-xs) 0;
+    margin-bottom: var(--space-sm);
+}
+
+.shop-filter-label {
+    font-size: var(--font-2xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+    font-family: var(--mono);
+    margin-right: var(--space-2xs);
+    margin-left: var(--space-xs);
+
+    &:first-child {
+        margin-left: 0;
+    }
+}
+
+.shop-filter-btn {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-pill);
+    padding: var(--space-2xs) var(--space-xs-sm);
+    font-size: var(--font-2xs);
+    font-weight: 600;
+    color: var(--dim);
+    cursor: pointer;
+    transition: var(--transition-base);
+    font-family: var(--font);
+
+    &:hover {
+        border-color: var(--glass-strong);
+        color: var(--fg);
+    }
+
+    &.active {
+        background: rgba(var(--accent-rgb), 0.12);
+        border-color: rgba(var(--accent-rgb), 0.3);
+        color: var(--accent);
+    }
+}
+
+/* ── Tag pills ── */
+.shop-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin-bottom: var(--space-xs);
+}
+
+.shop-tag {
+    font-size: var(--font-2xs);
+    padding: 2px var(--space-xs);
+    border-radius: var(--radius-pill);
+    background: var(--glass);
+    color: var(--dim);
+    white-space: nowrap;
+    font-family: var(--font);
+}
+
+/* ── Audience + Domain badges ── */
+.shop-card-badges {
+    display: flex;
+    gap: var(--space-2xs);
+    margin-bottom: var(--space-xs);
+}
+
+.shop-badge {
+    font-size: var(--font-2xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 2px var(--space-xs);
+    border-radius: var(--radius-pill);
+    font-family: var(--mono);
+    white-space: nowrap;
+}
+
+.shop-badge-audience {
+    background: rgba(var(--knowledge-rgb), 0.12);
+    color: var(--knowledge);
+}
+
+.shop-badge-domain {
+    background: rgba(var(--operations-rgb), 0.12);
+    color: var(--operations);
+}
+
 /* ── Inline mode: compact cards ── */
 [data-mode="inline"] .shop-header {
+    display: none;
+}
+
+[data-mode="inline"] .shop-filter-bar {
     display: none;
 }
 

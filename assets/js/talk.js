@@ -211,6 +211,7 @@ const TALK = {
             this.canon = canon;
             this.system = canon.systemPrompt;
             this.scope = canon.scope || canon.name || 'CANONIC';
+            this.notify = Array.isArray(canon.notify) ? canon.notify : [];
             this.governed = true;
 
             // Welcome message
@@ -580,7 +581,8 @@ const TALK = {
                         assistant_message: reply,
                         trace_id: data.trace_id || null,
                         provider_used: data.provider_used || null,
-                        elapsed_ms: data.elapsed_ms || null
+                        elapsed_ms: data.elapsed_ms || null,
+                        notify: this.notify || []
                     })
                 }).catch(function() {});
             } catch (le) { /* ledger write must not break chat */ }

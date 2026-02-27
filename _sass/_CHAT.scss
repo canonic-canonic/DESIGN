@@ -38,7 +38,7 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Chat header ── */
-body > header,
+body > header:not(.nav),
 .chat-header-bar {
     display: flex;
     align-items: center;
@@ -387,7 +387,7 @@ main:not(.with-sidebar) #talkMessages {
         max-height: 300px;
     }
 
-    body > header,
+    body > header:not(.nav),
     .chat-header-bar {
         padding: var(--space-xs) var(--space-sm);
     }

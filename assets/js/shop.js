@@ -17,6 +17,7 @@ const SHOP = {
     products: [],
     bag: [],
     wallet: null,
+    activeFilters: { domain: '', audience: '', type: '' },
     API: (window.CANONIC_SHOP_API || 'https://api.canonic.org').replace(/\/+$/, ''),
     TOKEN_KEY: 'canonic_auth_token',
 
@@ -27,6 +28,7 @@ const SHOP = {
 
         // Load products from SHOP.json (static, compiled from GOV)
         await this.loadProducts();
+        this.renderFilterBar();
         this.renderProducts();
 
         // Wallet projection — delegate to shared WALLET module
@@ -58,16 +60,69 @@ const SHOP = {
         }
     },
 
+    // ── Filter bar ────────────────────────────────────────────
+    renderFilterBar() {
+        var bar = document.getElementById('shopFilterBar');
+        if (!bar) return;
+
+        var mode = document.getElementById('shopRoot');
+        if (mode && mode.getAttribute('data-mode') === 'inline') {
+            bar.style.display = 'none';
+            return;
+        }
+
+        // Collect unique values
+        var domains = {}, audiences = {}, types = {};
+        for (var i = 0; i < this.products.length; i++) {
+            var p = this.products[i];
+            if (p.domain) domains[p.domain] = true;
+            if (p.audience) audiences[p.audience] = true;
+            if (p.type) types[p.type.toUpperCase()] = true;
+        }
+
+        var html = '';
+        var self = this;
+
+        function renderGroup(label, values, filterKey) {
+            if (!Object.keys(values).length) return '';
+            var h = '<span class="shop-filter-label">' + label + '</span>';
+            h += '<button class="shop-filter-btn' + (self.activeFilters[filterKey] === '' ? ' active' : '') + '" data-filter="' + filterKey + '" data-value="">All</button>';
+            var keys = Object.keys(values).sort();
+            for (var j = 0; j < keys.length; j++) {
+                h += '<button class="shop-filter-btn' + (self.activeFilters[filterKey] === keys[j] ? ' active' : '') + '" data-filter="' + filterKey + '" data-value="' + keys[j] + '">' + keys[j].charAt(0).toUpperCase() + keys[j].slice(1) + '</button>';
+            }
+            return h;
+        }
+
+        html += renderGroup('Type', types, 'type');
+        html += renderGroup('Domain', domains, 'domain');
+        html += renderGroup('Audience', audiences, 'audience');
+
+        bar.innerHTML = html;
+
+        // Bind click handlers
+        var btns = bar.querySelectorAll('.shop-filter-btn');
+        for (var k = 0; k < btns.length; k++) {
+            btns[k].addEventListener('click', function () {
+                var key = this.getAttribute('data-filter');
+                var val = this.getAttribute('data-value');
+                SHOP.activeFilters[key] = val;
+                SHOP.renderFilterBar();
+                SHOP.renderProducts();
+            });
+        }
+    },
+
     renderProducts() {
         var container = document.getElementById('shopProducts');
         if (!container) return;
         container.innerHTML = '';
 
         var mode = document.getElementById('shopRoot');
-        var filter = mode ? mode.getAttribute('data-mode') : 'catalog';
+        var dataMode = mode ? mode.getAttribute('data-mode') : 'catalog';
 
         var items = this.products;
-        if (filter === 'inline') {
+        if (dataMode === 'inline') {
             // Inline mode: filter by page context (e.g. BOOKS page shows only BOOKs)
             var scope = document.querySelector('[data-scope]');
             var s = scope ? scope.getAttribute('data-scope') : '';
@@ -77,10 +132,19 @@ const SHOP = {
                            (p.shop_lane || '').toUpperCase() === s.toUpperCase();
                 });
             }
+        } else {
+            // Catalog mode: apply active filters
+            var af = this.activeFilters;
+            items = items.filter(function (p) {
+                if (af.domain && (p.domain || '') !== af.domain) return false;
+                if (af.audience && (p.audience || '') !== af.audience) return false;
+                if (af.type && (p.type || '').toUpperCase() !== af.type) return false;
+                return true;
+            });
         }
 
         if (!items.length) {
-            container.innerHTML = '<p class="shop-empty">No products yet.</p>';
+            container.innerHTML = '<p class="shop-empty">No products match the current filters.</p>';
             return;
         }
 
@@ -98,6 +162,27 @@ const SHOP = {
         var ctaText = price > 0 ? 'Add to Bag' : 'Get';
         var status = product.status || '';
 
+        // Build tags HTML
+        var tagsHtml = '';
+        var tags = product.tags || [];
+        if (typeof tags === 'string') tags = tags.split(',').map(function (t) { return t.trim(); });
+        if (tags.length) {
+            tagsHtml = '<div class="shop-card-tags">';
+            for (var t = 0; t < tags.length; t++) {
+                tagsHtml += '<span class="shop-tag">' + tags[t] + '</span>';
+            }
+            tagsHtml += '</div>';
+        }
+
+        // Build badges HTML
+        var badgesHtml = '';
+        if (product.audience || product.domain) {
+            badgesHtml = '<div class="shop-card-badges">';
+            if (product.audience) badgesHtml += '<span class="shop-badge shop-badge-audience">' + product.audience + '</span>';
+            if (product.domain) badgesHtml += '<span class="shop-badge shop-badge-domain">' + product.domain + '</span>';
+            badgesHtml += '</div>';
+        }
+
         card.innerHTML =
             (product.cover
                 ? '<div class="shop-card-cover" style="background-image:url(' + product.cover + ')"></div>'
@@ -106,6 +191,8 @@ const SHOP = {
                 '<div class="shop-card-eyebrow">' + (product.type || '') + '</div>' +
                 '<div class="shop-card-title">' + (product.title || '') + '</div>' +
                 (product.synopsis ? '<div class="shop-card-synopsis">' + product.synopsis + '</div>' : '') +
+                badgesHtml +
+                tagsHtml +
                 (status ? '<div class="shop-card-status">' + status + '</div>' : '') +
                 '<div class="shop-card-price">' + priceText + '</div>' +
             '</div>';
