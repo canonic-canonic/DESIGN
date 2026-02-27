@@ -30,7 +30,7 @@
 
       {% if section.eyebrow %}<div class="section-eyebrow text-center">{{ section.eyebrow }}</div>{% endif %}
       {% if section.title %}<h2 class="section-title text-center">{{ section.title }}</h2>{% endif %}
-      {% if section.description %}<p class="description">{{ section.description }}</p>{% endif %}
+      {% if section.description %}<div class="description">{{ section.description | markdownify }}</div>{% endif %}
 
       {% if section.feature %}
       <div class="feature-block">
