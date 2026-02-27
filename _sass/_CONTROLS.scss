@@ -60,10 +60,10 @@
     font-variant-numeric: tabular-nums;
 }
 
-// Deck mode: position fixed
+// Deck mode: position fixed, bottom-right
 .deck-mode .controls-bar {
     position: fixed;
-    top: var(--space-sm);
+    bottom: var(--space-sm);
     right: var(--space-sm);
     left: auto;
     max-width: none;

@@ -1,5 +1,5 @@
 ---
-layout: DECK
+layout: deck
 title: "DECK Demo — Presentation Template"
 description: "Every figure type rendered as slides. Lorem ipsum."
 scope: DEMO
