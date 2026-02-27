@@ -1,16 +1,16 @@
 <!-- DEALS | DESIGN.md 255 Map -->
-<!-- Deal/partnership card grid with vault locking + TALK integration -->
+<!-- Deal/partnership card grid with vault locking + TALK integration — data fields: camelCase per MAGIC/DESIGN.md -->
 <div class="apps-grid">
   {% for d in include.deals %}
   <a href="{{ d.href | default: '#' }}" class="app-card{% if d.vault %} app-card-vault{% endif %}"{% if d.talk %} onclick="TALK.open();return false"{% endif %}>
-    {% if d.icon_gradient %}
-    <div class="app-icon" style="background:linear-gradient(135deg,{{ d.icon_gradient[0] }},{{ d.icon_gradient[1] }});">{{ d.icon }}</div>
+    {% if d.iconGradient %}
+    <div class="app-icon" style="background:linear-gradient(135deg,{{ d.iconGradient[0] }},{{ d.iconGradient[1] }});">{{ d.icon }}</div>
     {% else %}
-    <div class="app-icon {{ d.icon_class }}">{{ d.icon }}</div>
+    <div class="app-icon {{ d.iconClass }}">{{ d.icon }}</div>
     {% endif %}
     <div class="app-name">{{ d.name }}</div>
     <div class="app-desc">{{ d.description }}</div>
-    <span class="app-badge" style="{% if d.vault %}background:rgba(212,175,55,0.15);color:var(--gold);{% elsif d.badge_color %}background:rgba({{ d.badge_color_rgb | default: '96,165,250' }},0.15);color:{{ d.badge_color }};{% endif %}">{% if d.vault %}&#128274; {% endif %}{{ d.badge }}</span>
+    <span class="app-badge" style="{% if d.vault %}background:rgba(212,175,55,0.15);color:var(--gold);{% elsif d.badgeColor %}background:rgba({{ d.badgeColorRgb | default: '96,165,250' }},0.15);color:{{ d.badgeColor }};{% endif %}">{% if d.vault %}&#128274; {% endif %}{{ d.badge }}</span>
   </a>
   {% endfor %}
 </div>
