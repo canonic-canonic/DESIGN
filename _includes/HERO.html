@@ -9,7 +9,7 @@
     <div class="hero-content">
       {% if hero.badge %}<div class="hero-badge">{{ hero.badge }}</div>{% endif %}
       <h1>{{ hero.title }}</h1>
-      {% if hero.description %}<p>{{ hero.description }}</p>{% endif %}
+      {% if hero.description %}<div class="description">{{ hero.description | markdownify }}</div>{% endif %}
       {% if hero.cta %}
       <div class="cta-buttons">
         {% for btn in hero.cta %}
@@ -93,7 +93,7 @@ window._demoSwitch = function(idx) {
     <div class="hero-content">
       {% if hero.badge %}<div class="hero-badge">{{ hero.badge }}</div>{% endif %}
       <h1>{{ hero.title }}</h1>
-      {% if hero.description %}<p>{{ hero.description }}</p>{% endif %}
+      {% if hero.description %}<div class="description">{{ hero.description | markdownify }}</div>{% endif %}
       {% if hero.cta %}
       <div class="cta-buttons">
         {% for btn in hero.cta %}
@@ -132,7 +132,7 @@ window._demoSwitch = function(idx) {
       {% if hero.badge %}<div class="hero-badge">{{ hero.badge }}</div>{% endif %}
       <h1 class="gradient-text">{{ hero.title }}</h1>
       {% if hero.subtitle %}<p class="subtitle">{{ hero.subtitle }}</p>{% endif %}
-      {% if hero.description %}<p class="description">{{ hero.description }}</p>{% endif %}
+      {% if hero.description %}<div class="description">{{ hero.description | markdownify }}</div>{% endif %}
       {% if hero.cta %}
       <div class="cta-buttons">
         {% for btn in hero.cta %}
@@ -150,7 +150,7 @@ window._demoSwitch = function(idx) {
   {% if hero.badge %}<div class="hero-badge">{{ hero.badge }}</div>{% endif %}
   <h1 class="gradient-text">{{ hero.title }}</h1>
   {% if hero.subtitle %}<p class="subtitle">{{ hero.subtitle }}</p>{% endif %}
-  {% if hero.description %}<p class="description">{{ hero.description }}</p>{% endif %}
+  {% if hero.description %}<div class="description">{{ hero.description | markdownify }}</div>{% endif %}
   {% if hero.cta %}
   <div class="cta-buttons">
     {% for btn in hero.cta %}
