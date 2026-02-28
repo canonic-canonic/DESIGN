@@ -13,16 +13,8 @@
 <!DOCTYPE html>
 <html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
 <head>
-  <!-- HEAD (inlined) -->
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
-  <title>{{ page.title | default: sd.name | default: site.title }}</title>
-  <meta name="description" content="{{ page.description | default: site.description }}">
-  <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
-  <style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
+  {% include HEAD.html title=page.title description=page.description %}
   {% if page.math %}
-  <!-- KaTeX (conditional for books) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" crossorigin="anonymous">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js" crossorigin="anonymous"

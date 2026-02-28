@@ -5,27 +5,16 @@
 {% assign accent_rgb = page.accent_rgb | default: sd.accent_rgb | default: site.accent_rgb %}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://api.canonic.org; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.canonic.org https://*.canonic.org; font-src 'self'; frame-ancestors 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://api.canonic.org https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.canonic.org https://*.canonic.org https://www.google-analytics.com https://connect.facebook.net; font-src 'self'; frame-ancestors 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
 {% assign page_title = include.title | default: page.title | default: sd.name | default: site.title %}
 {% assign page_desc = include.description | default: page.description | default: site.description %}
-{% assign page_image = page.image | default: site.image %}
-{% assign page_url = page.url | absolute_url %}
 <title>{{ page_title }}</title>
 <meta name="description" content="{{ page_desc }}">
-<!-- Open Graph -->
-<meta property="og:type" content="{{ page.layout | default: 'website' }}">
-<meta property="og:title" content="{{ page_title }}">
-<meta property="og:description" content="{{ page_desc }}">
-<meta property="og:url" content="{{ page_url }}">
-{% if page_image %}<meta property="og:image" content="{{ page_image | absolute_url }}">{% endif %}
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ page_title }}">
-<meta name="twitter:description" content="{{ page_desc }}">
-{% if page_image %}<meta name="twitter:image" content="{{ page_image | absolute_url }}">{% endif %}
+{% include OG.html title=page_title description=page_desc %}
 <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
 <style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
+{% include TRACKING.html %}
 {% if page.custom_head %}{{ page.custom_head }}{% endif %}
