@@ -138,8 +138,9 @@ body > header:not(.nav),
 [data-layout="custom"] {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
 }
 
 [data-layout="custom"] > * {
@@ -415,6 +416,11 @@ main:not(.with-sidebar) #talkMessages {
 
 /* ── Chat — responsive ── */
 @media (max-width: 768px) {
+    [data-layout="custom"] {
+        height: auto;
+        overflow: visible;
+    }
+
     .with-sidebar {
         grid-template-columns: 1fr;
         height: auto;
