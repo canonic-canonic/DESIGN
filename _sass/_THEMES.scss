@@ -149,6 +149,7 @@
 [data-scope="canonic"] {
     --section-border: none;
     --section-radius: 0;
+    --section-shadow: none;
     --section-padding: var(--space-xl) 0;
     --section-margin: 0;
     --section-divider: 1px solid var(--glass-border);
@@ -161,6 +162,7 @@
 [data-scope="hadleylab"] {
     --section-border: none;
     --section-radius: 0;
+    --section-shadow: none;
     --section-padding: var(--space-xl) 0;
     --section-margin: 0;
     --section-divider: 1px solid var(--glass-border);
