@@ -59,8 +59,10 @@
 }
 
 [data-theme="light"] section {
-    background: var(--bg);
-    box-shadow: var(--shadow);
+    background: var(--section-bg, var(--bg));
+    box-shadow: var(--section-shadow, var(--shadow));
+    border: var(--section-border, 1px solid var(--glass-border));
+    border-radius: var(--section-radius, var(--radius-xl));
 }
 
 /* System light mode — auto-apply if no explicit theme */
@@ -110,8 +112,10 @@
         box-shadow: var(--shadow);
     }
     :root:not([data-theme="dark"]) section {
-        background: var(--bg);
-        box-shadow: var(--shadow);
+        background: var(--section-bg, var(--bg));
+        box-shadow: var(--section-shadow, var(--shadow));
+        border: var(--section-border, 1px solid var(--glass-border));
+        border-radius: var(--section-radius, var(--radius-xl));
     }
 }
 
@@ -135,6 +139,36 @@
 [data-scope="patents"]    { --accent: #f59e0b; --accent-rgb: 245,158,11; }
 [data-scope="deal"]       { --accent: #10b981; --accent-rgb: 16,185,129; }
 [data-scope="investor"]   { --accent: #d4af37; --accent-rgb: 212,175,55; }
+[data-scope="canonic"]    { --accent: #00ff88; --accent-rgb: 0,255,136; }
+
+/* ── Apple-finish layout tokens (opt-in per scope) ──
+   Scopes that define these override the default glass-card sections
+   with borderless full-bleed Apple-style layout. All other scopes
+   fall through to defaults via var() fallbacks in _LAYOUT.scss. */
+
+[data-scope="canonic"] {
+    --section-border: none;
+    --section-radius: 0;
+    --section-padding: var(--space-xl) 0;
+    --section-margin: 0;
+    --section-divider: 1px solid var(--glass-border);
+    --section-bg: transparent;
+    --section-bg-alt: rgba(0, 255, 136, 0.02);
+    --h2-transform: none;
+    --h2-tracking: -0.03em;
+}
+
+[data-scope="hadleylab"] {
+    --section-border: none;
+    --section-radius: 0;
+    --section-padding: var(--space-xl) 0;
+    --section-margin: 0;
+    --section-divider: 1px solid var(--glass-border);
+    --section-bg: transparent;
+    --section-bg-alt: rgba(96, 165, 250, 0.02);
+    --h2-transform: none;
+    --h2-tracking: -0.02em;
+}
 
 /* Light mode scope accents — WCAG AA safe on white */
 [data-theme="light"][data-scope="foundation"] { --accent: #6d28d9; --accent-rgb: 109,40,217; }
@@ -145,6 +179,7 @@
 [data-theme="light"][data-scope="patents"]    { --accent: #d97706; --accent-rgb: 217,119,6; }
 [data-theme="light"][data-scope="deal"]       { --accent: #059669; --accent-rgb: 5,150,105; }
 [data-theme="light"][data-scope="investor"]   { --accent: #b45309; --accent-rgb: 180,83,9; }
+[data-theme="light"][data-scope="canonic"]    { --accent: #059669; --accent-rgb: 5,150,105; }
 
 @media (prefers-color-scheme: light) {
     :root:not([data-theme="dark"])[data-scope="foundation"] { --accent: #6d28d9; --accent-rgb: 109,40,217; }
@@ -155,5 +190,6 @@
     :root:not([data-theme="dark"])[data-scope="patents"]    { --accent: #d97706; --accent-rgb: 217,119,6; }
     :root:not([data-theme="dark"])[data-scope="deal"]       { --accent: #059669; --accent-rgb: 5,150,105; }
     :root:not([data-theme="dark"])[data-scope="investor"]   { --accent: #b45309; --accent-rgb: 180,83,9; }
+    :root:not([data-theme="dark"])[data-scope="canonic"]    { --accent: #059669; --accent-rgb: 5,150,105; }
 }
 

@@ -86,6 +86,41 @@ window._demoSwitch = function(idx) {
 };
 </script>
 
+{% elsif hero.terminal %}
+<!-- Split hero with terminal mockup — The Machine identity -->
+<div class="hero-split">
+  <div class="hero-split-inner">
+    <div class="hero-content">
+      {% if hero.badge %}<div class="hero-badge">{{ hero.badge }}</div>{% endif %}
+      <h1>{{ hero.title }}</h1>
+      {% if hero.description %}<p>{{ hero.description }}</p>{% endif %}
+      {% if hero.cta %}
+      <div class="cta-buttons">
+        {% for btn in hero.cta %}
+        <a href="{{ btn.href }}" class="btn{% unless forloop.first %} btn-secondary{% endunless %}"{% if btn.talk %} onclick="TALK.open();return false"{% endif %}>{{ btn.label }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    <div class="terminal-container">
+      <div class="terminal-glow"></div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span class="terminal-title">{{ hero.terminal.title | default: "magic validate" }}</span>
+        </div>
+        <div class="terminal-body">
+          {% for line in hero.terminal.lines %}
+          <div class="terminal-line tl-{{ forloop.index }}"{% if line.color %} style="color:{{ line.color }}"{% endif %}>{% if line.prompt %}<span class="terminal-prompt">$</span> {% endif %}{{ line.text }}</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% elsif hero.cover %}
 <!-- Hero with cover art -->
 <div class="hero hero-cover">

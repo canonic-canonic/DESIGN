@@ -105,24 +105,27 @@
     .hero-cover-image img { width: 180px; }
 }
 
-/* Section — open canvas, generous breathing */
+/* Section — open canvas, generous breathing
+   Apple-finish scopes override via --section-* tokens in _THEMES.scss.
+   All other scopes get glass-card defaults via var() fallbacks. */
 section {
-    background: linear-gradient(180deg, var(--glass-subtle) 0%, transparent 100%);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-xl) var(--space-lg);
-    margin-bottom: var(--space-md);
+    background: var(--section-bg, linear-gradient(180deg, var(--glass-subtle) 0%, transparent 100%));
+    border: var(--section-border, 1px solid var(--glass-border));
+    border-radius: var(--section-radius, var(--radius-xl));
+    padding: var(--section-padding, var(--space-xl) var(--space-lg));
+    margin-bottom: var(--section-margin, var(--space-md));
+    border-bottom: var(--section-divider, none);
 }
 
 /* Alternating section contrast — accent tint on even sections */
 section:nth-child(even) {
-    background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.04) 0%, transparent 100%);
+    background: var(--section-bg-alt, linear-gradient(180deg, rgba(var(--accent-rgb), 0.04) 0%, transparent 100%));
 }
 
 section h2 {
-    font-size: clamp(24px, 3.5vw, 40px);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-size: var(--h2-size, clamp(24px, 3.5vw, 40px));
+    text-transform: var(--h2-transform, uppercase);
+    letter-spacing: var(--h2-tracking, 0.08em);
     color: var(--fg);
     margin-bottom: var(--space-xs-sm);
     text-align: center;
