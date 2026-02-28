@@ -2391,7 +2391,17 @@ async function emailSend(request, env) {
 
   const payload = { from: sender, to: [recipient], subject, html };
   if (cc) payload.cc = Array.isArray(cc) ? cc : [cc];
-  if (bcc) payload.bcc = Array.isArray(bcc) ? bcc : [bcc];
+
+  // GOV: EMAIL/CANON.md — MUST BCC sender on every outbound. Auto-inject if absent.
+  const senderAddr = sender.includes('<') ? sender.match(/<([^>]+)>/)?.[1] || sender : sender;
+  if (bcc) {
+    const bccList = Array.isArray(bcc) ? bcc : [bcc];
+    if (!bccList.includes(senderAddr)) bccList.push(senderAddr);
+    payload.bcc = bccList;
+  } else {
+    payload.bcc = [senderAddr];
+  }
+
   if (reply_to) payload.reply_to = reply_to;
   if (body.attachments) payload.attachments = body.attachments;
 
