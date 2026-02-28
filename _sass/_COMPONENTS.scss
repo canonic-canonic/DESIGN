@@ -376,8 +376,8 @@
 
 .switcher-graphic {
     border-radius: var(--radius-lg);
-    border: 1px solid var(--glass-border);
-    background: radial-gradient(120% 120% at 0% 0%, rgba(var(--accent-rgb, 59, 130, 246), 0.12) 0%, var(--glass-subtle) 55%, rgba(0, 0, 0, 0.06) 100%);
+    border: 1px solid rgba(var(--accent-rgb, 59, 130, 246), 0.15);
+    background: radial-gradient(120% 120% at 0% 0%, rgba(var(--accent-rgb, 59, 130, 246), 0.14) 0%, rgba(255, 255, 255, 0.05) 55%, rgba(0, 0, 0, 0.06) 100%);
     padding: var(--space-xs-sm);
     overflow: hidden;
 }
@@ -385,7 +385,8 @@
 .switcher-graphic svg { width: 100%; height: auto; display: block; }
 
 /* Figure SVG — responsive sizing */
-.figure-svg { width: 100%; max-width: 420px; }
+.figure-svg { width: 100%; max-width: 520px; }
+
 
 /* Vault card — reduced opacity */
 .app-card-vault { border-color: rgba(var(--commerce-rgb), 0.2); opacity: 0.65; }
@@ -457,11 +458,11 @@
 }
 .vaas-graphic {
     border-radius: var(--radius);
-    border: 1px solid var(--glass-border);
-    background: radial-gradient(120% 120% at 0% 0%, rgba(var(--accent-rgb, 59, 130, 246), 0.1) 0%, var(--glass-subtle) 55%);
+    border: 1px solid rgba(var(--accent-rgb, 59, 130, 246), 0.15);
+    background: radial-gradient(120% 120% at 0% 0%, rgba(var(--accent-rgb, 59, 130, 246), 0.14) 0%, rgba(255, 255, 255, 0.05) 55%);
     padding: var(--space-xs-sm);
     overflow: hidden;
-    max-width: 320px;
+    max-width: 380px;
 }
 .vaas-graphic svg { width: 100%; height: auto; display: block; }
 @media (max-width: 720px) {
