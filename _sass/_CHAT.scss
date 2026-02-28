@@ -7,6 +7,12 @@
    These are full-page surfaces, distinct from the TALK slide-out panel.
    All styling via design tokens. No external CSS dependencies.
 
+   Viewport contract:
+   custom.html body[data-layout="custom"] → flex column → min-height 100dvh
+   All children flex-shrink: 0 (take natural height)
+   <main> flex: 1 → fills remaining viewport space
+   Content above <main> is optional and accommodated automatically.
+
    HTML contract:
    <header>
      <div class="header-left">
@@ -23,7 +29,8 @@
        <span class="magic-badge">MAGIC 255</span>
      </div>
    </header>
-   <main class="with-sidebar">
+   <!-- optional above-fold content (hero, panels, CTA) -->
+   <main class="with-sidebar">       <!-- flex: 1, grid: chat + sidebar -->
      <div class="chat-column">
        <div id="talkMessages"></div>
        <div class="input-area">
@@ -127,11 +134,29 @@ body > header:not(.nav),
     font-family: var(--mono);
 }
 
+/* ── Custom-layout viewport flex ── */
+[data-layout="custom"] {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+[data-layout="custom"] > * {
+    flex-shrink: 0;
+}
+
+[data-layout="custom"] > main {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
 /* ── Chat layout ── */
 .with-sidebar {
     display: grid;
     grid-template-columns: 1fr 320px;
-    height: calc(100vh - var(--header-offset) - 72px);
+    height: 100%;
     overflow: hidden;
 }
 
@@ -358,10 +383,24 @@ body > header:not(.nav),
 }
 
 /* ── No-sidebar layout (MedChat style) ── */
+[data-layout="custom"] > main:not(.with-sidebar) {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
 main:not(.with-sidebar) .chat-column,
 main:not(.with-sidebar) {
     max-width: 720px;
     margin: 0 auto;
+}
+
+main:not(.with-sidebar) .chat-column {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
 }
 
 main:not(.with-sidebar) #talkMessages {
@@ -371,7 +410,7 @@ main:not(.with-sidebar) #talkMessages {
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
-    min-height: calc(100vh - var(--header-offset) - 200px);
+    min-height: 0;
 }
 
 /* ── Chat — responsive ── */
