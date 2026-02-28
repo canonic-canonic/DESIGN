@@ -2,10 +2,10 @@
 {% if page.stats %}
 <div class="stats">
   {% for s in page.stats %}
-  <div class="stat">
+  {% if s.href %}<a href="{{ s.href }}" class="stat" title="{{ s.source }}">{% else %}<div class="stat">{% endif %}
     <div class="stat-value">{{ s.value }}</div>
     <div class="stat-label">{{ s.label }}</div>
-  </div>
+  {% if s.href %}</a>{% else %}</div>{% endif %}
   {% endfor %}
 </div>
 {% endif %}
