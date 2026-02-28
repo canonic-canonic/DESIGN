@@ -52,7 +52,7 @@
       <a href="{{ dl.href | relative_url }}" class="nav-ctrl nav-dl" download title="Download {{ dl.label }}">&#8615; {{ dl.label }}</a>
       {% endfor %}
       {% endif %}
-      {% if page.view and page.view != "html" %}
+      {% if page.view %}
       <button class="nav-ctrl nav-view" type="button"
         data-view="{{ page.view }}" onclick="CONTROLS.view(this)" title="Toggle view">
         {{ page.view | upcase }}
@@ -72,16 +72,21 @@
     {% endif %}
   </header>
 
-  <!-- ARTICLE: same classes as post.html -->
-  <article class="post container">
+  <!-- PDF VIEWER: tex view (default when view: tex) -->
+  {% if page.pdf %}
+  <div id="pdfViewer" class="pdf-viewer"{% if page.view == "md" %} style="display:none"{% endif %}>
+    <iframe src="{{ page.pdf | relative_url }}" title="{{ page.title }} — PDF"></iframe>
+  </div>
+  {% endif %}
+
+  <!-- ARTICLE: md view -->
+  <article class="post container view-md"{% if page.view == "tex" and page.pdf %} style="display:none"{% endif %}>
     <header class="post-header">
       <div class="hero-badge">{{ page.badge | default: scope_up }}</div>
       <h1 class="gradient-text">{{ page.title }}</h1>
       {% if page.date %}<time class="post-date">{{ page.date | date: "%B %d, %Y" }}</time>{% endif %}
       {% if page.author %}<span class="post-author">{{ page.author }}</span>{% endif %}
     </header>
-
-    <!-- Controls now rendered inline in nav-right zone above -->
 
     {% if page.figure %}
     <figure class="post-figure">

@@ -506,7 +506,26 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PDF VIEWER — Paginated display with deck.js-style navigation
+   PDF VIEWER — Inline iframe embed (tex view)
+   Toggled by controls.js VIEW button: tex|md
+   ═══════════════════════════════════════════════════════════════ */
+
+.pdf-viewer {
+    width: 100%;
+    max-width: 56rem;
+    margin: 0 auto;
+    padding-top: var(--nav-h);
+}
+.pdf-viewer iframe {
+    width: 100%;
+    height: calc(100vh - var(--nav-h) - 2rem);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PDF VIEWER (legacy) — Paginated display with deck.js-style navigation
    Renders compiled LaTeX PDFs via PDF.js. Token-only.
    ═══════════════════════════════════════════════════════════════ */
 

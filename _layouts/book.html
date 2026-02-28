@@ -58,7 +58,7 @@
       <a href="{{ dl.href | relative_url }}" class="nav-ctrl nav-dl" download title="Download {{ dl.label }}">&#8615; {{ dl.label }}</a>
       {% endfor %}
       {% endif %}
-      {% if page.view and page.view != "html" %}
+      {% if page.view %}
       <button class="nav-ctrl nav-view" type="button"
         data-view="{{ page.view }}" onclick="CONTROLS.view(this)" title="Toggle view">
         {{ page.view | upcase }}
@@ -80,21 +80,14 @@
   </article>
 
   {% if page.pdf %}
-  <!-- ═══ PDF VIEWER (dual-view: shown when view=latex) ═══ -->
-  <div class="pdf-viewer-mode" id="pdfViewer"{% unless page.view == "latex" %} style="display:none"{% endunless %}>
-    <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
-    <button type="button" class="pdf-nav-btn pdf-nav-btn--prev" id="pdfPrev" aria-label="Previous page">&larr;</button>
-    <button type="button" class="pdf-nav-btn pdf-nav-btn--next" id="pdfNext" aria-label="Next page">&rarr;</button>
-    <nav class="pdf-nav">
-      <span class="pdf-page-counter">
-        <span id="pdfCurr">1</span> / <span id="pdfTotal">0</span>
-      </span>
-    </nav>
+  <!-- ═══ PDF VIEWER (dual-view: shown when view=tex) ═══ -->
+  <div class="pdf-viewer" id="pdfViewer"{% unless page.view == "tex" %} style="display:none"{% endunless %}>
+    <iframe src="{{ page.pdf | relative_url }}" title="{{ page.title }} — PDF"></iframe>
   </div>
   {% endif %}
 
-  <!-- ═══ HTML VIEW (dual-view: shown when view=html or no PDF) ═══ -->
-  <div class="view-html"{% if page.pdf and page.view == "latex" %} style="display:none"{% endif %}>
+  <!-- ═══ MD VIEW (dual-view: shown when view=md or no PDF) ═══ -->
+  <div class="view-md"{% if page.pdf and page.view == "tex" %} style="display:none"{% endif %}>
   <article class="post paper book container">
 
     {% if page.gate == "contribute" %}
@@ -142,7 +135,7 @@
     {% endif %}
 
   </article>
-  </div><!-- /view-html -->
+  </div><!-- /view-md -->
 
   <!-- FOOTER (inlined) -->
   <footer id="footer">

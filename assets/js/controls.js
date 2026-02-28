@@ -1,5 +1,5 @@
 // CONTROLS — Inline nav-right controller
-// Four dimensions: TALK (position), DOWNLOAD (assets), VIEW (latex|html), THEME (light|dark)
+// Four dimensions: TALK (position), DOWNLOAD (assets), VIEW (tex|md), THEME (light|dark)
 // GOV declares → Compiler emits → NAV renders inline → This toggles
 var CONTROLS = (function() {
     'use strict';
@@ -22,16 +22,16 @@ var CONTROLS = (function() {
 
     function view(btn) {
         var mode = btn.dataset.view;
-        var next = mode === 'latex' ? 'html' : 'latex';
+        var next = mode === 'tex' ? 'md' : 'tex';
         var pdfViewer = document.getElementById('pdfViewer');
-        var htmlView = document.querySelector('.view-html');
+        var mdView = document.querySelector('.view-md');
 
-        if (next === 'html') {
+        if (next === 'md') {
             if (pdfViewer) pdfViewer.style.display = 'none';
-            if (htmlView) htmlView.style.display = '';
+            if (mdView) mdView.style.display = '';
         } else {
             if (pdfViewer) pdfViewer.style.display = '';
-            if (htmlView) htmlView.style.display = 'none';
+            if (mdView) mdView.style.display = 'none';
         }
 
         document.querySelectorAll('.nav-view, .controls-view').forEach(function(b) {
