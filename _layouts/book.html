@@ -51,14 +51,17 @@
       </button>
       {% if page.downloads %}
       {% for dl in page.downloads %}
-      <a href="{{ dl.href | relative_url }}" class="nav-ctrl nav-dl" download title="Download {{ dl.label }}">&#8615; {{ dl.label }}</a>
+      <a href="{{ dl.href | relative_url }}" class="nav-ctrl nav-dl{% if page.gate == 'contribute' %} gated-ctrl{% endif %}" download title="Download {{ dl.label }}">&#8615; {{ dl.label }}</a>
       {% endfor %}
       {% endif %}
       {% if page.view %}
-      <button class="nav-ctrl nav-view" type="button"
+      <button class="nav-ctrl nav-view{% if page.gate == 'contribute' %} gated-ctrl{% endif %}" type="button"
         data-view="{{ page.view }}" onclick="CONTROLS.view(this)" title="Toggle view">
         {{ page.view | upcase }}
       </button>
+      {% endif %}
+      {% if page.gate == "contribute" %}
+      <a href="#Contribute" class="nav-ctrl gated-ctrl" title="Contribute">CONTRIBUTE</a>
       {% endif %}
       <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">&#9790;</button>
     </div>
@@ -76,14 +79,14 @@
   </article>
 
   {% if page.pdf %}
-  <!-- ═══ PDF VIEWER (dual-view: shown when view=tex) ═══ -->
-  <div class="pdf-viewer" id="pdfViewer"{% unless page.view == "tex" %} style="display:none"{% endunless %}>
+  <!-- ═══ PDF VIEWER (dual-view: shown when view=tex, hidden when gate:contribute until passed) ═══ -->
+  <div class="pdf-viewer" id="pdfViewer"{% if page.gate == "contribute" or page.view != "tex" %} style="display:none"{% endif %}>
     <iframe src="{{ page.pdf | relative_url }}" title="{{ page.title }} — PDF"></iframe>
   </div>
   {% endif %}
 
-  <!-- ═══ MD VIEW (dual-view: shown when view=md or no PDF) ═══ -->
-  <div class="view-md"{% if page.pdf and page.view == "tex" %} style="display:none"{% endif %}>
+  <!-- ═══ MD VIEW (dual-view: forced visible when gate:contribute) ═══ -->
+  <div class="view-md"{% if page.pdf and page.view == "tex" and page.gate != "contribute" %} style="display:none"{% endif %}>
   <article class="post paper book container">
 
     {% if page.gate == "contribute" %}
@@ -205,7 +208,12 @@
   (function(){
     var KEY='canonic-gate-'+{{ page.scope | jsonify }};
     var stored=localStorage.getItem(KEY);
-    function unlock(){document.getElementById('gate').classList.add('hidden');document.getElementById('gatedContent').classList.add('unlocked');}
+    function unlock(){
+      var gate=document.getElementById('gate');var content=document.getElementById('gatedContent');
+      if(gate)gate.classList.add('hidden');if(content)content.classList.add('unlocked');
+      document.querySelectorAll('.gated-ctrl').forEach(function(el){el.style.display='';});
+    }
+    document.querySelectorAll('.gated-ctrl').forEach(function(el){el.style.display='none';});
     if(stored){try{var d=JSON.parse(stored);if(d&&d.name){unlock();}}catch(e){}}
     document.getElementById('gateForm').addEventListener('submit',function(e){
       e.preventDefault();
