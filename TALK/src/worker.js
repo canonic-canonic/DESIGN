@@ -831,17 +831,22 @@ async function deepHealth(env) {
     }
   } catch (_) {}
 
-  // Assemble intel section
+  // Assemble intel section — only report actual test results (not no_test/skip)
   const intelChecks = [];
+  const intelDiscovered = new Set(); // scopes with testbanks (from cache)
   for (const r of intelFresh) {
+    if (r.status === 'no_test' || r.status === 'skip') continue;
     intelChecks.push({ scope: r.scope, status: r.status, prompt: r.prompt, expect_hit: r.expect_hit, expect_total: r.expect_total, cross_hit: r.cross_hit, cross_total: r.cross_total, detail: r.detail, response: r.response, elapsed_ms: r.elapsed_ms });
+    intelDiscovered.add(r.url);
   }
-  // Add cached results
+  // Add cached results (tested scopes only)
   for (const [url, entry] of Object.entries(intelCached)) {
-    if (intelFresh.some(r => r.url === url)) continue; // already in fresh
+    if (intelFresh.some(r => r.url === url)) continue;
+    if (entry.status === 'no_test' || entry.status === 'skip') continue;
     if ((now - entry.ts) < INTEL_TTL) {
       const age = Math.round((now - entry.ts) / 1000);
       intelChecks.push({ scope: entry.scope, status: entry.status, prompt: entry.prompt, expect_hit: entry.expect_hit, expect_total: entry.expect_total, cross_hit: entry.cross_hit, cross_total: entry.cross_total, detail: entry.detail, cached: `${age}s ago`, elapsed_ms: entry.elapsed_ms });
+      intelDiscovered.add(url);
     }
   }
 
@@ -849,8 +854,8 @@ async function deepHealth(env) {
   const intelPassed = intelChecks.filter(c => c.status === 'ok').length;
   const intelWeak = intelChecks.filter(c => c.status === 'weak').length;
   const intelFailed = intelChecks.filter(c => c.status === 'fail').length;
-  const intelTotal = accessibleUrls.length;
-  const intelPending = intelTotal - intelChecks.filter(c => c.status !== 'no_test' && c.status !== 'skip').length;
+  const noTestCount = Object.values(intelCached).filter(e => e.status === 'no_test' && (now - e.ts) < INTEL_TTL).length;
+  const intelPending = accessibleUrls.length - intelDiscovered.size - noTestCount;
 
   // ── Assemble response ─────────────────────────────────────────
   const probed = surfaces.filter(s => s.status !== 'private' && s.status !== 'pending');
@@ -883,7 +888,7 @@ async function deepHealth(env) {
     pending: pending || undefined,
     services: { total: svcTotal, ok: svcOk, checks: services },
     intel: {
-      total: intelTotal,
+      total: accessibleUrls.length,
       tested: intelTested,
       passed: intelPassed,
       weak: intelWeak || undefined,

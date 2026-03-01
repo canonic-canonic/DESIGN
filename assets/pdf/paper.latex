@@ -1,0 +1,172 @@
+% CANONIC Paper Template — MAGIC DESIGN
+% Pandoc LaTeX template for governed papers.
+% Two-column academic format. CANONIC branding.
+% _generated: MAGIC/SURFACE/DESIGN
+\documentclass[10pt,letterpaper,twocolumn]{article}
+
+% === Document Setup ===
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{setspace}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\DeclareFontShape{T1}{cmss}{b}{n}{<->ssub*cmss/bx/n}{}
+\DeclareFontShape{TS1}{cmss}{b}{n}{<->ssub*cmss/bx/n}{}
+
+% === Page Geometry ===
+\usepackage[a4paper,margin=1in]{geometry}
+\setlength{\columnsep}{1cm}
+
+% === Colors — CANONIC Branding ===
+\usepackage{xcolor}
+\definecolor{canonic-gold}{HTML}{F7931A}
+\definecolor{canonic-slate}{HTML}{4B5563}
+\definecolor{canonic-green}{HTML}{10B981}
+\definecolor{linkblue}{HTML}{1B4F72}
+
+% === Graphics and Diagrams ===
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+
+% === Tables and Math ===
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+% longtable is incompatible with twocolumn — provide tabular replacement
+\newenvironment{longtable}[2][c]{%
+  \begin{center}\small\begin{tabular}{#2}%
+}{%
+  \end{tabular}\end{center}%
+}
+\makeatletter
+\def\endhead{}
+\def\endfirsthead{}
+\def\endfoot{}
+\def\endlastfoot{}
+\makeatother
+
+% === References and Hyperlinks ===
+\usepackage{hyperref}
+\hypersetup{
+    unicode=true,
+    colorlinks=true,
+    linkcolor=linkblue,
+    citecolor=linkblue,
+    urlcolor=linkblue,
+    pdftitle={$title$},
+    pdfauthor={$if(author)$$for(author)$$author$$sep$, $endfor$$else$CANONIC$endif$},
+}
+
+% === Formatting ===
+\renewcommand{\baselinestretch}{1.2}
+\setlength{\parskip}{0.8em}
+\setlength{\parindent}{0pt}
+
+% === Section Styling ===
+\usepackage{titlesec}
+\titleformat{\section}
+  {\color{canonic-slate}\Large\bfseries}
+  {\thesection.}{0.5em}{}
+\titleformat{\subsection}
+  {\color{canonic-slate}\large\bfseries}
+  {\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}
+  {\color{canonic-slate}\normalsize\bfseries}
+  {\thesubsubsection}{0.5em}{}
+
+% === Header / Footer — CANONIC ===
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{canonic-slate}{\textbf{CANONIC}}}
+\fancyhead[R]{\textcolor{canonic-gold}{\textbf{$if(scope)$$scope$$else$PAPERS$endif$}}}
+\fancyfoot[C]{\textcolor{canonic-slate}{\small hadleylab.org/PAPERS — Governed Research \quad Page \thepage}}
+
+% === Lists ===
+\usepackage{enumitem}
+\setlist[itemize]{itemsep=2pt, topsep=2pt, parsep=0pt, partopsep=0pt, leftmargin=*}
+
+% === Balance Columns ===
+\usepackage{ragged2e}
+
+% === Provenance ===
+\usepackage{fancyvrb}
+
+% === Pandoc compatibility ===
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Code highlighting (pandoc --highlight-style)
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
+
+% Header includes from pandoc metadata
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+\begin{document}
+
+% === Title Page ===
+\begin{titlepage}
+\thispagestyle{empty}
+\centering
+
+\vspace*{1.2cm}
+
+{\Huge\bfseries $title$\par}
+
+$if(subtitle)$
+\vspace{0.25cm}
+{\large\itshape $subtitle$\par}
+$endif$
+
+$if(date)$
+{\small $date$\par}
+$endif$
+
+\vspace{0.6cm}
+
+$if(author)$
+$for(author)$
+{\Large $author$\par}
+$endfor$
+$else$
+{\Large Dexter Hadley, MD/PhD\par}
+$endif$
+
+{\small Hadley Lab — CANONIC\par}
+
+\vspace{0.6cm}
+\noindent\rule{\linewidth}{0.4pt}
+
+$if(abstract)$
+\vspace{0.45cm}
+\begin{abstract}
+\noindent
+$abstract$
+\end{abstract}
+$endif$
+
+\vspace{0.5cm}
+\noindent\rule{\linewidth}{0.4pt}
+\vspace{0.2cm}
+{\small \textbf{hadleylab.org} — Governed Research. Every claim cited.\par}
+
+\end{titlepage}
+
+\pagestyle{fancy}
+
+$if(toc)$
+\tableofcontents
+\newpage
+$endif$
+
+$body$
+
+\end{document}
