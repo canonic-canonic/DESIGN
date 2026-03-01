@@ -498,44 +498,72 @@ let _reqOrigin = '*';
  * probed — they have no public surface page by design.
  */
 async function deepHealth(env) {
-  const hadleylabScopes = (env.GOV_HADLEYLAB_SCOPES || '').split(',').filter(Boolean);
-  const canonicScopes = (env.GOV_CANONIC_SCOPES || '').split(',').filter(Boolean);
   const vanity = (env.GOV_VANITY_DOMAINS || '').split(',').filter(Boolean);
   const privateSet = new Set((env.GOV_PRIVATE_SCOPES || '').split(',').filter(Boolean));
   const CACHE_TTL = parseInt(env.HEALTH_CACHE_TTL_S || '300', 10) * 1000;
   const BUDGET = parseInt(env.HEALTH_BUDGET || '18', 10);
   const CACHE_KEY = 'health:deep:cache';
 
-  // ── Sitemap: every governed scope (including private) ──────────
+  // ── Auto-discover all governed surfaces from compiled manifest ──
+  const fleetRoots = (env.GOV_FLEET_ROOTS || 'https://hadleylab.org,https://canonic.org').split(',').filter(Boolean);
   const sitemap = [];
-  for (const scope of hadleylabScopes) {
-    const entry = { scope, fleet: 'hadleylab', urls: [`https://hadleylab.org/SERVICES/${scope}/`] };
-    if (privateSet.has(scope)) entry.private = true;
-    sitemap.push(entry);
-  }
-  for (const scope of canonicScopes) {
-    sitemap.push({ scope, fleet: 'canonic', urls: [`https://canonic.org/${scope}/`] });
-  }
-
-  // ── Build check list (public surfaces only) ───────────────────
   const allChecks = [];
-  allChecks.push({ url: 'https://hadleylab.org/', scope: '_root' });
-  allChecks.push({ url: 'https://canonic.org/', scope: '_root' });
-  for (const scope of hadleylabScopes) {
-    if (privateSet.has(scope)) continue; // skip private scopes
-    allChecks.push({ url: `https://hadleylab.org/SERVICES/${scope}/`, scope });
+  const seen = new Set();
+
+  for (const base of fleetRoots) {
+    const fleet = new URL(base).hostname.split('.')[0];
+    let discovered = false;
+    try {
+      const resp = await fetch(`${base}/surfaces.json`, {
+        headers: { 'User-Agent': 'canonic-health/1.0' },
+      });
+      if (resp.ok) {
+        const surfaces = await resp.json();
+        for (const s of surfaces) {
+          const url = base + s.path;
+          if (seen.has(url)) continue;
+          seen.add(url);
+          const entry = { scope: s.scope, fleet, urls: [url] };
+          if (s.surface_type) entry.surface_type = s.surface_type;
+          if (privateSet.has(s.scope)) { entry.private = true; sitemap.push(entry); continue; }
+          sitemap.push(entry);
+          allChecks.push({ url, scope: s.scope });
+        }
+        discovered = true;
+      }
+    } catch (_) {}
+
+    // Fallback to env var lists if surfaces.json unavailable
+    if (!discovered) {
+      const envKey = fleet === 'hadleylab' ? 'GOV_HADLEYLAB_SCOPES' : 'GOV_CANONIC_SCOPES';
+      const scopes = (env[envKey] || '').split(',').filter(Boolean);
+      const prefix = fleet === 'hadleylab' ? `${base}/SERVICES/` : `${base}/`;
+      for (const scope of scopes) {
+        const url = `${prefix}${scope}/`;
+        if (seen.has(url)) continue;
+        seen.add(url);
+        const entry = { scope, fleet, urls: [url] };
+        if (privateSet.has(scope)) { entry.private = true; sitemap.push(entry); continue; }
+        sitemap.push(entry);
+        allChecks.push({ url, scope });
+      }
+      if (fleet === 'hadleylab') {
+        const extra = (env.GOV_EXTRA_SURFACES || '').split(',').filter(Boolean);
+        for (const rawUrl of extra) {
+          const u = rawUrl.endsWith('/') ? rawUrl : rawUrl + '/';
+          if (seen.has(u)) continue;
+          seen.add(u);
+          const scope = u.replace(/\/$/, '').split('/').pop();
+          allChecks.push({ url: u, scope });
+          sitemap.push({ scope, fleet, urls: [u] });
+        }
+      }
+    }
   }
-  for (const scope of canonicScopes) {
-    allChecks.push({ url: `https://canonic.org/${scope}/`, scope });
-  }
-  for (const v of vanity) allChecks.push({ url: v + '/', scope: '_vanity' });
-  // Extra surfaces (CHAT, BOOKS — fleet paths not under SERVICES/)
-  const extraSurfaces = (env.GOV_EXTRA_SURFACES || '').split(',').filter(Boolean);
-  for (const rawUrl of extraSurfaces) {
-    const u = rawUrl.endsWith('/') ? rawUrl : rawUrl + '/';
-    const scope = u.replace(/\/$/, '').split('/').pop();
-    allChecks.push({ url: u, scope });
-    sitemap.push({ scope, fleet: 'hadleylab', urls: [u] });
+  // Vanity domains
+  for (const v of vanity) {
+    const u = v.endsWith('/') ? v : v + '/';
+    if (!seen.has(u)) { allChecks.push({ url: u, scope: '_vanity' }); seen.add(u); }
   }
 
   // ── Load cached results from KV ───────────────────────────────
@@ -616,10 +644,10 @@ async function deepHealth(env) {
       surfaces.push({ url: f.url, scope: f.scope, status: f.status, detail: f.detail || undefined, cached: `${age}s ago` });
     }
   }
-  // Private scopes — listed but not probed
-  for (const scope of hadleylabScopes) {
-    if (!privateSet.has(scope)) continue;
-    surfaces.push({ url: `https://hadleylab.org/SERVICES/${scope}/`, scope, status: 'private', detail: 'no public surface (by design)' });
+  // Private scopes — listed but not probed (discovered from sitemap)
+  for (const sm of sitemap) {
+    if (!sm.private) continue;
+    surfaces.push({ url: sm.urls[0], scope: sm.scope, status: 'private', detail: 'no public surface (by design)' });
   }
   // Remaining unchecked (stale, exceeded budget this call, no cache)
   const allCovered = new Set(surfaces.map(s => s.url));
@@ -703,14 +731,12 @@ async function deepHealth(env) {
     svcViolations.push({ type: 'SERVICE_ERROR', service: 'SHOP', detail: `Missing: ${missing.join(', ')}` });
   }
 
-  // Per-scope TALK readiness: verify every public scope can be served
-  // (scope name is valid and maps to the same working provider chain)
-  const allPublicScopes = [...hadleylabScopes.filter(s => !privateSet.has(s)), ...canonicScopes];
+  // Per-scope TALK readiness: derived from auto-discovered surfaces
+  const allPublicScopes = allChecks.map(c => c.scope).filter(s => s !== '_vanity');
   const talkScopes = allPublicScopes.map(scope => ({ scope, status: 'ok' }));
   services.push({ service: 'TALK_SCOPES', status: 'ok', count: talkScopes.length, scopes: talkScopes });
 
   // ── INTEL testing (autodiscovered from CANON.json testbanks) ──
-  const INTEL_BUDGET = parseInt(env.HEALTH_INTEL_BUDGET || '3', 10);
   const INTEL_TTL = parseInt(env.HEALTH_INTEL_TTL_S || '3600', 10) * 1000;
   const INTEL_CACHE_KEY = 'health:intel:cache';
 
@@ -733,8 +759,9 @@ async function deepHealth(env) {
     intelStale.push(url);
   }
 
-  // Test up to INTEL_BUDGET scopes (each = ~3 subrequests: GET + LLM)
-  const intelToTest = intelStale.slice(0, INTEL_BUDGET);
+  // Test all stale scopes — deterministic, all prompts per scope
+  // Cloudflare 50-subrequest limit is the natural ceiling (caught below)
+  const intelToTest = intelStale;
   const intelFresh = [];
 
   for (const surfaceUrl of intelToTest) {
@@ -751,9 +778,40 @@ async function deepHealth(env) {
       }
       const canon = await resp.json();
 
+      // ── Render pipeline discovery (from CANON.json controls) ──
+      const controls = canon.controls || {};
+      const render = {
+        surface_type: canon.surface_type || 'unknown',
+        view: controls.view || 'html',
+        talk: controls.talk || 'side',
+        gate: controls.gate || undefined,
+        downloads: [],
+      };
+      // Validate downloads (HEAD check each asset URL)
+      const dlList = controls.downloads || [];
+      for (const dl of dlList) {
+        try {
+          const dlUrl = new URL(dl.href, surfaceUrl).href;
+          const dlResp = await fetch(dlUrl, {
+            method: 'HEAD',
+            headers: { 'User-Agent': 'canonic-health/1.0' },
+          });
+          render.downloads.push({
+            label: dl.label, href: dl.href,
+            status: dlResp.ok ? 'ok' : 'error',
+            detail: dlResp.ok ? undefined : `HTTP ${dlResp.status}`,
+          });
+        } catch (e) {
+          render.downloads.push({
+            label: dl.label, href: dl.href,
+            status: 'error', detail: String(e.message || e),
+          });
+        }
+      }
+
       // CANON.json validation (0 subrequests)
       if (!canon.systemPrompt || !canon.scope) {
-        intelFresh.push({ url: surfaceUrl, scope, status: 'invalid', detail: 'missing systemPrompt or scope', ts: now });
+        intelFresh.push({ url: surfaceUrl, scope, status: 'invalid', detail: 'missing systemPrompt or scope', render, ts: now });
         continue;
       }
 
@@ -769,70 +827,107 @@ async function deepHealth(env) {
 
       // Check for testbank
       if (!canon.test || !canon.test.prompts || !canon.test.prompts.length) {
-        intelFresh.push({ url: surfaceUrl, scope, status: 'no_test', ts: now });
+        intelFresh.push({ url: surfaceUrl, scope, status: 'no_test', render, ts: now });
         continue;
       }
 
-      // Pick a random test prompt
+      // Deterministic: test ALL prompts, aggregate results (governed — no random selection)
       const prompts = canon.test.prompts;
-      const fixture = prompts[Math.floor(Math.random() * prompts.length)];
+      const promptResults = [];
+      let scopeElapsed = 0;
+      let lastResponse = '';
 
-      // Call chat() internally (1 subrequest — upstream LLM call)
-      const chatReq = new Request('https://internal/chat', {
-        method: 'POST',
-        body: JSON.stringify({
-          message: fixture.prompt,
-          scope: canon.scope,
-          system: canon.systemPrompt,
-        }),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      let subrequestExhausted = false;
+      for (const fixture of prompts) {
+        try {
+          const chatReq = new Request('https://internal/chat', {
+            method: 'POST',
+            body: JSON.stringify({
+              message: fixture.prompt,
+              scope: canon.scope,
+              system: canon.systemPrompt,
+            }),
+            headers: { 'Content-Type': 'application/json' },
+          });
 
-      const chatStart = Date.now();
-      const chatResp = await chat(chatReq, env);
-      const elapsed_ms = Date.now() - chatStart;
+          const chatStart = Date.now();
+          const chatResp = await chat(chatReq, env);
+          const elapsed_ms = Date.now() - chatStart;
+          scopeElapsed += elapsed_ms;
 
-      if (!chatResp.ok) {
-        intelFresh.push({ url: surfaceUrl, scope, status: 'chat_error', prompt: fixture.prompt, elapsed_ms, ts: now });
-        continue;
+          if (!chatResp.ok) {
+            promptResults.push({ prompt: fixture.prompt, status: 'chat_error', elapsed_ms });
+            continue;
+          }
+
+          const chatData = await chatResp.json();
+          const responseText = (chatData.message || '').toLowerCase();
+          lastResponse = chatData.message || '';
+
+          const expectHit = fixture.expect.filter(e => responseText.includes(e.toLowerCase())).length;
+          const crossArr = fixture.cross || [];
+          const crossHit = crossArr.filter(c => responseText.includes(c.toLowerCase())).length;
+          const threshold = Math.ceil(fixture.expect.length * 0.5);
+          const pStatus = expectHit >= threshold
+            ? (crossArr.length === 0 || crossHit >= 1 ? 'ok' : 'weak')
+            : 'fail';
+          const missing = fixture.expect.filter(e => !responseText.includes(e.toLowerCase()));
+          const missingCross = crossArr.filter(c => !responseText.includes(c.toLowerCase()));
+
+          promptResults.push({
+            prompt: fixture.prompt, status: pStatus,
+            expect_hit: expectHit, expect_total: fixture.expect.length,
+            cross_hit: crossHit, cross_total: crossArr.length,
+            missing: missing.length ? missing : undefined,
+            missing_cross: missingCross.length ? missingCross : undefined,
+            elapsed_ms,
+          });
+        } catch (promptErr) {
+          const pmsg = String(promptErr.message || promptErr);
+          if (pmsg.includes('Too many subrequests')) { subrequestExhausted = true; break; }
+          promptResults.push({ prompt: fixture.prompt, status: 'chat_error', detail: pmsg });
+        }
       }
 
-      const chatData = await chatResp.json();
-      const responseText = (chatData.message || '').toLowerCase();
+      // Aggregate: scope status = worst prompt result (partial results included)
+      const hasError = promptResults.some(p => p.status === 'chat_error');
+      const hasFail = promptResults.some(p => p.status === 'fail');
+      const hasWeak = promptResults.some(p => p.status === 'weak');
+      let intelStatus = hasFail ? 'fail' : hasWeak ? 'weak' : hasError ? 'chat_error' : 'ok';
 
-      // Deterministic validation: keyword matching
-      const expectHit = fixture.expect.filter(e => responseText.includes(e.toLowerCase())).length;
-      const crossArr = fixture.cross || [];
-      const crossHit = crossArr.filter(c => responseText.includes(c.toLowerCase())).length;
+      // Aggregate totals across all prompts
+      const totalExpect = promptResults.reduce((s, p) => s + (p.expect_total || 0), 0);
+      const totalExpectHit = promptResults.reduce((s, p) => s + (p.expect_hit || 0), 0);
+      const totalCross = promptResults.reduce((s, p) => s + (p.cross_total || 0), 0);
+      const totalCrossHit = promptResults.reduce((s, p) => s + (p.cross_hit || 0), 0);
 
-      const threshold = Math.ceil(fixture.expect.length * 0.5);
-      let intelStatus = expectHit >= threshold
-        ? (crossArr.length === 0 || crossHit >= 1 ? 'ok' : 'weak')
-        : 'fail';
-
-      const missing = fixture.expect.filter(e => !responseText.includes(e.toLowerCase()));
-      const missingCross = crossArr.filter(c => !responseText.includes(c.toLowerCase()));
-
-      // Downgrade if welcome is generic (not in-context)
+      // Downgrade if welcome is generic
       if (intelStatus === 'ok' && !welcomeInContext) intelStatus = 'weak';
 
       const detailParts = [];
       if (intelStatus !== 'ok') {
-        if (missing.length) detailParts.push(...missing);
-        if (missingCross.length) detailParts.push(...missingCross.map(c => `cross:${c}`));
+        for (const p of promptResults) {
+          if (p.missing) detailParts.push(...p.missing);
+          if (p.missing_cross) detailParts.push(...p.missing_cross.map(c => `cross:${c}`));
+        }
       }
       if (!welcomeInContext) detailParts.push('welcome:generic');
 
       intelFresh.push({
-        url: surfaceUrl, scope, status: intelStatus,
-        prompt: fixture.prompt,
-        expect_hit: expectHit, expect_total: fixture.expect.length,
-        cross_hit: crossHit, cross_total: crossArr.length,
+        url: surfaceUrl, scope, status: promptResults.length ? intelStatus : 'error',
+        render,
+        prompts_tested: promptResults.length, prompts_total: prompts.length,
+        prompts_passed: promptResults.filter(p => p.status === 'ok').length,
+        expect_hit: totalExpectHit, expect_total: totalExpect,
+        cross_hit: totalCrossHit, cross_total: totalCross,
         welcome_in_context: welcomeInContext,
-        detail: detailParts.length ? `missing: ${detailParts.join(', ')}` : undefined,
-        response: chatData.message ? chatData.message.slice(0, 500) : undefined,
-        elapsed_ms, ts: now,
+        detail: detailParts.length ? `missing: ${[...new Set(detailParts)].join(', ')}` : undefined,
+        prompt_details: promptResults,
+        elapsed_ms: scopeElapsed, ts: now,
       });
+
+      // If subrequests exhausted mid-scope, stop testing more scopes
+      if (subrequestExhausted) break;
 
     } catch (e) {
       const msg = String(e.message || e);
@@ -841,8 +936,11 @@ async function deepHealth(env) {
     }
   }
 
-  // Merge fresh INTEL results into cache
-  for (const r of intelFresh) intelCached[r.url] = r;
+  // Merge fresh INTEL results into cache (skip incomplete — re-test next call)
+  for (const r of intelFresh) {
+    if (r.prompts_total && r.prompts_tested < r.prompts_total) continue;
+    intelCached[r.url] = r;
+  }
   for (const key of Object.keys(intelCached)) {
     if ((now - intelCached[key].ts) > INTEL_TTL * 2) delete intelCached[key];
   }
@@ -857,7 +955,7 @@ async function deepHealth(env) {
   const intelDiscovered = new Set(); // scopes with testbanks (from cache)
   for (const r of intelFresh) {
     if (r.status === 'no_test' || r.status === 'skip') continue;
-    intelChecks.push({ scope: r.scope, status: r.status, prompt: r.prompt, expect_hit: r.expect_hit, expect_total: r.expect_total, cross_hit: r.cross_hit, cross_total: r.cross_total, welcome_in_context: r.welcome_in_context, detail: r.detail, response: r.response, elapsed_ms: r.elapsed_ms });
+    intelChecks.push({ scope: r.scope, status: r.status, prompts_tested: r.prompts_tested, prompts_total: r.prompts_total, prompts_passed: r.prompts_passed, expect_hit: r.expect_hit, expect_total: r.expect_total, cross_hit: r.cross_hit, cross_total: r.cross_total, welcome_in_context: r.welcome_in_context, detail: r.detail, prompt_details: r.prompt_details, elapsed_ms: r.elapsed_ms });
     intelDiscovered.add(r.url);
   }
   // Add cached results (tested scopes only)
@@ -866,7 +964,7 @@ async function deepHealth(env) {
     if (entry.status === 'no_test' || entry.status === 'skip') continue;
     if ((now - entry.ts) < INTEL_TTL) {
       const age = Math.round((now - entry.ts) / 1000);
-      intelChecks.push({ scope: entry.scope, status: entry.status, prompt: entry.prompt, expect_hit: entry.expect_hit, expect_total: entry.expect_total, cross_hit: entry.cross_hit, cross_total: entry.cross_total, detail: entry.detail, cached: `${age}s ago`, elapsed_ms: entry.elapsed_ms });
+      intelChecks.push({ scope: entry.scope, status: entry.status, prompts_tested: entry.prompts_tested, prompts_total: entry.prompts_total, prompts_passed: entry.prompts_passed, expect_hit: entry.expect_hit, expect_total: entry.expect_total, cross_hit: entry.cross_hit, cross_total: entry.cross_total, welcome_in_context: entry.welcome_in_context, detail: entry.detail, prompt_details: entry.prompt_details, cached: `${age}s ago`, elapsed_ms: entry.elapsed_ms });
       intelDiscovered.add(url);
     }
   }
@@ -877,6 +975,24 @@ async function deepHealth(env) {
   const intelFailed = intelChecks.filter(c => c.status === 'fail').length;
   const noTestCount = Object.values(intelCached).filter(e => e.status === 'no_test' && (now - e.ts) < INTEL_TTL).length;
   const intelPending = accessibleUrls.length - intelDiscovered.size - noTestCount;
+
+  // ── Render pipeline summary (discovered from CANON.json controls) ──
+  const renderChecks = [];
+  for (const [url, entry] of Object.entries(intelCached)) {
+    if (!entry.render) continue;
+    const r = entry.render;
+    const dlBroken = (r.downloads || []).filter(d => d.status !== 'ok');
+    renderChecks.push({
+      scope: entry.scope,
+      surface_type: r.surface_type,
+      view: r.view,
+      talk: r.talk,
+      gate: r.gate || undefined,
+      downloads: r.downloads.length,
+      downloads_ok: r.downloads.filter(d => d.status === 'ok').length,
+      downloads_broken: dlBroken.length ? dlBroken : undefined,
+    });
+  }
 
   // ── Assemble response ─────────────────────────────────────────
   const probed = surfaces.filter(s => s.status !== 'private' && s.status !== 'pending');
@@ -890,6 +1006,10 @@ async function deepHealth(env) {
     ...svcViolations,
     ...intelChecks.filter(c => c.status === 'fail').map(c => ({
       type: 'INTEL_FAIL', scope: c.scope, prompt: c.prompt, detail: c.detail,
+    })),
+    ...renderChecks.filter(r => r.downloads_broken?.length).map(r => ({
+      type: 'DOWNLOAD_BROKEN', scope: r.scope,
+      detail: r.downloads_broken.map(d => `${d.label}: ${d.detail}`).join(', '),
     })),
   ];
 
@@ -916,6 +1036,10 @@ async function deepHealth(env) {
       failed: intelFailed || undefined,
       pending: intelPending > 0 ? intelPending : undefined,
       checks: intelChecks.length ? intelChecks : undefined,
+    },
+    render: {
+      total: renderChecks.length,
+      checks: renderChecks.length ? renderChecks : undefined,
     },
     sitemap,
     surfaces,

@@ -318,27 +318,11 @@
     margin-top: var(--space-lg);
 }
 
-/* ── Paper body — two-column academic layout ── */
+/* ── Paper body — single-column (HTML default, like blog posts) ── */
+/* TEX view renders the 2-col PDF directly via iframe. HTML view = 1 col. */
 .paper-page .paper-body {
-    text-align: justify;
-    -webkit-hyphens: auto;
-    hyphens: auto;
     font-size: var(--font-base);
-    line-height: 1.2;
-    column-count: 2;
-    column-gap: var(--space-md);
-    column-rule: 1px solid var(--border);
-}
-/* Full-width elements span both columns */
-.paper-page .paper-body h2,
-.paper-page .paper-body hr,
-.paper-page .paper-body .latex-figure,
-.paper-page .paper-body .theorem,
-.paper-page .paper-body .definition,
-.paper-page .paper-body .latex-vignettes,
-.paper-page .paper-body > table,
-.paper-page .paper-body > pre {
-    column-span: all;
+    line-height: 1.6;
 }
 
 /* Section headings — bold sans-serif, slate color */
@@ -509,7 +493,7 @@
     .latex-abstract { max-width: 100%; padding: var(--space-sm); }
     .latex-vignettes { grid-template-columns: 1fr; }
     .paper-page .post.paper { padding: 0 var(--space-sm); }
-    .paper-page .paper-body { column-count: 1; }
+    .paper-page .paper-body { /* already 1-col */ }
     .paper-abstract { max-width: 100%; }
     .paper-title { font-size: var(--font-lg); }
 }

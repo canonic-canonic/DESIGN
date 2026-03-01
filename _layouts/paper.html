@@ -82,14 +82,14 @@
   <div class="gated-content" id="gatedContent">
   {% endif %}
 
-  <!-- PDF VIEWER: tex view (default when view: tex) -->
+  <!-- PDF VIEWER: tex view (hidden by default — HTML is always the default view) -->
   {% if page.pdf %}
-  <div id="pdfViewer" class="pdf-viewer"{% if page.view == "md" %} style="display:none"{% endif %}>
+  <div id="pdfViewer" class="pdf-viewer"{% unless page.view == "tex" %} style="display:none"{% endunless %}>
     <iframe src="{{ page.pdf | relative_url }}" title="{{ page.title }} — PDF"></iframe>
   </div>
   {% endif %}
 
-  <!-- ARTICLE: md view -->
+  <!-- ARTICLE: html view (default — 1-col like blog posts) -->
   <article class="post container view-md"{% if page.view == "tex" and page.pdf %} style="display:none"{% endif %}>
     <header class="post-header">
       <div class="hero-badge">{{ page.badge | default: scope_up }}</div>
