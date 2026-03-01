@@ -61,9 +61,11 @@
       {% endfor %}
       {% endif %}
       {% if page.view %}
+      {% assign initial_view = page.view %}
+      {% if page.gate == "contribute" %}{% assign initial_view = "md" %}{% endif %}
       <button class="nav-ctrl nav-view{% if page.gate == 'contribute' %} gated-ctrl{% endif %}" type="button"
-        data-view="{{ page.view }}" onclick="CONTROLS.view(this)" title="Toggle view">
-        {{ page.view | upcase }}
+        data-view="{{ initial_view }}" onclick="CONTROLS.view(this)" title="Toggle view">
+        {{ initial_view | upcase }}
       </button>
       {% endif %}
       {% if page.gate == "contribute" %}
