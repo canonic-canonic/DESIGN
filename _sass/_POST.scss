@@ -38,7 +38,7 @@
     font-weight: 700;
     letter-spacing: -0.03em;
     margin-bottom: 0.75rem;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--green) 100%);
+    background: linear-gradient(180deg, var(--accent) 0%, var(--green) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -95,7 +95,7 @@
     padding: 0 var(--space-md) var(--space-xl);
 }
 .post-body p, .prose {
-    color: var(--fg-secondary);
+    color: var(--dim);
     font-size: 1.0625rem;
     line-height: 1.8;
     margin-bottom: 1.5rem;
@@ -478,12 +478,12 @@
     background: linear-gradient(180deg, var(--glass-subtle) 0%, transparent 100%);
 }
 [data-theme="light"] .post-hero h1 {
-    background: linear-gradient(135deg, var(--accent) 0%, var(--tx-mint) 100%);
+    background: linear-gradient(180deg, var(--accent) 0%, var(--tx-mint) 100%);
     -webkit-background-clip: text;
     background-clip: text;
 }
 [data-theme="light"] .mult-value {
-    background: linear-gradient(135deg, var(--accent) 0%, var(--tx-mint) 100%);
+    background: linear-gradient(180deg, var(--accent) 0%, var(--tx-mint) 100%);
     -webkit-background-clip: text;
     background-clip: text;
 }

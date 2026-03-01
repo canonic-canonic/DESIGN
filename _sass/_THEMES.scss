@@ -56,6 +56,7 @@
 [data-theme="light"] .btn-secondary {
     background: var(--bg);
     color: var(--fg);
+    border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 [data-theme="light"] section {

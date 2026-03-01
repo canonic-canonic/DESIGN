@@ -38,6 +38,7 @@
     .hero-content h1 { font-size: clamp(28px, 8vw, 40px); }
     .stats { grid-template-columns: 1fr; }
     .stat { padding: var(--space-sm); }
+    .stat-label { font-size: var(--font-sm); letter-spacing: 0.05em; }
     .section { padding: var(--space-lg) 0; }
     .btn, .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
     .hero-cta { width: 100%; }

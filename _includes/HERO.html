@@ -104,6 +104,30 @@ window._demoSwitch = function(idx) {
     </div>
     <div class="terminal-container">
       <div class="terminal-glow"></div>
+      {% if hero.terminal.tabs.size > 1 %}
+      <div class="terminal-tabs">
+        {% for tab in hero.terminal.tabs %}
+        <button class="terminal-tab{% if forloop.first %} active{% endif %}" onclick="window._termSwitch({{ forloop.index0 }})">{{ tab.label }}</button>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if hero.terminal.tabs %}
+      {% for tab in hero.terminal.tabs %}
+      <div class="terminal" data-term="{{ forloop.index0 }}" {% unless forloop.first %}hidden{% endunless %}>
+        <div class="terminal-bar">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span class="terminal-title">{{ tab.title | default: "magic validate" }}</span>
+        </div>
+        <div class="terminal-body">
+          {% for line in tab.lines %}
+          <div class="terminal-line tl-{{ forloop.index }}"{% if line.color %} style="color:{{ line.color }}"{% endif %}>{% if line.prompt %}<span class="terminal-prompt">$</span> {% endif %}{{ line.text }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
       <div class="terminal">
         <div class="terminal-bar">
           <span class="terminal-dot red"></span>
@@ -117,16 +141,25 @@ window._demoSwitch = function(idx) {
           {% endfor %}
         </div>
       </div>
+      {% endif %}
     </div>
   </div>
 </div>
 <script>
+window._termSwitch = function(idx) {
+  document.querySelectorAll('.terminal[data-term]').forEach(function(el) {
+    el.hidden = (el.getAttribute('data-term') != idx);
+  });
+  document.querySelectorAll('.terminal-tab').forEach(function(el, i) {
+    el.classList.toggle('active', i === idx);
+  });
+};
 (function(){
-  var b=document.querySelector('.terminal-body');
-  if(!b)return;
-  b.querySelectorAll('.terminal-line').forEach(function(l){
-    l.addEventListener('animationstart',function(){
-      requestAnimationFrame(function(){b.scrollTop=b.scrollHeight;});
+  document.querySelectorAll('.terminal-body').forEach(function(b){
+    b.querySelectorAll('.terminal-line').forEach(function(l){
+      l.addEventListener('animationstart',function(){
+        requestAnimationFrame(function(){b.scrollTop=b.scrollHeight;});
+      });
     });
   });
 })();
