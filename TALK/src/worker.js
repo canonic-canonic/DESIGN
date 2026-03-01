@@ -7,7 +7,8 @@
  * Provider, model, tokens — all from wrangler.toml [vars].
  * GitHub OAuth — client_id from vars, client_secret from secrets.
  *
- * GET  /health       — status
+ * GET  /health              — fast status (provider, model, ts)
+ * GET  /health?deep=true   — full gov tree scan (sitemap + surface checks + violations)
  * POST /chat         — conversation
  * GET  /auth/config  — GitHub OAuth config (client_id + scopes)
  * POST /auth/github  — exchange code for token, create server-side session
@@ -480,6 +481,102 @@ function walletEventFromStripeSession(session, coinToCents) {
 // Global per-request origin — set at top of fetch handler, read by json() and addCors()
 let _reqOrigin = '*';
 
+/**
+ * deepHealth — Full governance tree scan. GOV: MONITORING/CANON.md.
+ * Builds sitemap from governed scopes per fleet domain, HEAD-checks every
+ * surface + vanity domains + API endpoints, reports violations.
+ * Batches requests (6 at a time) to stay within Cloudflare subrequest limits.
+ */
+async function deepHealth(env) {
+  const hadleylabScopes = (env.GOV_HADLEYLAB_SCOPES || '').split(',').filter(Boolean);
+  const canonicScopes = (env.GOV_CANONIC_SCOPES || '').split(',').filter(Boolean);
+  const vanity = (env.GOV_VANITY_DOMAINS || '').split(',').filter(Boolean);
+
+  // Build sitemap: scopes mapped to their correct fleet domain + path
+  const sitemap = [];
+  for (const scope of hadleylabScopes) {
+    sitemap.push({ scope, fleet: 'hadleylab', urls: [`https://hadleylab.org/SERVICES/${scope}/`] });
+  }
+  for (const scope of canonicScopes) {
+    sitemap.push({ scope, fleet: 'canonic', urls: [`https://canonic.org/${scope}/`] });
+  }
+
+  // Collect surfaces: hit custom domains directly (routing Workers return real status).
+  // GitHub Pages origins (.github.io) 301 for ALL paths (even missing), so they
+  // can't validate existence. Custom domains go through routing Workers which
+  // proxy to GitHub Pages and return the true status code.
+  const checks = [];
+  checks.push({ url: 'https://hadleylab.org/', scope: '_root' });
+  checks.push({ url: 'https://canonic.org/', scope: '_root' });
+  for (const scope of hadleylabScopes) {
+    checks.push({ url: `https://hadleylab.org/SERVICES/${scope}/`, scope });
+  }
+  for (const scope of canonicScopes) {
+    checks.push({ url: `https://canonic.org/${scope}/`, scope });
+  }
+  for (const v of vanity) checks.push({ url: v + '/', scope: '_vanity' });
+
+  // Batch HEAD checks (3 concurrent, sequential batches) to stay within
+  // Cloudflare subrequest limits. Each cross-zone fetch = 1 subrequest,
+  // same-zone (canonic.org) = 2. Budget ~50 total.
+  const BATCH = 3;
+  const surfaces = [];
+  let aborted = false;
+  for (let i = 0; i < checks.length; i += BATCH) {
+    if (aborted) {
+      // Mark remaining as skipped
+      for (const c of checks.slice(i)) {
+        surfaces.push({ url: c.url, scope: c.scope, status: 'skipped', detail: 'subrequest budget exhausted' });
+      }
+      break;
+    }
+    const batch = checks.slice(i, i + BATCH);
+    const results = await Promise.allSettled(
+      batch.map(async ({ url, scope }) => {
+        try {
+          const resp = await fetch(url, {
+            method: 'HEAD',
+            headers: { 'User-Agent': 'canonic-health/1.0' },
+            redirect: 'follow',
+          });
+          const code = resp.status;
+          return { url, scope, status: code < 400 ? 'ok' : 'error', detail: code < 400 ? null : `HTTP ${code}` };
+        } catch (e) {
+          const msg = String(e.message || e);
+          if (msg.includes('Too many subrequests')) {
+            aborted = true;
+            return { url, scope, status: 'skipped', detail: 'subrequest limit' };
+          }
+          return { url, scope, status: 'unreachable', detail: msg };
+        }
+      })
+    );
+    for (const r of results) {
+      surfaces.push(r.status === 'fulfilled' ? r.value : { url: '?', scope: '?', status: 'error', detail: 'promise rejected' });
+    }
+  }
+
+  const checked = surfaces.filter(s => s.status !== 'skipped').length;
+  const ok = surfaces.filter(s => s.status === 'ok').length;
+  const skipped = surfaces.filter(s => s.status === 'skipped').length;
+  const violations = surfaces.filter(s => s.status === 'error' || s.status === 'unreachable').map(s => ({
+    type: 'SURFACE_ERROR', scope: s.scope, url: s.url, detail: s.detail,
+  }));
+
+  return json({
+    status: violations.length === 0 && skipped === 0 ? 'ok' : violations.length > 0 ? 'degraded' : 'partial',
+    provider: env.PROVIDER,
+    model: env.MODEL,
+    ts: Date.now(),
+    checked,
+    ok,
+    skipped: skipped || undefined,
+    sitemap,
+    surfaces,
+    violations: violations.length ? violations : undefined,
+  });
+}
+
 function json(data, status = 200) {
   const headers = { 'Content-Type': 'application/json', ...CORS_DEFAULTS };
   if (_reqOrigin) headers['Access-Control-Allow-Origin'] = _reqOrigin;
@@ -506,6 +603,8 @@ export default {
     env = envForLane(url.hostname, env);
 
     if (path === '/health') {
+      const deep = url.searchParams.get('deep') === 'true';
+      if (deep) return deepHealth(env);
       return json({ status: 'ok', provider: env.PROVIDER, model: env.MODEL, ts: Date.now() });
     }
 
