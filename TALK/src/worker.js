@@ -757,6 +757,16 @@ async function deepHealth(env) {
         continue;
       }
 
+      // Welcome-in-context check: welcome must exist and not be generic template
+      const welcome = canon.welcome || '';
+      const genericWelcome = `Welcome to **${canon.scope}**`;
+      const welcomeInContext = welcome.length > 0 && (
+        // Custom welcome (longer than generic template + axiom)
+        welcome.length > genericWelcome.length + 80 ||
+        // Or contains markdown links, evidence, or INTEL keywords
+        /\[.*\]\(|evidence|govern|sourced|clinical|trial|NCT|BI-RADS|mCODE/i.test(welcome)
+      );
+
       // Check for testbank
       if (!canon.test || !canon.test.prompts || !canon.test.prompts.length) {
         intelFresh.push({ url: surfaceUrl, scope, status: 'no_test', ts: now });
@@ -796,19 +806,30 @@ async function deepHealth(env) {
       const crossHit = crossArr.filter(c => responseText.includes(c.toLowerCase())).length;
 
       const threshold = Math.ceil(fixture.expect.length * 0.5);
-      const intelStatus = expectHit >= threshold
+      let intelStatus = expectHit >= threshold
         ? (crossArr.length === 0 || crossHit >= 1 ? 'ok' : 'weak')
         : 'fail';
 
       const missing = fixture.expect.filter(e => !responseText.includes(e.toLowerCase()));
       const missingCross = crossArr.filter(c => !responseText.includes(c.toLowerCase()));
 
+      // Downgrade if welcome is generic (not in-context)
+      if (intelStatus === 'ok' && !welcomeInContext) intelStatus = 'weak';
+
+      const detailParts = [];
+      if (intelStatus !== 'ok') {
+        if (missing.length) detailParts.push(...missing);
+        if (missingCross.length) detailParts.push(...missingCross.map(c => `cross:${c}`));
+      }
+      if (!welcomeInContext) detailParts.push('welcome:generic');
+
       intelFresh.push({
         url: surfaceUrl, scope, status: intelStatus,
         prompt: fixture.prompt,
         expect_hit: expectHit, expect_total: fixture.expect.length,
         cross_hit: crossHit, cross_total: crossArr.length,
-        detail: intelStatus !== 'ok' ? `missing: ${[...missing, ...missingCross.map(c => `cross:${c}`)].join(', ')}` : undefined,
+        welcome_in_context: welcomeInContext,
+        detail: detailParts.length ? `missing: ${detailParts.join(', ')}` : undefined,
         response: chatData.message ? chatData.message.slice(0, 500) : undefined,
         elapsed_ms, ts: now,
       });
@@ -836,7 +857,7 @@ async function deepHealth(env) {
   const intelDiscovered = new Set(); // scopes with testbanks (from cache)
   for (const r of intelFresh) {
     if (r.status === 'no_test' || r.status === 'skip') continue;
-    intelChecks.push({ scope: r.scope, status: r.status, prompt: r.prompt, expect_hit: r.expect_hit, expect_total: r.expect_total, cross_hit: r.cross_hit, cross_total: r.cross_total, detail: r.detail, response: r.response, elapsed_ms: r.elapsed_ms });
+    intelChecks.push({ scope: r.scope, status: r.status, prompt: r.prompt, expect_hit: r.expect_hit, expect_total: r.expect_total, cross_hit: r.cross_hit, cross_total: r.cross_total, welcome_in_context: r.welcome_in_context, detail: r.detail, response: r.response, elapsed_ms: r.elapsed_ms });
     intelDiscovered.add(r.url);
   }
   // Add cached results (tested scopes only)
