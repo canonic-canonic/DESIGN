@@ -373,8 +373,11 @@
     font-size: 12px;
     line-height: 1.9;
     color: var(--dim);
-    min-height: 340px;
+    height: 220px;
+    overflow-y: auto;
+    scrollbar-width: none;
 }
+.terminal-body::-webkit-scrollbar { display: none; }
 
 .terminal-prompt {
     color: var(--accent);
@@ -412,10 +415,10 @@
 /* Terminal responsive */
 @media (max-width: 768px) {
     .terminal { width: 100%; max-width: 380px; }
-    .terminal-body { min-height: 280px; }
+    .terminal-body { height: 200px; }
 }
 @media (max-width: 640px) {
     .terminal { max-width: 320px; }
-    .terminal-body { font-size: 11px; min-height: 240px; }
+    .terminal-body { font-size: 11px; height: 180px; }
 }
 
