@@ -1,0 +1,23 @@
+<!-- SEO | JSON-LD Structured Data | All layouts -->
+{% assign seo_title = include.title | default: page.title | default: site.title %}
+{% assign seo_desc = include.description | default: page.description | default: site.description %}
+{% assign seo_url = page.url | absolute_url | downcase %}
+{% assign seo_type = page.schema_type | default: "WebPage" %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "{{ seo_type }}",
+  "name": "{{ seo_title | escape }}",
+  "description": "{{ seo_desc | escape }}",
+  "url": "{{ seo_url }}"{% if page.date %},
+  "datePublished": "{{ page.date | date_to_xmlschema }}"{% endif %}{% if page.authors %},
+  "author": [{% for author in page.authors %}
+    { "@type": "Person", "name": "{{ author | escape }}" }{% unless forloop.last %},{% endunless %}{% endfor %}
+  ]{% endif %},
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ site.title | escape }}",
+    "url": "{{ site.url }}"
+  }
+}
+</script>

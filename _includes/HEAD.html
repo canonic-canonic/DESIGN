@@ -5,7 +5,7 @@
 {% assign accent_rgb = page.accent_rgb | default: sd.accent_rgb | default: site.accent_rgb %}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://api.canonic.org https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://api.canonic.org https://*.canonic.org https://www.google-analytics.com https://connect.facebook.net; font-src 'self' https://cdn.jsdelivr.net; frame-ancestors 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://api.canonic.org https://www.googletagmanager.com https://connect.facebook.net https://snap.licdn.com https://static.ads-twitter.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://api.canonic.org https://*.canonic.org https://www.google-analytics.com https://connect.facebook.net https://snap.licdn.com https://static.ads-twitter.com; font-src 'self' https://cdn.jsdelivr.net; frame-ancestors 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
@@ -13,7 +13,9 @@
 {% assign page_desc = include.description | default: page.description | default: site.description %}
 <title>{{ page_title }}</title>
 <meta name="description" content="{{ page_desc }}">
+<link rel="canonical" href="{{ page.url | absolute_url | downcase }}">
 {% include OG.html title=page_title description=page_desc %}
+{% include SEO.html title=page_title description=page_desc %}
 <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
 <style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
 {% include TRACKING.html %}

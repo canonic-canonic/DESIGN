@@ -1,0 +1,1 @@
+{"service":"TALK_PREFLIGHT","status":"error","providers":{"anthropic":{"status":"error","key_valid":false,"model":"claude-sonnet-4-20250514","error":"ANTHROPIC_API_KEY not configured","elapsed_ms":0},"runpod":{"status":"error","key_valid":false,"model":"Qwen/Qwen2.5-7B-Instruct","error":"RUNPOD_API_KEY not configured","elapsed_ms":0}},"ts":1772391671747}

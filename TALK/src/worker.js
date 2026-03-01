@@ -107,6 +107,10 @@ function coerceContentToText(content) {
 const PROVIDERS = {
   anthropic: {
     url: 'https://api.anthropic.com/v1/messages',
+    validate(env) {
+      if (!env.ANTHROPIC_API_KEY) return 'ANTHROPIC_API_KEY not configured';
+      return null;
+    },
     build(env, system, messages) {
       return {
         headers: {
@@ -118,6 +122,36 @@ const PROVIDERS = {
       };
     },
     parse(data) { return data.content?.[0]?.text; },
+    async preflight(env) {
+      const started = Date.now();
+      const model = env.MODEL || 'claude-sonnet-4-20250514';
+      if (!env.ANTHROPIC_API_KEY) return { status: 'error', key_valid: false, model, error: 'ANTHROPIC_API_KEY not configured', elapsed_ms: 0 };
+      const timeout = intEnv(env, 'PREFLIGHT_TIMEOUT_MS', 5000);
+      try {
+        const res = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': env.ANTHROPIC_API_KEY,
+            'anthropic-version': env.ANTHROPIC_VERSION || '2023-06-01',
+          },
+          body: JSON.stringify({ model, max_tokens: 1, messages: [{ role: 'user', content: 'ping' }] }),
+        }, timeout);
+        const rl = parseAnthropicRateLimits(res.headers);
+        if (!res.ok) {
+          const text = await res.text();
+          const isAuth = res.status === 401 || res.status === 403;
+          let detail = `HTTP ${res.status}`;
+          try { const j = JSON.parse(text); if (j.error && j.error.message) detail = j.error.message; } catch (_) {}
+          const isCredit = res.status === 400 && detail.toLowerCase().includes('credit');
+          return { status: (isAuth || isCredit) ? 'error' : 'degraded', key_valid: !isAuth, model, ...rl, error: clampString(redactSecrets(detail), 200), elapsed_ms: Date.now() - started };
+        }
+        const deg = preflightDegraded(rl);
+        return { status: deg ? 'degraded' : 'ok', key_valid: true, model, ...rl, error: deg || undefined, elapsed_ms: Date.now() - started };
+      } catch (e) {
+        return { status: 'error', key_valid: false, model, error: clampString(String(e.message || e), 200), elapsed_ms: Date.now() - started };
+      }
+    },
   },
   openai: {
     url(env) {
@@ -143,6 +177,32 @@ const PROVIDERS = {
       };
     },
     parse(data) { return data.choices?.[0]?.message?.content; },
+    async preflight(env) {
+      const started = Date.now();
+      const model = env.OPENAI_MODEL || env.MODEL || 'gpt-4o-mini';
+      if (!env.OPENAI_API_KEY) return { status: 'error', key_valid: false, model, error: 'OPENAI_API_KEY not configured', elapsed_ms: 0 };
+      const timeout = intEnv(env, 'PREFLIGHT_TIMEOUT_MS', 5000);
+      try {
+        const url = typeof PROVIDERS.openai.url === 'function' ? PROVIDERS.openai.url(env) : PROVIDERS.openai.url;
+        const res = await fetchWithTimeout(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.OPENAI_API_KEY}` },
+          body: JSON.stringify({ model, max_tokens: 1, messages: [{ role: 'user', content: 'ping' }] }),
+        }, timeout);
+        const rl = parseOpenAIRateLimits(res.headers);
+        if (!res.ok) {
+          const text = await res.text();
+          const isAuth = res.status === 401 || res.status === 403;
+          let detail = `HTTP ${res.status}`;
+          try { const j = JSON.parse(text); if (j.error && j.error.message) detail = j.error.message; } catch (_) {}
+          return { status: isAuth ? 'error' : 'degraded', key_valid: !isAuth, model, ...rl, error: clampString(redactSecrets(detail), 200), elapsed_ms: Date.now() - started };
+        }
+        const deg = preflightDegraded(rl);
+        return { status: deg ? 'degraded' : 'ok', key_valid: true, model, ...rl, error: deg || undefined, elapsed_ms: Date.now() - started };
+      } catch (e) {
+        return { status: 'error', key_valid: false, model, error: clampString(String(e.message || e), 200), elapsed_ms: Date.now() - started };
+      }
+    },
   },
   deepseek: {
     url(env) {
@@ -168,6 +228,32 @@ const PROVIDERS = {
       };
     },
     parse(data) { return data.choices?.[0]?.message?.content; },
+    async preflight(env) {
+      const started = Date.now();
+      const model = env.DEEPSEEK_MODEL || env.MODEL || 'deepseek-chat';
+      if (!env.DEEPSEEK_API_KEY) return { status: 'error', key_valid: false, model, error: 'DEEPSEEK_API_KEY not configured', elapsed_ms: 0 };
+      const timeout = intEnv(env, 'PREFLIGHT_TIMEOUT_MS', 5000);
+      try {
+        const url = typeof PROVIDERS.deepseek.url === 'function' ? PROVIDERS.deepseek.url(env) : PROVIDERS.deepseek.url;
+        const res = await fetchWithTimeout(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.DEEPSEEK_API_KEY}` },
+          body: JSON.stringify({ model, max_tokens: 1, messages: [{ role: 'user', content: 'ping' }] }),
+        }, timeout);
+        const rl = parseOpenAIRateLimits(res.headers);
+        if (!res.ok) {
+          const text = await res.text();
+          const isAuth = res.status === 401 || res.status === 403;
+          let detail = `HTTP ${res.status}`;
+          try { const j = JSON.parse(text); if (j.error && j.error.message) detail = j.error.message; } catch (_) {}
+          return { status: isAuth ? 'error' : 'degraded', key_valid: !isAuth, model, ...rl, error: clampString(redactSecrets(detail), 200), elapsed_ms: Date.now() - started };
+        }
+        const deg = preflightDegraded(rl);
+        return { status: deg ? 'degraded' : 'ok', key_valid: true, model, ...rl, error: deg || undefined, elapsed_ms: Date.now() - started };
+      } catch (e) {
+        return { status: 'error', key_valid: false, model, error: clampString(String(e.message || e), 200), elapsed_ms: Date.now() - started };
+      }
+    },
   },
   runpod: {
     url(env) {
@@ -196,6 +282,34 @@ const PROVIDERS = {
       };
     },
     parse(data) { return data.choices?.[0]?.message?.content; },
+    async preflight(env) {
+      const started = Date.now();
+      const model = env.RUNPOD_MODEL || env.MODEL;
+      if (!env.RUNPOD_API_KEY) return { status: 'error', key_valid: false, model, error: 'RUNPOD_API_KEY not configured', elapsed_ms: 0 };
+      const baseUrl = (env.RUNPOD_BASE_URL || '').trim();
+      if (!baseUrl) return { status: 'error', key_valid: true, model, error: 'RUNPOD_BASE_URL not configured', elapsed_ms: 0 };
+      const endpointId = runpodEndpointIdFromBaseUrl(baseUrl);
+      if (endpointId) {
+        const h = await runpodHealth(endpointId, env);
+        const w = h && h.workers ? h.workers : null;
+        if (!w) return { status: 'error', key_valid: true, model, error: 'health endpoint unreachable', elapsed_ms: Date.now() - started };
+        return {
+          status: (w.ready || 0) >= 1 && (w.throttled || 0) === 0 ? 'ok' : 'degraded',
+          key_valid: true, model,
+          workers_ready: w.ready || 0, workers_throttled: w.throttled || 0,
+          elapsed_ms: Date.now() - started,
+        };
+      }
+      if (isRunpodProxyBaseUrl(baseUrl)) {
+        const pr = await runpodProxyReady(baseUrl, env);
+        return {
+          status: pr && pr.ok ? 'ok' : 'degraded',
+          key_valid: true, model, proxy_ready: pr ? pr.ok : false,
+          elapsed_ms: Date.now() - started,
+        };
+      }
+      return { status: 'degraded', key_valid: true, model, error: 'unknown endpoint format', elapsed_ms: Date.now() - started };
+    },
   },
   vastai: {
     // Vast.ai instances typically run an OpenAI-compatible server (vLLM) at
@@ -228,6 +342,27 @@ const PROVIDERS = {
       };
     },
     parse(data) { return data.choices?.[0]?.message?.content; },
+    async preflight(env) {
+      const started = Date.now();
+      const model = env.VASTAI_MODEL || env.MODEL;
+      const baseUrl = (env.VASTAI_BASE_URL || '').trim();
+      if (!baseUrl) return { status: 'error', key_valid: false, model, error: 'VASTAI_BASE_URL not configured', elapsed_ms: 0 };
+      const timeout = intEnv(env, 'PREFLIGHT_TIMEOUT_MS', 5000);
+      const b = baseUrl.replace(/\/+$/, '');
+      try {
+        const headers = { 'Accept': 'application/json' };
+        const key = (env.VASTAI_API_KEY || env.VLLM_API_KEY || '').trim();
+        if (key) headers.Authorization = 'Bearer ' + key;
+        const r = await fetchWithTimeout(b + '/models', { headers }, timeout);
+        return {
+          status: r.ok ? 'ok' : 'degraded',
+          key_valid: true, model, proxy_ready: r.ok,
+          elapsed_ms: Date.now() - started,
+        };
+      } catch (e) {
+        return { status: 'error', key_valid: false, model, error: clampString(String(e.message || e), 200), elapsed_ms: Date.now() - started };
+      }
+    },
   },
 };
 
@@ -305,6 +440,52 @@ function boolEnv(env, key, fallback = false) {
 function intEnv(env, key, fallback) {
   const n = parseIntEnv(env, key);
   return Number.isFinite(n) ? n : fallback;
+}
+
+// ── Preflight rate-limit header parsers (GOV: TALK/TALK.md § Preflight) ──
+
+function parseAnthropicRateLimits(headers) {
+  const rl = {};
+  const rr = headers.get('anthropic-ratelimit-requests-remaining');
+  const rlim = headers.get('anthropic-ratelimit-requests-limit');
+  const tr = headers.get('anthropic-ratelimit-tokens-remaining');
+  const tlim = headers.get('anthropic-ratelimit-tokens-limit');
+  if (rr !== null) rl.requests_remaining = parseInt(rr, 10);
+  if (rlim !== null) rl.requests_limit = parseInt(rlim, 10);
+  if (tr !== null) rl.tokens_remaining = parseInt(tr, 10);
+  if (tlim !== null) rl.tokens_limit = parseInt(tlim, 10);
+  const rReset = headers.get('anthropic-ratelimit-requests-reset');
+  const tReset = headers.get('anthropic-ratelimit-tokens-reset');
+  if (rReset) rl.requests_reset = rReset;
+  if (tReset) rl.tokens_reset = tReset;
+  return rl;
+}
+
+function parseOpenAIRateLimits(headers) {
+  const rl = {};
+  const rr = headers.get('x-ratelimit-remaining-requests');
+  const rlim = headers.get('x-ratelimit-limit-requests');
+  const tr = headers.get('x-ratelimit-remaining-tokens');
+  const tlim = headers.get('x-ratelimit-limit-tokens');
+  if (rr !== null) rl.requests_remaining = parseInt(rr, 10);
+  if (rlim !== null) rl.requests_limit = parseInt(rlim, 10);
+  if (tr !== null) rl.tokens_remaining = parseInt(tr, 10);
+  if (tlim !== null) rl.tokens_limit = parseInt(tlim, 10);
+  const rReset = headers.get('x-ratelimit-reset-requests');
+  const tReset = headers.get('x-ratelimit-reset-tokens');
+  if (rReset) rl.requests_reset = rReset;
+  if (tReset) rl.tokens_reset = tReset;
+  return rl;
+}
+
+function preflightDegraded(rl) {
+  if (rl.requests_remaining !== undefined && rl.requests_limit > 0) {
+    if (rl.requests_remaining / rl.requests_limit < 0.05) return 'requests_low';
+  }
+  if (rl.tokens_remaining !== undefined && rl.tokens_limit > 0) {
+    if (rl.tokens_remaining / rl.tokens_limit < 0.05) return 'tokens_low';
+  }
+  return null;
 }
 
 function isoFromUnix(tsSec) {
@@ -688,6 +869,54 @@ async function deepHealth(env) {
   services.push({ service: 'TALK_CHAIN', status: chainStatus.every(c => c.status === 'ok') ? 'ok' : chainStatus.some(c => c.status === 'ok') ? 'degraded' : 'error', chain: chainStatus });
   for (const c of chainStatus) {
     if (c.status === 'error') svcViolations.push({ type: 'SERVICE_ERROR', service: `TALK_CHAIN/${c.provider}`, detail: c.detail });
+  }
+
+  // TALK_PREFLIGHT: live API probe for configured providers (GOV: TALK/TALK.md § Preflight)
+  if (boolEnv(env, 'PREFLIGHT_HEALTH', false)) {
+    const PREFLIGHT_CACHE_KEY = 'health:preflight:cache';
+    const PREFLIGHT_TTL = parseInt(env.PREFLIGHT_CACHE_TTL_S || '120', 10) * 1000;
+    let preflightResult = null;
+
+    try {
+      const raw = env.TALK_KV ? await env.TALK_KV.get(PREFLIGHT_CACHE_KEY) : null;
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (cached && cached.ts && (now - cached.ts) < PREFLIGHT_TTL) {
+          preflightResult = cached;
+          preflightResult._cached = true;
+          preflightResult._cached_age_s = Math.round((now - cached.ts) / 1000);
+        }
+      }
+    } catch (_) {}
+
+    if (!preflightResult) {
+      try {
+        preflightResult = await preflightAllProviders(env);
+        preflightResult.ts = now;
+        if (env.TALK_KV) {
+          try {
+            await env.TALK_KV.put(PREFLIGHT_CACHE_KEY, JSON.stringify(preflightResult), {
+              expirationTtl: Math.ceil(PREFLIGHT_TTL * 2 / 1000),
+            });
+          } catch (_) {}
+        }
+      } catch (e) {
+        preflightResult = { service: 'TALK_PREFLIGHT', status: 'error', error: String(e.message || e) };
+      }
+    }
+
+    services.push(preflightResult);
+    if (preflightResult.providers) {
+      for (const [pName, pResult] of Object.entries(preflightResult.providers)) {
+        if (pResult.status === 'error') {
+          svcViolations.push({
+            type: 'PREFLIGHT_ERROR',
+            service: `TALK_PREFLIGHT/${pName}`,
+            detail: pResult.error || `${pName} preflight failed`,
+          });
+        }
+      }
+    }
   }
 
   // KV: verify TALK_KV is accessible
@@ -1633,6 +1862,60 @@ async function runpodHealth(endpointId, env) {
   } catch {
     return null;
   }
+}
+
+// ── Preflight orchestrator (GOV: TALK/TALK.md § Preflight) ──────────
+
+async function preflightAllProviders(env) {
+  const chain = env.PROVIDER_CHAIN
+    ? String(env.PROVIDER_CHAIN).split(',').map(s => s.trim()).filter(Boolean)
+    : [env.PROVIDER];
+
+  const seen = new Set();
+  const toCheck = [];
+
+  // Primary provider always checked when global toggle is on
+  const primaryName = env.PROVIDER;
+  if (primaryName && PROVIDERS[primaryName] && PROVIDERS[primaryName].preflight) {
+    seen.add(primaryName);
+    toCheck.push({ name: primaryName, provider: PROVIDERS[primaryName] });
+  }
+
+  // Chain providers checked per their enable flag
+  for (const name of chain) {
+    if (seen.has(name)) continue;
+    seen.add(name);
+    const p = PROVIDERS[name];
+    if (!p || !p.preflight) continue;
+    const envKey = `${name.toUpperCase()}_PREFLIGHT_HEALTH`;
+    if (!boolEnv(env, envKey, false)) continue;
+    toCheck.push({ name, provider: p });
+  }
+
+  const results = {};
+  const settled = await Promise.allSettled(
+    toCheck.map(async ({ name, provider }) => {
+      const result = await provider.preflight(env);
+      return { name, result };
+    })
+  );
+
+  for (const s of settled) {
+    if (s.status === 'fulfilled') {
+      results[s.value.name] = s.value.result;
+    } else {
+      results['unknown'] = { status: 'error', key_valid: false, model: null, error: String(s.reason), elapsed_ms: 0 };
+    }
+  }
+
+  const statuses = Object.values(results).map(r => r.status);
+  const overall = statuses.every(s => s === 'ok')
+    ? 'ok'
+    : statuses.some(s => s === 'ok')
+      ? 'degraded'
+      : 'error';
+
+  return { service: 'TALK_PREFLIGHT', status: overall, providers: results };
 }
 
 async function oaiModels(request, env) {
