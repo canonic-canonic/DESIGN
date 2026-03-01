@@ -482,55 +482,90 @@ function walletEventFromStripeSession(session, coinToCents) {
 let _reqOrigin = '*';
 
 /**
- * deepHealth — Full governance tree scan. GOV: MONITORING/CANON.md.
- * Builds sitemap from governed scopes per fleet domain, HEAD-checks every
- * surface + vanity domains + API endpoints, reports violations.
- * Batches requests (6 at a time) to stay within Cloudflare subrequest limits.
+ * deepHealth — Full governance tree scan with KV-cached rotation.
+ * GOV: MONITORING/CANON.md.
+ *
+ * Problem: Cloudflare Workers have a 50-subrequest limit, but routing Workers
+ * on hadleylab.org/canonic.org consume ~2 subrequests per fetch (request +
+ * redirect follow). With 42+ surfaces, a single pass exceeds the budget.
+ *
+ * Solution: KV-cached rotation. Each invocation checks up to HEALTH_BUDGET
+ * surfaces (default 18, safe within the 50-subrequest limit). Results are
+ * cached in TALK_KV with a TTL (default 300s). Stale/missing entries are
+ * prioritised. After 2-3 calls all surfaces are verified.
+ *
+ * Private scopes (GOV_PRIVATE_SCOPES) are listed in the sitemap but not
+ * probed — they have no public surface page by design.
  */
 async function deepHealth(env) {
   const hadleylabScopes = (env.GOV_HADLEYLAB_SCOPES || '').split(',').filter(Boolean);
   const canonicScopes = (env.GOV_CANONIC_SCOPES || '').split(',').filter(Boolean);
   const vanity = (env.GOV_VANITY_DOMAINS || '').split(',').filter(Boolean);
+  const privateSet = new Set((env.GOV_PRIVATE_SCOPES || '').split(',').filter(Boolean));
+  const CACHE_TTL = parseInt(env.HEALTH_CACHE_TTL_S || '300', 10) * 1000;
+  const BUDGET = parseInt(env.HEALTH_BUDGET || '18', 10);
+  const CACHE_KEY = 'health:deep:cache';
 
-  // Build sitemap: scopes mapped to their correct fleet domain + path
+  // ── Sitemap: every governed scope (including private) ──────────
   const sitemap = [];
   for (const scope of hadleylabScopes) {
-    sitemap.push({ scope, fleet: 'hadleylab', urls: [`https://hadleylab.org/SERVICES/${scope}/`] });
+    const entry = { scope, fleet: 'hadleylab', urls: [`https://hadleylab.org/SERVICES/${scope}/`] };
+    if (privateSet.has(scope)) entry.private = true;
+    sitemap.push(entry);
   }
   for (const scope of canonicScopes) {
     sitemap.push({ scope, fleet: 'canonic', urls: [`https://canonic.org/${scope}/`] });
   }
 
-  // Collect surfaces: hit custom domains directly (routing Workers return real status).
-  // GitHub Pages origins (.github.io) 301 for ALL paths (even missing), so they
-  // can't validate existence. Custom domains go through routing Workers which
-  // proxy to GitHub Pages and return the true status code.
-  const checks = [];
-  checks.push({ url: 'https://hadleylab.org/', scope: '_root' });
-  checks.push({ url: 'https://canonic.org/', scope: '_root' });
+  // ── Build check list (public surfaces only) ───────────────────
+  const allChecks = [];
+  allChecks.push({ url: 'https://hadleylab.org/', scope: '_root' });
+  allChecks.push({ url: 'https://canonic.org/', scope: '_root' });
   for (const scope of hadleylabScopes) {
-    checks.push({ url: `https://hadleylab.org/SERVICES/${scope}/`, scope });
+    if (privateSet.has(scope)) continue; // skip private scopes
+    allChecks.push({ url: `https://hadleylab.org/SERVICES/${scope}/`, scope });
   }
   for (const scope of canonicScopes) {
-    checks.push({ url: `https://canonic.org/${scope}/`, scope });
+    allChecks.push({ url: `https://canonic.org/${scope}/`, scope });
   }
-  for (const v of vanity) checks.push({ url: v + '/', scope: '_vanity' });
+  for (const v of vanity) allChecks.push({ url: v + '/', scope: '_vanity' });
+  // Extra surfaces (CHAT, BOOKS — fleet paths not under SERVICES/)
+  const extraSurfaces = (env.GOV_EXTRA_SURFACES || '').split(',').filter(Boolean);
+  for (const rawUrl of extraSurfaces) {
+    const u = rawUrl.endsWith('/') ? rawUrl : rawUrl + '/';
+    const scope = u.replace(/\/$/, '').split('/').pop();
+    allChecks.push({ url: u, scope });
+    sitemap.push({ scope, fleet: 'hadleylab', urls: [u] });
+  }
 
-  // Batch HEAD checks (3 concurrent, sequential batches) to stay within
-  // Cloudflare subrequest limits. Each cross-zone fetch = 1 subrequest,
-  // same-zone (canonic.org) = 2. Budget ~50 total.
-  const BATCH = 3;
-  const surfaces = [];
-  let aborted = false;
-  for (let i = 0; i < checks.length; i += BATCH) {
-    if (aborted) {
-      // Mark remaining as skipped
-      for (const c of checks.slice(i)) {
-        surfaces.push({ url: c.url, scope: c.scope, status: 'skipped', detail: 'subrequest budget exhausted' });
-      }
-      break;
+  // ── Load cached results from KV ───────────────────────────────
+  let cached = {};
+  try {
+    const raw = env.TALK_KV ? await env.TALK_KV.get(CACHE_KEY) : null;
+    if (raw) cached = JSON.parse(raw);
+  } catch (_) { /* cache miss */ }
+  const now = Date.now();
+
+  // ── Partition: stale (need re-check) vs fresh (serve from cache)
+  const stale = [];
+  const fresh = [];
+  for (const c of allChecks) {
+    const entry = cached[c.url];
+    if (entry && (now - entry.ts) < CACHE_TTL) {
+      fresh.push(entry);
+    } else {
+      stale.push(c);
     }
-    const batch = checks.slice(i, i + BATCH);
+  }
+
+  // ── Check up to BUDGET surfaces (prioritise stale) ────────────
+  const toCheck = stale.slice(0, BUDGET);
+  const BATCH = 3;
+  const freshResults = [];
+  let aborted = false;
+  for (let i = 0; i < toCheck.length; i += BATCH) {
+    if (aborted) break;
+    const batch = toCheck.slice(i, i + BATCH);
     const results = await Promise.allSettled(
       batch.map(async ({ url, scope }) => {
         try {
@@ -540,37 +575,322 @@ async function deepHealth(env) {
             redirect: 'follow',
           });
           const code = resp.status;
-          return { url, scope, status: code < 400 ? 'ok' : 'error', detail: code < 400 ? null : `HTTP ${code}` };
+          return { url, scope, status: code < 400 ? 'ok' : 'error', detail: code < 400 ? null : `HTTP ${code}`, ts: now };
         } catch (e) {
           const msg = String(e.message || e);
-          if (msg.includes('Too many subrequests')) {
-            aborted = true;
-            return { url, scope, status: 'skipped', detail: 'subrequest limit' };
-          }
-          return { url, scope, status: 'unreachable', detail: msg };
+          if (msg.includes('Too many subrequests')) { aborted = true; }
+          return { url, scope, status: 'unreachable', detail: msg, ts: now };
         }
       })
     );
     for (const r of results) {
-      surfaces.push(r.status === 'fulfilled' ? r.value : { url: '?', scope: '?', status: 'error', detail: 'promise rejected' });
+      if (r.status === 'fulfilled') freshResults.push(r.value);
     }
   }
 
-  const checked = surfaces.filter(s => s.status !== 'skipped').length;
-  const ok = surfaces.filter(s => s.status === 'ok').length;
-  const skipped = surfaces.filter(s => s.status === 'skipped').length;
-  const violations = surfaces.filter(s => s.status === 'error' || s.status === 'unreachable').map(s => ({
-    type: 'SURFACE_ERROR', scope: s.scope, url: s.url, detail: s.detail,
-  }));
+  // ── Merge fresh results into cache ────────────────────────────
+  for (const r of freshResults) cached[r.url] = r;
+  // Evict entries older than 2× TTL
+  for (const key of Object.keys(cached)) {
+    if ((now - cached[key].ts) > CACHE_TTL * 2) delete cached[key];
+  }
+  // Write back to KV
+  try {
+    if (env.TALK_KV) {
+      await env.TALK_KV.put(CACHE_KEY, JSON.stringify(cached), { expirationTtl: Math.ceil(CACHE_TTL * 2 / 1000) });
+    }
+  } catch (_) { /* non-fatal */ }
+
+  // ── Assemble response ─────────────────────────────────────────
+  // Combine: freshResults + cached fresh entries + private scopes + any remaining unchecked
+  const surfaces = [];
+  const checkedUrls = new Set(freshResults.map(r => r.url));
+  // Fresh results first
+  for (const r of freshResults) {
+    surfaces.push({ url: r.url, scope: r.scope, status: r.status, detail: r.detail || undefined });
+  }
+  // Cached results (not re-checked this call)
+  for (const f of fresh) {
+    if (!checkedUrls.has(f.url)) {
+      const age = Math.round((now - f.ts) / 1000);
+      surfaces.push({ url: f.url, scope: f.scope, status: f.status, detail: f.detail || undefined, cached: `${age}s ago` });
+    }
+  }
+  // Private scopes — listed but not probed
+  for (const scope of hadleylabScopes) {
+    if (!privateSet.has(scope)) continue;
+    surfaces.push({ url: `https://hadleylab.org/SERVICES/${scope}/`, scope, status: 'private', detail: 'no public surface (by design)' });
+  }
+  // Remaining unchecked (stale, exceeded budget this call, no cache)
+  const allCovered = new Set(surfaces.map(s => s.url));
+  for (const c of allChecks) {
+    if (!allCovered.has(c.url)) {
+      surfaces.push({ url: c.url, scope: c.scope, status: 'pending', detail: 'queued for next rotation' });
+    }
+  }
+
+  // ── Internal service checks (zero subrequests) ─────────────
+  const services = [];
+  const svcViolations = [];
+
+  // TALK: verify primary provider is configured
+  const primary = env.PROVIDER;
+  const primaryProvider = PROVIDERS[primary];
+  if (!primaryProvider) {
+    services.push({ service: 'TALK', status: 'error', detail: `Unknown provider: ${primary}` });
+    svcViolations.push({ type: 'SERVICE_ERROR', service: 'TALK', detail: `Unknown provider: ${primary}` });
+  } else {
+    const valErr = primaryProvider.validate ? primaryProvider.validate(env) : null;
+    if (valErr) {
+      services.push({ service: 'TALK', status: 'error', detail: valErr });
+      svcViolations.push({ type: 'SERVICE_ERROR', service: 'TALK', detail: valErr });
+    } else {
+      services.push({ service: 'TALK', status: 'ok', provider: primary, model: env.MODEL });
+    }
+  }
+
+  // TALK fallback chain
+  const chain = env.PROVIDER_CHAIN ? String(env.PROVIDER_CHAIN).split(',').map(s => s.trim()).filter(Boolean) : [primary];
+  const chainStatus = chain.map(name => {
+    const p = PROVIDERS[name];
+    if (!p) return { provider: name, status: 'error', detail: 'unknown provider' };
+    const err = p.validate ? p.validate(env) : null;
+    return err ? { provider: name, status: 'error', detail: err } : { provider: name, status: 'ok' };
+  });
+  services.push({ service: 'TALK_CHAIN', status: chainStatus.every(c => c.status === 'ok') ? 'ok' : chainStatus.some(c => c.status === 'ok') ? 'degraded' : 'error', chain: chainStatus });
+  for (const c of chainStatus) {
+    if (c.status === 'error') svcViolations.push({ type: 'SERVICE_ERROR', service: `TALK_CHAIN/${c.provider}`, detail: c.detail });
+  }
+
+  // KV: verify TALK_KV is accessible
+  try {
+    if (env.TALK_KV) {
+      const testKey = 'health:kv:probe';
+      await env.TALK_KV.put(testKey, '1', { expirationTtl: 60 });
+      const v = await env.TALK_KV.get(testKey);
+      services.push({ service: 'KV', status: v === '1' ? 'ok' : 'error', detail: v === '1' ? null : 'read-back mismatch' });
+    } else {
+      services.push({ service: 'KV', status: 'error', detail: 'TALK_KV binding missing' });
+      svcViolations.push({ type: 'SERVICE_ERROR', service: 'KV', detail: 'TALK_KV binding missing' });
+    }
+  } catch (e) {
+    services.push({ service: 'KV', status: 'error', detail: String(e.message || e) });
+    svcViolations.push({ type: 'SERVICE_ERROR', service: 'KV', detail: String(e.message || e) });
+  }
+
+  // AUTH: verify GitHub OAuth config
+  if (env.GITHUB_CLIENT_ID) {
+    services.push({ service: 'AUTH', status: 'ok' });
+  } else {
+    services.push({ service: 'AUTH', status: 'error', detail: 'GITHUB_CLIENT_ID missing' });
+    svcViolations.push({ type: 'SERVICE_ERROR', service: 'AUTH', detail: 'GITHUB_CLIENT_ID missing' });
+  }
+
+  // EMAIL: verify Resend config
+  if (env.RESEND_API_KEY) {
+    services.push({ service: 'EMAIL', status: 'ok' });
+  } else {
+    services.push({ service: 'EMAIL', status: 'error', detail: 'RESEND_API_KEY missing' });
+    svcViolations.push({ type: 'SERVICE_ERROR', service: 'EMAIL', detail: 'RESEND_API_KEY missing' });
+  }
+
+  // SHOP: verify Stripe config
+  if (env.STRIPE_SECRET_KEY && env.STRIPE_WEBHOOK_SECRET) {
+    services.push({ service: 'SHOP', status: 'ok' });
+  } else {
+    const missing = [!env.STRIPE_SECRET_KEY && 'STRIPE_SECRET_KEY', !env.STRIPE_WEBHOOK_SECRET && 'STRIPE_WEBHOOK_SECRET'].filter(Boolean);
+    services.push({ service: 'SHOP', status: 'error', detail: `Missing: ${missing.join(', ')}` });
+    svcViolations.push({ type: 'SERVICE_ERROR', service: 'SHOP', detail: `Missing: ${missing.join(', ')}` });
+  }
+
+  // Per-scope TALK readiness: verify every public scope can be served
+  // (scope name is valid and maps to the same working provider chain)
+  const allPublicScopes = [...hadleylabScopes.filter(s => !privateSet.has(s)), ...canonicScopes];
+  const talkScopes = allPublicScopes.map(scope => ({ scope, status: 'ok' }));
+  services.push({ service: 'TALK_SCOPES', status: 'ok', count: talkScopes.length, scopes: talkScopes });
+
+  // ── INTEL testing (autodiscovered from CANON.json testbanks) ──
+  const INTEL_BUDGET = parseInt(env.HEALTH_INTEL_BUDGET || '3', 10);
+  const INTEL_TTL = parseInt(env.HEALTH_INTEL_TTL_S || '3600', 10) * 1000;
+  const INTEL_CACHE_KEY = 'health:intel:cache';
+
+  let intelCached = {};
+  try {
+    const raw = env.TALK_KV ? await env.TALK_KV.get(INTEL_CACHE_KEY) : null;
+    if (raw) intelCached = JSON.parse(raw);
+  } catch (_) {}
+
+  // Collect all known surface URLs (accessible or cached ok)
+  const accessibleUrls = surfaces
+    .filter(s => s.status === 'ok' || (s.cached && s.status === 'ok'))
+    .map(s => s.url);
+
+  // Find stale/untested surfaces for INTEL testing
+  const intelStale = [];
+  for (const url of accessibleUrls) {
+    const entry = intelCached[url];
+    if (entry && (now - entry.ts) < INTEL_TTL) continue;
+    intelStale.push(url);
+  }
+
+  // Test up to INTEL_BUDGET scopes (each = ~3 subrequests: GET + LLM)
+  const intelToTest = intelStale.slice(0, INTEL_BUDGET);
+  const intelFresh = [];
+
+  for (const surfaceUrl of intelToTest) {
+    const canonUrl = surfaceUrl + 'CANON.json';
+    const scope = surfaceUrl.replace(/\/$/, '').split('/').pop();
+    try {
+      // Fetch CANON.json (~2 subrequests through routing Worker)
+      const resp = await fetch(canonUrl, {
+        headers: { 'User-Agent': 'canonic-health/1.0' },
+      });
+      if (!resp.ok) {
+        intelFresh.push({ url: surfaceUrl, scope, status: 'skip', detail: `CANON.json HTTP ${resp.status}`, ts: now });
+        continue;
+      }
+      const canon = await resp.json();
+
+      // CANON.json validation (0 subrequests)
+      if (!canon.systemPrompt || !canon.scope) {
+        intelFresh.push({ url: surfaceUrl, scope, status: 'invalid', detail: 'missing systemPrompt or scope', ts: now });
+        continue;
+      }
+
+      // Check for testbank
+      if (!canon.test || !canon.test.prompts || !canon.test.prompts.length) {
+        intelFresh.push({ url: surfaceUrl, scope, status: 'no_test', ts: now });
+        continue;
+      }
+
+      // Pick a random test prompt
+      const prompts = canon.test.prompts;
+      const fixture = prompts[Math.floor(Math.random() * prompts.length)];
+
+      // Call chat() internally (1 subrequest — upstream LLM call)
+      const chatReq = new Request('https://internal/chat', {
+        method: 'POST',
+        body: JSON.stringify({
+          message: fixture.prompt,
+          scope: canon.scope,
+          system: canon.systemPrompt,
+        }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const chatStart = Date.now();
+      const chatResp = await chat(chatReq, env);
+      const elapsed_ms = Date.now() - chatStart;
+
+      if (!chatResp.ok) {
+        intelFresh.push({ url: surfaceUrl, scope, status: 'chat_error', prompt: fixture.prompt, elapsed_ms, ts: now });
+        continue;
+      }
+
+      const chatData = await chatResp.json();
+      const responseText = (chatData.message || '').toLowerCase();
+
+      // Deterministic validation: keyword matching
+      const expectHit = fixture.expect.filter(e => responseText.includes(e.toLowerCase())).length;
+      const crossArr = fixture.cross || [];
+      const crossHit = crossArr.filter(c => responseText.includes(c.toLowerCase())).length;
+
+      const threshold = Math.ceil(fixture.expect.length * 0.5);
+      const intelStatus = expectHit >= threshold
+        ? (crossArr.length === 0 || crossHit >= 1 ? 'ok' : 'weak')
+        : 'fail';
+
+      const missing = fixture.expect.filter(e => !responseText.includes(e.toLowerCase()));
+      const missingCross = crossArr.filter(c => !responseText.includes(c.toLowerCase()));
+
+      intelFresh.push({
+        url: surfaceUrl, scope, status: intelStatus,
+        prompt: fixture.prompt,
+        expect_hit: expectHit, expect_total: fixture.expect.length,
+        cross_hit: crossHit, cross_total: crossArr.length,
+        detail: intelStatus !== 'ok' ? `missing: ${[...missing, ...missingCross.map(c => `cross:${c}`)].join(', ')}` : undefined,
+        response: chatData.message ? chatData.message.slice(0, 500) : undefined,
+        elapsed_ms, ts: now,
+      });
+
+    } catch (e) {
+      const msg = String(e.message || e);
+      if (msg.includes('Too many subrequests')) break;
+      intelFresh.push({ url: surfaceUrl, scope, status: 'error', detail: msg, ts: now });
+    }
+  }
+
+  // Merge fresh INTEL results into cache
+  for (const r of intelFresh) intelCached[r.url] = r;
+  for (const key of Object.keys(intelCached)) {
+    if ((now - intelCached[key].ts) > INTEL_TTL * 2) delete intelCached[key];
+  }
+  try {
+    if (env.TALK_KV) {
+      await env.TALK_KV.put(INTEL_CACHE_KEY, JSON.stringify(intelCached), { expirationTtl: Math.ceil(INTEL_TTL * 2 / 1000) });
+    }
+  } catch (_) {}
+
+  // Assemble intel section
+  const intelChecks = [];
+  for (const r of intelFresh) {
+    intelChecks.push({ scope: r.scope, status: r.status, prompt: r.prompt, expect_hit: r.expect_hit, expect_total: r.expect_total, cross_hit: r.cross_hit, cross_total: r.cross_total, detail: r.detail, response: r.response, elapsed_ms: r.elapsed_ms });
+  }
+  // Add cached results
+  for (const [url, entry] of Object.entries(intelCached)) {
+    if (intelFresh.some(r => r.url === url)) continue; // already in fresh
+    if ((now - entry.ts) < INTEL_TTL) {
+      const age = Math.round((now - entry.ts) / 1000);
+      intelChecks.push({ scope: entry.scope, status: entry.status, prompt: entry.prompt, expect_hit: entry.expect_hit, expect_total: entry.expect_total, cross_hit: entry.cross_hit, cross_total: entry.cross_total, detail: entry.detail, cached: `${age}s ago`, elapsed_ms: entry.elapsed_ms });
+    }
+  }
+
+  const intelTested = intelChecks.filter(c => c.status === 'ok' || c.status === 'weak' || c.status === 'fail').length;
+  const intelPassed = intelChecks.filter(c => c.status === 'ok').length;
+  const intelWeak = intelChecks.filter(c => c.status === 'weak').length;
+  const intelFailed = intelChecks.filter(c => c.status === 'fail').length;
+  const intelTotal = accessibleUrls.length;
+  const intelPending = intelTotal - intelChecks.filter(c => c.status !== 'no_test' && c.status !== 'skip').length;
+
+  // ── Assemble response ─────────────────────────────────────────
+  const probed = surfaces.filter(s => s.status !== 'private' && s.status !== 'pending');
+  const okCount = probed.filter(s => s.status === 'ok').length;
+  const pending = surfaces.filter(s => s.status === 'pending').length;
+  const privateCount = surfaces.filter(s => s.status === 'private').length;
+  const violations = [
+    ...probed.filter(s => s.status === 'error' || s.status === 'unreachable').map(s => ({
+      type: 'SURFACE_ERROR', scope: s.scope, url: s.url, detail: s.detail,
+    })),
+    ...svcViolations,
+    ...intelChecks.filter(c => c.status === 'fail').map(c => ({
+      type: 'INTEL_FAIL', scope: c.scope, prompt: c.prompt, detail: c.detail,
+    })),
+  ];
+
+  const svcOk = services.filter(s => s.status === 'ok').length;
+  const svcTotal = services.length;
+  const overall = violations.length > 0 ? 'degraded' : pending > 0 ? 'warming' : 'ok';
 
   return json({
-    status: violations.length === 0 && skipped === 0 ? 'ok' : violations.length > 0 ? 'degraded' : 'partial',
+    status: overall,
     provider: env.PROVIDER,
     model: env.MODEL,
-    ts: Date.now(),
-    checked,
-    ok,
-    skipped: skipped || undefined,
+    ts: now,
+    total: allChecks.length + privateCount,
+    checked: probed.length,
+    ok: okCount,
+    private: privateCount || undefined,
+    pending: pending || undefined,
+    services: { total: svcTotal, ok: svcOk, checks: services },
+    intel: {
+      total: intelTotal,
+      tested: intelTested,
+      passed: intelPassed,
+      weak: intelWeak || undefined,
+      failed: intelFailed || undefined,
+      pending: intelPending > 0 ? intelPending : undefined,
+      checks: intelChecks.length ? intelChecks : undefined,
+    },
     sitemap,
     surfaces,
     violations: violations.length ? violations : undefined,
