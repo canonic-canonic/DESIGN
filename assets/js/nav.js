@@ -6,6 +6,23 @@ var NAV = (function() {
 
     function init() {
         loadBreadcrumbs();
+        initDropdown();
+    }
+
+    function initDropdown() {
+        var btn = document.getElementById('navBrand');
+        var dd = document.getElementById('navDropdown');
+        if (!btn || !dd) return;
+        btn.addEventListener('click', function() {
+            var open = dd.classList.toggle('open');
+            btn.setAttribute('aria-expanded', open);
+        });
+        document.addEventListener('click', function(e) {
+            if (!btn.contains(e.target) && !dd.contains(e.target)) {
+                dd.classList.remove('open');
+                btn.setAttribute('aria-expanded', 'false');
+            }
+        });
     }
 
     function loadBreadcrumbs() {

@@ -383,6 +383,40 @@ a.nav-crumb:hover { color: var(--accent); }
     color: var(--fg);
 }
 
+/* ── Nav dropdown (paper/book standalone layouts) ── */
+.nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--panel);
+    border-bottom: 1px solid var(--glass-border);
+    padding: var(--space-xs) var(--space-md);
+    z-index: 99;
+}
+.nav-dropdown.open { display: block; }
+.nav-dropdown-label {
+    font-family: var(--mono);
+    font-size: var(--font-xs);
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    margin-bottom: var(--space-2xs);
+}
+.nav-dropdown-links {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+.nav-dropdown-links a {
+    font-family: var(--mono);
+    font-size: var(--font-sm);
+    color: var(--accent);
+    text-decoration: none;
+}
+.nav-dropdown-links a:hover { text-decoration: underline; }
+.nav-dropdown-links a.active { color: var(--fg); }
+
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
     .nav-dot { animation: none; }
