@@ -477,6 +477,15 @@
 .book-page .post.paper {
     max-width: 48rem;
 }
+/* Collapse gap between title-only article and view-md article in book layout */
+.book-page > .post:first-of-type {
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+.book-page .view-md > .post {
+    padding-top: 0;
+    margin-top: 0;
+}
 .paper-author {
     font-size: var(--font-sm);
     color: var(--fg-secondary);
