@@ -10,14 +10,18 @@
 <html lang="en" data-scope="{{ scope_key }}">
 <head>
   {% include HEAD.html title=page.title description=page.description %}
+  {% assign deps = site.data.deps %}
   {% if page.math %}
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" crossorigin="anonymous"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+  <!-- KaTeX (conditional) — governed by DEPS.md -->
+  <link rel="stylesheet" href="{{ deps.katex.css }}" integrity="{{ deps.katex.css_integrity }}" crossorigin="anonymous">
+  <script defer src="{{ deps.katex.js }}" integrity="{{ deps.katex.js_integrity }}" crossorigin="anonymous"></script>
+  <script defer src="{{ deps.katex.auto_render }}" integrity="{{ deps.katex.auto_render_integrity }}" crossorigin="anonymous"
     onload="renderMathInElement(document.body, {
       delimiters: [
         {left: '$$', right: '$$', display: true},
-        {left: '$', right: '$', display: false}
+        {left: '$', right: '$', display: false},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false}
       ],
       throwOnError: false
     });"></script>
@@ -41,11 +45,7 @@
         <span class="nav-dot"></span>
         <span class="nav-talk-label">TALK</span>
       </button>{% endif %}
-      {% if page.downloads %}
-      {% for dl in page.downloads %}
-      <a href="{{ dl.href | relative_url }}" class="nav-ctrl nav-dl" download title="Download {{ dl.label }}">&#8615; {{ dl.label }}</a>
-      {% endfor %}
-      {% endif %}
+      {% if page.gate == "contribute" %}<a href="#Contribute" class="nav-ctrl" title="Contribute to this paper">CONTRIBUTE</a>{% endif %}
       {% if page.view %}
       <button class="nav-ctrl nav-view" type="button"
         data-view="{{ page.view }}" onclick="CONTROLS.view(this)" title="Toggle view">
@@ -65,6 +65,22 @@
     </div>
     {% endif %}
   </header>
+
+  {% if page.gate == "contribute" %}
+  <!-- CONTRIBUTE GATE: identity required before any content renders -->
+  <div class="gate-contribute" id="gate">
+    <div class="gate-inner">
+      <p class="gate-text">Tell us who you are to read, explore, and contribute. Your identity is logged with provenance. Open access. Governed record.</p>
+      <form class="gate-form" id="gateForm">
+        <input type="text" id="g-name" placeholder="Full Name" required>
+        <input type="email" id="g-email" placeholder="Email" required>
+        <input type="text" id="g-affiliation" placeholder="Affiliation" required>
+        <button type="submit" class="btn">ENTER</button>
+      </form>
+    </div>
+  </div>
+  <div class="gated-content" id="gatedContent">
+  {% endif %}
 
   <!-- PDF VIEWER: tex view (default when view: tex) -->
   {% if page.pdf %}
@@ -109,7 +125,27 @@
     <div class="post-body prose">
       {{ content }}
     </div>
+
+    {% if page.gate == "contribute" %}
+    <div class="contribute-section" id="Contribute">
+      <h2>Contribute</h2>
+      <p class="contribute-sub">Have a story, a quote we missed, a correction, a moment? Every contribution is governed and attributed.</p>
+      <form class="gate-form" id="contribForm">
+        <input type="text" id="c-chapter" placeholder="Section or quote this relates to (optional)">
+        <textarea id="c-story" placeholder="Your story, quote, or correction..." required></textarea>
+        <input type="text" id="c-source" placeholder="Source (paper title, year, personal memory...)">
+        <button type="submit" class="btn">SUBMIT CONTRIBUTION</button>
+      </form>
+      <div class="contrib-success" id="contribSuccess">
+        Your contribution has been recorded with provenance. Thank you.
+      </div>
+    </div>
+    {% endif %}
   </article>
+
+  {% if page.gate == "contribute" %}
+  </div><!-- /gatedContent -->
+  {% endif %}
 
   <!-- FOOTER: inline (same classes as FOOTER.html) -->
   <footer id="footer">
@@ -150,9 +186,34 @@
   <script>TALK.init();</script>
   {% endif %}
 
+  {% if page.gate == "contribute" %}
+  <!-- Contribute gate script (identity + contribution form) -->
+  <script>
+  (function(){
+    var KEY='canonic-gate-'+{{ page.scope | jsonify }};
+    var stored=localStorage.getItem(KEY);
+    function unlock(){document.getElementById('gate').classList.add('hidden');document.getElementById('gatedContent').classList.add('unlocked');}
+    if(stored){try{var d=JSON.parse(stored);if(d&&d.name){unlock();}}catch(e){}}
+    document.getElementById('gateForm').addEventListener('submit',function(e){
+      e.preventDefault();
+      var entry={name:document.getElementById('g-name').value.trim(),email:document.getElementById('g-email').value.trim(),affiliation:document.getElementById('g-affiliation').value.trim(),timestamp:new Date().toISOString(),scope:{{ page.scope | jsonify }}};
+      localStorage.setItem(KEY,JSON.stringify(entry));
+      unlock();
+    });
+    document.getElementById('contribForm').addEventListener('submit',function(e){
+      e.preventDefault();
+      var auth=JSON.parse(localStorage.getItem(KEY)||'{}');
+      var contrib={scope:{{ page.scope | jsonify }},contributor:auth.name||'Anonymous',email:auth.email||'',affiliation:auth.affiliation||'',chapter:document.getElementById('c-chapter').value.trim(),story:document.getElementById('c-story').value.trim(),source:document.getElementById('c-source').value.trim()};
+      function showSuccess(msg){document.getElementById('contribForm').classList.add('hidden');var s=document.getElementById('contribSuccess');if(msg)s.textContent=msg;s.classList.add('unlocked');}
+      fetch('https://api.canonic.org/contribute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(contrib)}).then(function(r){return r.json()}).then(function(d){if(d.ok){showSuccess();}}).catch(function(){var local=JSON.parse(localStorage.getItem(KEY+'-contributions')||'[]');contrib.timestamp=new Date().toISOString();contrib.offline=true;local.push(contrib);localStorage.setItem(KEY+'-contributions',JSON.stringify(local));showSuccess('Saved offline. Will sync when reconnected.');});
+    });
+  })();
+  </script>
+  {% endif %}
+
   <!-- Mermaid (inlined, theme-reactive) -->
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    import mermaid from '{{ site.data.deps.mermaid.esm }}';
     const sources=new Map();
     document.querySelectorAll('code.language-mermaid').forEach(c=>{
       const d=document.createElement('div');

@@ -106,7 +106,7 @@
 
   {% include SCRIPTS.html %}
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    import mermaid from '{{ site.data.deps.mermaid.esm }}';
     document.querySelectorAll('code.language-mermaid').forEach(c=>{
       const d=document.createElement('div');
       d.classList.add('mermaid');

@@ -14,14 +14,18 @@
 <html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
 <head>
   {% include HEAD.html title=page.title description=page.description %}
+  {% assign deps = site.data.deps %}
   {% if page.math %}
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" crossorigin="anonymous"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+  <!-- KaTeX (conditional) — governed by DEPS.md -->
+  <link rel="stylesheet" href="{{ deps.katex.css }}" integrity="{{ deps.katex.css_integrity }}" crossorigin="anonymous">
+  <script defer src="{{ deps.katex.js }}" integrity="{{ deps.katex.js_integrity }}" crossorigin="anonymous"></script>
+  <script defer src="{{ deps.katex.auto_render }}" integrity="{{ deps.katex.auto_render_integrity }}" crossorigin="anonymous"
     onload="renderMathInElement(document.body, {
       delimiters: [
         {left: '$$', right: '$$', display: true},
-        {left: '$', right: '$', display: false}
+        {left: '$', right: '$', display: false},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false}
       ],
       throwOnError: false
     });"></script>
@@ -171,7 +175,7 @@
 
   <!-- Mermaid (theme-reactive) -->
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    import mermaid from '{{ site.data.deps.mermaid.esm }}';
     const sources=new Map();
     document.querySelectorAll('code.language-mermaid').forEach(c=>{
       const d=document.createElement('div');
