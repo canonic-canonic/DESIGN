@@ -1,0 +1,13 @@
+---
+layout: null
+sitemap: false
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{% for page in site.pages %}{% unless page.sitemap == false or page.layout == null %}
+<url>
+<loc>{{ page.url | absolute_url | downcase }}</loc>
+<lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+</url>
+{% endunless %}{% endfor %}
+</urlset>
