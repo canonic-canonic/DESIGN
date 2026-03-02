@@ -185,3 +185,22 @@ footer {
 footer a { color: var(--accent); opacity: 0.8; }
 footer a:hover { opacity: 1; }
 
+/* Grid (merged from _GRID.scss) */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-sm-md);
+}
+
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-sm-md); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm-md); }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-sm-md); }
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-sm-md); }
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+}
+
