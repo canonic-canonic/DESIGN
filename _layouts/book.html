@@ -86,9 +86,16 @@
   </article>
 
   {% if page.pdf %}
-  <!-- ═══ PDF VIEWER (dual-view: shown when view=tex, hidden when gate:contribute until passed) ═══ -->
-  <div class="pdf-viewer" id="pdfViewer"{% if page.gate == "contribute" or page.view != "tex" %} style="display:none"{% endif %}>
-    <iframe src="{{ page.pdf | relative_url }}" title="{{ page.title }} — PDF"></iframe>
+  <!-- ═══ PDF VIEWER (PDF.js canvas — no browser iframe fallback) ═══ -->
+  <div class="pdf-viewer-mode" id="pdfViewer"{% if page.gate == "contribute" or page.view != "tex" %} style="display:none"{% endif %}>
+    <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
+    <button type="button" class="pdf-nav-btn pdf-nav-btn--prev" id="pdfPrev" aria-label="Previous page">&larr;</button>
+    <button type="button" class="pdf-nav-btn pdf-nav-btn--next" id="pdfNext" aria-label="Next page">&rarr;</button>
+    <nav class="pdf-nav">
+      <span class="pdf-page-counter">
+        <span id="pdfCurr">1</span> / <span id="pdfTotal">0</span>
+      </span>
+    </nav>
   </div>
   {% endif %}
 

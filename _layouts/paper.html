@@ -82,10 +82,17 @@
   <div class="gated-content" id="gatedContent">
   {% endif %}
 
-  <!-- PDF VIEWER: tex view (hidden by default — HTML is always the default view) -->
+  <!-- PDF VIEWER: tex view (PDF.js canvas — no browser iframe) -->
   {% if page.pdf %}
-  <div id="pdfViewer" class="pdf-viewer"{% unless page.view == "tex" %} style="display:none"{% endunless %}>
-    <iframe src="{{ page.pdf | relative_url }}" title="{{ page.title }} — PDF"></iframe>
+  <div id="pdfViewer" class="pdf-viewer-mode"{% unless page.view == "tex" %} style="display:none"{% endunless %}>
+    <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
+    <button type="button" class="pdf-nav-btn pdf-nav-btn--prev" id="pdfPrev" aria-label="Previous page">&larr;</button>
+    <button type="button" class="pdf-nav-btn pdf-nav-btn--next" id="pdfNext" aria-label="Next page">&rarr;</button>
+    <nav class="pdf-nav">
+      <span class="pdf-page-counter">
+        <span id="pdfCurr">1</span> / <span id="pdfTotal">0</span>
+      </span>
+    </nav>
   </div>
   {% endif %}
 
@@ -236,5 +243,13 @@
       mermaid.run({nodes:document.querySelectorAll('.mermaid')});
     }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
   </script>
+
+  {% if page.pdf %}
+  <!-- PDF.js + pdf-viewer.js (canvas rendering — no browser iframe) — governed by DEPS.md -->
+  <script src="{{ deps.pdfjs.js }}" integrity="{{ deps.pdfjs.js_integrity }}" crossorigin="anonymous"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc='{{ deps.pdfjs.worker }}';</script>
+  <script src="{{ '/assets/js/pdf-viewer.js' | relative_url }}"></script>
+  <script>PDFVIEWER.init('{{ page.pdf | relative_url }}');</script>
+  {% endif %}
 </body>
 </html>
