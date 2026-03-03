@@ -33,7 +33,11 @@ var CONTROLS = (function() {
         // Show target view
         if (target === 'md' && mdView) mdView.style.display = '';
         if (target === 'html' && htmlView) htmlView.style.display = '';
-        if (target === 'tex' && pdfViewer) pdfViewer.style.display = '';
+        if (target === 'tex' && pdfViewer) {
+            pdfViewer.style.display = '';
+            // Re-render PDF when revealed from hidden (fixes 0×0 canvas)
+            if (typeof PDFVIEWER !== 'undefined' && PDFVIEWER.reveal) PDFVIEWER.reveal();
+        }
 
         // Update toggle bar active state
         document.querySelectorAll('.view-toggle-btn').forEach(function(b) {

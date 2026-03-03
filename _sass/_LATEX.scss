@@ -499,27 +499,10 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PDF VIEWER — Inline iframe embed (tex view)
-   Toggled by controls.js VIEW button: tex|md
-   ═══════════════════════════════════════════════════════════════ */
-
-.pdf-viewer {
-    width: 100%;
-    max-width: 56rem;
-    margin: 0 auto;
-    padding-top: var(--nav-h);
-}
-.pdf-viewer iframe {
-    width: 100%;
-    height: calc(100vh - var(--nav-h) - 2rem);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   PDF VIEWER (legacy) — Paginated display with deck.js-style navigation
-   Renders compiled LaTeX PDFs via PDF.js. Token-only.
+   PDF VIEWER — Book-Spread Presentation
+   GOV: PAPERS.md → TEX View — PDF.js canvas (book-spread)
+   Two modes: spread (desktop ≥768px) / scroll (mobile <768px)
+   Apple-style effects: page turn, spine shadow, depth, hover lift
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Viewer container (full viewport) ── */
@@ -535,11 +518,134 @@
     z-index: var(--z-base);
 }
 
+/* ── Spread mode: 2-page facing ── */
+.pdf-spread {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    perspective: 1200px;
+    transform-style: preserve-3d;
+}
+
+/* ── Page wrapper (both modes) ── */
+.pdf-page-wrapper {
+    position: relative;
+    transition: var(--transition-fast);
+}
+
+/* ── Spread mode page positioning ── */
+.pdf-page--left {
+    transform-origin: right center;
+}
+.pdf-page--right {
+    transform-origin: left center;
+}
+
+/* ── Hover lift effect ── */
+.pdf-viewer--spread .pdf-page-wrapper:hover {
+    transform: translateY(-2px);
+}
+
 /* ── Canvas (centered, aspect-preserved, HiDPI) ── */
 .pdf-canvas {
     display: block;
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-lg);
+}
+
+/* ── Left page: deeper shadow on right edge (toward spine) ── */
+.pdf-page--left .pdf-canvas {
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    box-shadow:
+        -4px 2px 12px rgba(0, 0, 0, 0.08),
+        -1px 0 4px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Right page: deeper shadow on left edge (toward spine) ── */
+.pdf-page--right .pdf-canvas {
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    box-shadow:
+        4px 2px 12px rgba(0, 0, 0, 0.08),
+        1px 0 4px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Page edge gradient (simulates page thickness) ── */
+.pdf-page--left::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to left, var(--border), transparent);
+    pointer-events: none;
+}
+.pdf-page--right::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to right, var(--border), transparent);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ── Spine shadow (between facing pages) ── */
+.pdf-spine {
+    width: 6px;
+    align-self: stretch;
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.06),
+        rgba(0, 0, 0, 0.12) 40%,
+        rgba(0, 0, 0, 0.12) 60%,
+        rgba(0, 0, 0, 0.06)
+    );
+    flex-shrink: 0;
+}
+
+/* ── Blank page slot (cover recto, last verso) ── */
+.pdf-page-blank {
+    aspect-ratio: 0.707;
+    background: transparent;
+}
+
+/* ── Page-turn animation: entering spread ── */
+.pdf-spread--entering {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.pdf-spread--from-right {
+    opacity: 0;
+    transform: translateX(40px) rotateY(-4deg);
+}
+.pdf-spread--from-left {
+    opacity: 0;
+    transform: translateX(-40px) rotateY(4deg);
+}
+.pdf-spread--entered {
+    opacity: 1;
+    transform: translateX(0) rotateY(0);
+    transition: opacity 400ms ease-out, transform 400ms ease-out;
+}
+
+/* ── Page-turn animation: leaving spread ── */
+.pdf-spread--leaving {
+    transition: opacity 400ms ease-out, transform 400ms ease-out;
+}
+.pdf-spread--to-left {
+    opacity: 0;
+    transform: translateX(-40px) rotateY(4deg);
+}
+.pdf-spread--to-right {
+    opacity: 0;
+    transform: translateX(40px) rotateY(-4deg);
 }
 
 /* ── Navigation bar (bottom center, glass panel) ── */
@@ -570,41 +676,6 @@
     white-space: nowrap;
 }
 
-/* ── Prev/Next buttons (side arrows) ── */
-.pdf-nav-btn {
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: rgba(var(--accent-rgb), 0.1);
-    border: 1px solid rgba(var(--accent-rgb), 0.2);
-    color: var(--accent);
-    font-size: var(--font-lg);
-    font-weight: 700;
-    cursor: pointer;
-    transition: var(--transition-fast);
-    z-index: var(--z-modal);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.pdf-nav-btn:hover:not(:disabled) {
-    background: rgba(var(--accent-rgb), 0.2);
-    border-color: var(--accent);
-    box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.3);
-}
-
-.pdf-nav-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-
-.pdf-nav-btn--prev { left: var(--space-sm); }
-.pdf-nav-btn--next { right: var(--space-sm); }
-
 /* ── Downloads (fixed top-right corner) ── */
 .pdf-viewer-mode ~ .paper-downloads {
     position: fixed;
@@ -613,11 +684,32 @@
     z-index: var(--z-modal);
 }
 
+/* ── Scroll mode (mobile) ── */
+.pdf-viewer--scroll {
+    overflow-y: auto;
+    max-height: 85vh;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.pdf-page--scroll {
+    margin-bottom: var(--space-sm);
+}
+
+.pdf-page--scroll .pdf-canvas {
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+}
+
 /* ── Responsive — mobile ── */
 @media (max-width: 768px) {
-    .pdf-nav-btn--prev,
-    .pdf-nav-btn--next { display: none; }
     .pdf-viewer-mode { padding-bottom: var(--space-md); }
     .pdf-nav { bottom: var(--space-sm); }
+}
+
+/* ── Cursor hints for click-edge navigation ── */
+.pdf-viewer--spread {
+    cursor: default;
 }
 
