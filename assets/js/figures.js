@@ -14,17 +14,18 @@
     'pipeline': function (el) {
       var steps = JSON.parse(el.dataset.steps || '[]');
       var n = steps.length; if (!n) return;
-      var w = 420, h = 180, padX = 50, stepW = (w - padX * 2) / n, cy = h / 2;
+      var w = 600, h = 160, padX = 60, stepW = (w - padX * 2) / (n - 1 || 1), cy = 55;
       var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
-      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="' + fg(0.02) + '"/>';
       steps.forEach(function (s, i) {
-        var cx = padX + stepW * i + stepW / 2;
+        var cx = n === 1 ? w / 2 : padX + stepW * i;
         var fill = i === n - 1 ? A + '0.25)' : fg(0.04);
         var stroke = i === n - 1 ? A + '0.7)' : fg(0.15);
-        svg += '<circle cx="' + cx + '" cy="' + cy + '" r="28" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5"/>';
-        svg += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="11" fill="' + fg(0.75) + '" font-family="var(--mono)">' + (s.label || s) + '</text>';
+        svg += '<circle cx="' + cx + '" cy="' + cy + '" r="24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5"/>';
+        svg += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="12" font-weight="700" fill="' + (i === n - 1 ? A + '0.9)' : fg(0.6)) + '" font-family="var(--mono)">' + (i + 1) + '</text>';
+        var label = (s.label || s);
+        svg += '<text x="' + cx + '" y="' + (cy + 44) + '" text-anchor="middle" font-size="9" fill="' + fg(0.6) + '" font-family="var(--mono)">' + label + '</text>';
         if (i < n - 1) {
-          var x1 = cx + 30, x2 = padX + stepW * (i + 1) + stepW / 2 - 30;
+          var x1 = cx + 26, x2 = padX + stepW * (i + 1) - 26;
           svg += '<line x1="' + x1 + '" y1="' + cy + '" x2="' + x2 + '" y2="' + cy + '" stroke="' + A + '0.35)" stroke-width="1.5"/>';
           svg += '<polygon points="' + x2 + ',' + (cy - 4) + ' ' + (x2 + 6) + ',' + cy + ' ' + x2 + ',' + (cy + 4) + '" fill="' + A + '0.5)"/>';
         }
@@ -36,17 +37,17 @@
     'audit-trail': function (el) {
       var items = JSON.parse(el.dataset.items || '[]');
       var n = items.length; if (!n) return;
-      var w = 420, h = 240, blockH = 36, gap = 10;
-      var totalH = n * (blockH + gap) - gap, startY = (h - totalH) / 2;
+      var w = 500, blockH = 32, gap = 6;
+      var h = n * (blockH + gap) + 20;
+      var startY = 10, bx = 80, bw = 340;
       var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
-      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="' + fg(0.02) + '"/>';
       items.forEach(function (item, i) {
         var y = startY + i * (blockH + gap);
         var alpha = (0.08 + (i / n) * 0.12).toFixed(2);
-        svg += '<rect x="100" y="' + y + '" width="220" height="' + blockH + '" rx="8" fill="' + fg(alpha) + '" stroke="' + A + (0.15 + i * 0.1).toFixed(2) + ')" stroke-width="1"/>';
-        svg += '<text x="210" y="' + (y + blockH / 2 + 4) + '" text-anchor="middle" font-size="12" fill="' + fg(0.7) + '" font-family="var(--mono)">' + (item.label || item) + '</text>';
-        if (i < n - 1) svg += '<line x1="210" y1="' + (y + blockH) + '" x2="210" y2="' + (y + blockH + gap) + '" stroke="' + A + '0.3)" stroke-width="1.5" stroke-dasharray="3 2"/>';
-        svg += '<text x="86" y="' + (y + blockH / 2 + 4) + '" text-anchor="end" font-size="10" fill="' + A + '0.4)" font-family="var(--mono)">#' + (i + 1) + '</text>';
+        svg += '<rect x="' + bx + '" y="' + y + '" width="' + bw + '" height="' + blockH + '" rx="6" fill="' + fg(alpha) + '" stroke="' + A + (0.15 + i * 0.1).toFixed(2) + ')" stroke-width="1"/>';
+        svg += '<text x="' + (bx + bw / 2) + '" y="' + (y + blockH / 2 + 4) + '" text-anchor="middle" font-size="11" fill="' + fg(0.75) + '" font-family="var(--mono)">' + (item.label || item) + '</text>';
+        if (i < n - 1) svg += '<line x1="' + (bx + bw / 2) + '" y1="' + (y + blockH) + '" x2="' + (bx + bw / 2) + '" y2="' + (y + blockH + gap) + '" stroke="' + A + '0.3)" stroke-width="1.5" stroke-dasharray="3 2"/>';
+        svg += '<text x="' + (bx - 10) + '" y="' + (y + blockH / 2 + 4) + '" text-anchor="end" font-size="10" fill="' + A + '0.5)" font-family="var(--mono)">#' + (i + 1) + '</text>';
       });
       svg += '</svg>';
       el.innerHTML = svg;
