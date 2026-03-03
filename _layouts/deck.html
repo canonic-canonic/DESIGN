@@ -1,6 +1,7 @@
 <!-- LAYOUT: DECK | Presentations | DESIGN.md 255 Map -->
 <!-- Same section data as default, rendered as slides instead of scrollable page -->
-{% assign sd = site.data[page.scope | downcase] %}
+{% assign scope_key = page.scope | default: site.scope | downcase %}
+{% assign sd = site.data[scope_key] %}
 {% assign sections = page.sections | default: sd.sections %}
 <!DOCTYPE html>
 <html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
