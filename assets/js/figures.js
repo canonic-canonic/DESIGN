@@ -22,7 +22,7 @@
         var fill = i === n - 1 ? A + '0.25)' : fg(0.04);
         var stroke = i === n - 1 ? A + '0.7)' : fg(0.15);
         svg += '<circle cx="' + cx + '" cy="' + cy + '" r="28" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5"/>';
-        svg += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="11" fill="' + fg(0.75) + '" font-family="var(--mono)">' + s + '</text>';
+        svg += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="11" fill="' + fg(0.75) + '" font-family="var(--mono)">' + (s.label || s) + '</text>';
         if (i < n - 1) {
           var x1 = cx + 30, x2 = padX + stepW * (i + 1) + stepW / 2 - 30;
           svg += '<line x1="' + x1 + '" y1="' + cy + '" x2="' + x2 + '" y2="' + cy + '" stroke="' + A + '0.35)" stroke-width="1.5"/>';
@@ -44,7 +44,7 @@
         var y = startY + i * (blockH + gap);
         var alpha = (0.08 + (i / n) * 0.12).toFixed(2);
         svg += '<rect x="100" y="' + y + '" width="220" height="' + blockH + '" rx="8" fill="' + fg(alpha) + '" stroke="' + A + (0.15 + i * 0.1).toFixed(2) + ')" stroke-width="1"/>';
-        svg += '<text x="210" y="' + (y + blockH / 2 + 4) + '" text-anchor="middle" font-size="12" fill="' + fg(0.7) + '" font-family="var(--mono)">' + item + '</text>';
+        svg += '<text x="210" y="' + (y + blockH / 2 + 4) + '" text-anchor="middle" font-size="12" fill="' + fg(0.7) + '" font-family="var(--mono)">' + (item.label || item) + '</text>';
         if (i < n - 1) svg += '<line x1="210" y1="' + (y + blockH) + '" x2="210" y2="' + (y + blockH + gap) + '" stroke="' + A + '0.3)" stroke-width="1.5" stroke-dasharray="3 2"/>';
         svg += '<text x="86" y="' + (y + blockH / 2 + 4) + '" text-anchor="end" font-size="10" fill="' + A + '0.4)" font-family="var(--mono)">#' + (i + 1) + '</text>';
       });
@@ -69,7 +69,7 @@
       nodes.forEach(function (nd, i) {
         var x = padX + segW * i;
         svg += '<circle cx="' + x + '" cy="' + cy + '" r="22" fill="' + A + '0.2)" stroke="' + A + '0.5)" stroke-width="1.5"/>';
-        svg += '<text x="' + x + '" y="' + (cy + 42) + '" text-anchor="middle" font-size="10" fill="' + fg(0.6) + '" font-family="var(--mono)">' + nd + '</text>';
+        svg += '<text x="' + x + '" y="' + (cy + 42) + '" text-anchor="middle" font-size="10" fill="' + fg(0.6) + '" font-family="var(--mono)">' + (nd.label || nd) + '</text>';
       });
       svg += '</svg>';
       el.innerHTML = svg;
