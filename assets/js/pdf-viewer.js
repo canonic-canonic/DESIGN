@@ -193,7 +193,7 @@ var PDFVIEWER = (function () {
 
     /* ═══ SCROLL MODE ═════════════════════════════════════════════ */
 
-    function renderScroll() {
+    function renderScroll(scrollToPage) {
         if (!_pdf || _rendering) return;
         _rendering = true;
 
@@ -226,6 +226,20 @@ var PDFVIEWER = (function () {
         Promise.all(promises).then(function () {
             _rendering = false;
             wireScrollSpy();
+
+            // Restore scroll position from mode transition
+            if (scrollToPage && scrollToPage > 1) {
+                var item = _pages[scrollToPage - 1];
+                if (item) {
+                    item.wrapper.scrollIntoView({ behavior: 'instant' });
+                    _current = scrollToPage;
+                    updateUI();
+                }
+            } else {
+                // Ensure counter reflects page 1 at top
+                _current = 1;
+                updateUI();
+            }
         }).catch(function (err) {
             console.error('PDFVIEWER scroll render error:', err);
             _rendering = false;
@@ -235,16 +249,19 @@ var PDFVIEWER = (function () {
     function wireScrollSpy() {
         if (_observer) _observer.disconnect();
         _observer = new IntersectionObserver(function (entries) {
+            var best = null;
             entries.forEach(function (entry) {
                 if (entry.isIntersecting) {
-                    var n = parseInt(entry.target.getAttribute('data-page'));
-                    if (n && n !== _current) {
-                        _current = n;
-                        updateUI();
+                    if (!best || entry.intersectionRatio > best.ratio) {
+                        best = { page: parseInt(entry.target.getAttribute('data-page')), ratio: entry.intersectionRatio };
                     }
                 }
             });
-        }, { root: _container, threshold: 0.5 });
+            if (best && best.page && best.page !== _current) {
+                _current = best.page;
+                updateUI();
+            }
+        }, { root: _container, threshold: [0.1, 0.3, 0.5, 0.7] });
 
         _pages.forEach(function (item) {
             _observer.observe(item.wrapper);
@@ -384,6 +401,9 @@ var PDFVIEWER = (function () {
     }
 
     function rebuild() {
+        // Preserve page context across mode transitions
+        var savedPage = _current;
+
         // Clear everything except nav
         var children = Array.from(_container.children);
         children.forEach(function (c) {
@@ -398,9 +418,11 @@ var PDFVIEWER = (function () {
         _container.classList.toggle('pdf-viewer--scroll', _mode === 'scroll');
 
         if (_mode === 'spread') {
+            _spreadIdx = spreadForPage(savedPage);
             renderSpread(_spreadIdx, null);
         } else {
-            renderScroll();
+            _current = savedPage;
+            renderScroll(savedPage);
         }
     }
 
