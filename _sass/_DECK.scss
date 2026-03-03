@@ -95,7 +95,7 @@ main.deck-main {
     gap: var(--space-sm);
     margin-top: var(--space-sm);
     width: 100%;
-    max-width: 900px;
+    max-width: 1100px;
     flex: 0 1 auto;
     min-height: 0;
 }
@@ -441,9 +441,10 @@ main.deck-main {
 /* ── Hero Stats (HERO-STATS.html) — THE reference layout ──────────── */
 .hero-stats {
     display: flex;
-    gap: var(--space-lg);
+    gap: var(--space-md);
     justify-content: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    width: 100%;
 }
 
 .hero-stat {
