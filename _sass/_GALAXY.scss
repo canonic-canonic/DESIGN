@@ -139,6 +139,47 @@
     margin-top: var(--space-2xs);
 }
 
+/* Galaxy legend overlay (top-right) — Category filter */
+.galaxy-legend {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    z-index: 10;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    line-height: 1.8;
+}
+.legend-cat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: var(--dim);
+    transition: all var(--transition-fast) ease;
+    padding: 1px 0;
+}
+.legend-cat:hover { color: var(--fg); }
+.legend-cat.active { color: var(--fg); font-weight: 600; }
+.legend-cat.dimmed { opacity: 0.2; }
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.legend-edges {
+    margin-top: var(--space-xs);
+    padding-top: var(--space-xs);
+    border-top: 1px solid var(--glass-subtle);
+    font-size: 9px;
+    color: var(--dim);
+    opacity: 0.6;
+}
+.galaxy-page .galaxy-legend {
+    top: calc(var(--header-offset) + var(--space-sm));
+}
+
 /* Galaxy dock overlay (bottom-center) — Icon Launcher Bar */
 .galaxy-dock {
     position: absolute;
@@ -458,6 +499,7 @@
     .galaxy-hero-text { padding: 80px var(--space-md) var(--space-md); }
     .galaxy-hud { padding: var(--space-xs); }
     .galaxy-hud svg { width: 80px; height: 80px; }
+    .galaxy-legend { display: none; }
     .dock-label { display: none; }
     .dock-btn { padding: var(--space-2xs); }
     .dock-app { width: 36px; height: 36px; font-size: 16px; }

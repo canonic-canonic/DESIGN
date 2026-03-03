@@ -102,6 +102,26 @@ var GALAXY = (function () {
         CONTENT: '\uf15c', SCOPE: '\uf111',
     };
 
+    // ── CATEGORY COLORS — from canonverse visual language ──
+    var CATEGORY_COLORS = {
+        KERNEL:     '#ff0088',
+        RUNTIME:    '#00ff88',
+        OPERATIONS: '#2997ff',
+        COMMERCE:   '#ff9f0a',
+        KNOWLEDGE:  '#bf5af2',
+        GOVERNANCE: '#ffd60a',
+        SERVICES:   '#ec4899',
+        CONTENT:    '#a78bfa',
+        ORG:        '#64748b',
+    };
+
+    function colorFor(n) {
+        // Priority: explicit node color > flagship color > category color > default
+        if (n.color && n.color !== '#64748b') return n.color;
+        if (FLAGSHIPS[n.label]) return FLAGSHIPS[n.label].color;
+        return CATEGORY_COLORS[n.category] || '#64748b';
+    }
+
     function iconFor(n) {
         return SERVICE_ICONS[n.label] || CATEGORY_ICONS[n.category] || '\uf111';
     }
@@ -607,13 +627,13 @@ var GALAXY = (function () {
 
             // Compliance-driven sizing (16-44px range)
             var size = 16 + (nodeBits / 255) * 28;
-            var nodeColor = n.color || '#64748b';
+            var nodeColor = colorFor(n);
             if (isPrivateVisible) nodeColor = '#ffd60a';
 
             return {
                 id: n.id, label: label, shape: 'icon',
                 icon: { face: FA, weight: '900', code: iconFor(n), size: size, color: nodeColor },
-                font: { color: isPrivateVisible ? '#ffd60a' : '#86868b', size: 9, vadjust: 4, multi: true, face: 'SF Mono, Menlo, monospace' },
+                font: { color: isPrivateVisible ? '#ffd60a' : nodeColor, size: 9, vadjust: 4, multi: true, face: 'SF Mono, Menlo, monospace' },
                 shadow: tierShadow(nodeBits),
                 mass: 0.8 + (nodeBits / 255) * 1.5
             };
@@ -791,7 +811,7 @@ var GALAXY = (function () {
             if (leaf.kind === 'SERVICE') {
                 return {
                     id: leaf.id, label: leaf.label, shape: 'icon',
-                    icon: { face: FA, weight: '900', code: iconFor(leaf), size: 20, color: leaf.color || '#64748b' },
+                    icon: { face: FA, weight: '900', code: iconFor(leaf), size: 20, color: colorFor(leaf) },
                     font: { color: '#86868b', size: 8, vadjust: 3, face: 'SF Mono, Menlo, monospace' },
                     mass: 0.5
                 };
@@ -925,6 +945,66 @@ var GALAXY = (function () {
         container.innerHTML = html;
     }
 
+    // ── LEGEND — interactive category filter ───────────────
+    var _activeCat = null;
+
+    function renderLegend() {
+        var el = document.getElementById('galaxyLegend');
+        if (!el) return;
+        var cats = ['KERNEL', 'RUNTIME', 'OPERATIONS', 'COMMERCE', 'KNOWLEDGE', 'GOVERNANCE', 'SERVICES', 'CONTENT', 'ORG'];
+        var html = '';
+        cats.forEach(function (cat) {
+            html += '<div class="legend-cat" data-cat="' + cat + '" onclick="GALAXY.filterCategory(\'' + cat + '\')">';
+            html += '<span class="legend-dot" style="background:' + CATEGORY_COLORS[cat] + '"></span>';
+            html += cat;
+            html += '</div>';
+        });
+        html += '<div class="legend-edges">';
+        html += '<span style="color:rgba(255,255,255,0.3)">━</span> inherits &nbsp;';
+        html += '<span style="color:rgba(255,255,255,0.2)">╌</span> cluster &nbsp;';
+        html += '<span style="color:rgba(255,255,255,0.1)">┈</span> domains';
+        html += '</div>';
+        el.innerHTML = html;
+    }
+
+    function filterCategory(cat) {
+        if (!nodeDS || !network) return;
+        var legendEl = document.getElementById('galaxyLegend');
+
+        if (_activeCat === cat) {
+            // Toggle off — show all
+            _activeCat = null;
+            nodeDS.forEach(function (visNode) {
+                var data = nodeMap[visNode.id];
+                if (!data) return;
+                nodeDS.update({ id: visNode.id, opacity: 1.0 });
+            });
+            if (legendEl) {
+                legendEl.querySelectorAll('.legend-cat').forEach(function (el) {
+                    el.classList.remove('active', 'dimmed');
+                });
+            }
+            return;
+        }
+
+        _activeCat = cat;
+        nodeDS.forEach(function (visNode) {
+            var data = nodeMap[visNode.id];
+            if (!data) return;
+            var nodeCat = data.category || (data.kind === 'ORG' ? 'ORG' : 'SCOPE');
+            var match = (nodeCat === cat) || (data.kind === cat);
+            nodeDS.update({ id: visNode.id, opacity: match ? 1.0 : 0.12 });
+        });
+
+        if (legendEl) {
+            legendEl.querySelectorAll('.legend-cat').forEach(function (el) {
+                var elCat = el.getAttribute('data-cat');
+                el.classList.toggle('active', elCat === cat);
+                el.classList.toggle('dimmed', elCat !== cat);
+            });
+        }
+    }
+
     // ── INTEL TASK MANAGER ──────────────────────────────────
     function renderIntelPanel() {
         var body = document.getElementById('intelBody');
@@ -1031,6 +1111,7 @@ var GALAXY = (function () {
         setTimeout(dismissLoader, 3000);
 
         renderDock();
+        renderLegend();
 
         // Spotlight search
         var spotlightInput = document.getElementById('spotlightInput');
@@ -1091,5 +1172,5 @@ var GALAXY = (function () {
         }
     }
 
-    return { init: init, closeDetail: closeDetail, focusScope: focusScope, openSpotlight: openSpotlight, closeSpotlight: closeSpotlight, auth: function () { return _authUser; } };
+    return { init: init, closeDetail: closeDetail, focusScope: focusScope, openSpotlight: openSpotlight, closeSpotlight: closeSpotlight, filterCategory: filterCategory, auth: function () { return _authUser; } };
 })();
