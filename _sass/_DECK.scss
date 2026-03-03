@@ -7,30 +7,21 @@
 /* ── Body: deck-mode ─────────────────────────────────────────────── */
 .deck-mode {
     overflow: hidden;
-    background: #000;   /* letterbox bars */
+    background: var(--bg);
 }
 
-/* ── Layout: 16:9 HD Letterbox ───────────────────────────────────── */
+/* ── Layout: Fullscreen ──────────────────────────────────────────── */
 .deck-main {
     position: relative;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .slide-area {
     position: relative;
-    aspect-ratio: 16 / 9;
-    width: 100vw;
-    max-width: 100vw;
-    max-height: 100vh;
-    overflow: hidden;
-    background: var(--bg);
-    border-radius: 6px;
-    box-shadow: 0 0 80px rgba(0,0,0,0.6);
+    width: 100%;
+    height: 100%;
 }
 
 .slide-container {
@@ -44,9 +35,9 @@
     display: none;
     flex-direction: column;
     justify-content: flex-start;
-    width: 100%;
-    height: 100%;
-    padding: 6% 8% 8%;
+    width: 100vw;
+    height: 100vh;
+    padding: 72px 8vw 60px;
     overflow: hidden;
     position: absolute;
     top: 0;
@@ -200,8 +191,8 @@
 
 /* ── Navigation Dots ──────────────────────────────────────────────── */
 .slide-nav {
-    position: absolute;
-    bottom: 5%;
+    position: fixed;
+    bottom: var(--space-md-lg);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -244,16 +235,17 @@
     font-family: var(--mono);
     font-size: var(--font-2xs);
     letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.3);
+    color: var(--dim);
     padding: var(--space-xs);
+    opacity: 0.5;
     z-index: var(--z-dropdown);
 }
 
 /* ── Downloads ────────────────────────────────────────────────────── */
 .deck-downloads {
-    position: absolute;
-    top: 3%;
-    right: 3%;
+    position: fixed;
+    top: var(--space-sm);
+    right: var(--space-sm);
     display: flex;
     gap: var(--space-xs);
     z-index: var(--z-sticky);
@@ -746,13 +738,8 @@
 
 /* ── Responsive ───────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-    .slide-area {
-        border-radius: 0;
-        box-shadow: none;
-    }
-
     .slide {
-        padding: 6% 5%;
+        padding: 60px 6vw 50px;
     }
 
     .slide-heading {
@@ -803,22 +790,9 @@
 
 /* ── Print / PDF ─────────────────────────────────────────────────── */
 @media print {
-    .deck-mode {
-        background: #fff;
-    }
+    .deck-mode { background: #fff; }
 
-    .slide-area {
-        width: 100%;
-        max-width: none;
-        max-height: none;
-        aspect-ratio: auto;
-        border-radius: 0;
-        box-shadow: none;
-    }
-
-    .slide-container {
-        position: static;
-    }
+    .slide-container { position: static; }
 
     .slide {
         display: flex !important;
@@ -828,6 +802,7 @@
         min-height: 100vh;
         page-break-after: always;
         break-after: page;
+        overflow: visible;
         padding: 5% 8%;
     }
 
@@ -839,13 +814,8 @@
         display: none !important;
     }
 
-    .slide-widget {
-        break-inside: avoid;
-    }
-
-    .slide-figure svg {
-        max-width: 360px;
-    }
+    .slide-widget { break-inside: avoid; }
+    .slide-figure svg { max-width: 360px; }
 }
 
 /* ── Light theme ──────────────────────────────────────────────────── */
