@@ -818,13 +818,18 @@ var GALAXY = (function () {
         renderHUD();
         renderIntelPanel();
 
-        // Dismiss loading spinner after physics stabilization
-        if (network) {
-            network.once('stabilizationIterationsDone', function () {
-                var loader = document.getElementById('galaxyLoader');
-                if (loader) loader.classList.add('hidden');
-            });
+        // Dismiss loading spinner after physics stabilization (with timeout fallback)
+        var loaderDismissed = false;
+        function dismissLoader() {
+            if (loaderDismissed) return;
+            loaderDismissed = true;
+            var loader = document.getElementById('galaxyLoader');
+            if (loader) loader.classList.add('hidden');
         }
+        if (network) {
+            network.once('stabilizationIterationsDone', dismissLoader);
+        }
+        setTimeout(dismissLoader, 3000);
 
         var search = document.getElementById('galaxySearch');
         if (search) {
