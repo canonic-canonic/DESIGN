@@ -17,6 +17,10 @@
 
   {% include NAV-UNIFIED.html nav=nav %}
 
+  {% if page.galaxy %}
+  {% include GALAXY.html %}
+  {% else %}
+
   <div id="hero">{% include HERO.html hero=hero %}</div>
 
   {% if page.stats %}<div id="stats">{% include STATS.html %}</div>{% endif %}
@@ -109,6 +113,8 @@
   {% endif %}
 
   <footer id="footer">{% include FOOTER.html footer=footer_data %}</footer>
+
+  {% endif %}
 
   {% include SCRIPTS.html %}
 </body>
