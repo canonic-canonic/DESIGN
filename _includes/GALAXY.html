@@ -1,0 +1,62 @@
+<!-- GALAXY | DESIGN.md 255 Map | Force-directed governance topology -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<div class="galaxy-hero">
+  <div class="galaxy-container" style="height:calc(100vh - var(--header-offset) - 40px);min-height:500px;">
+    <div id="galaxyLoader" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;font-family:var(--mono);font-size:var(--font-xs);color:var(--dim);text-align:center;">
+      <div style="width:40px;height:40px;border:3px solid var(--glass-strong);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto var(--space-sm);"></div>
+      LOADING GALAXY
+    </div>
+    <div id="galaxy" style="width:100%;height:100%;"></div>
+    <div class="galaxy-hud" id="hud"></div>
+    <div class="galaxy-search">
+      <input id="galaxySearch" type="text" placeholder="Search scopes..." autocomplete="off">
+    </div>
+    <div class="galaxy-dock">
+      <a href="/MAGIC/GALAXY/ORGS/">ORGS</a>
+      <a href="/MAGIC/GALAXY/USERS/">USERS</a>
+      <a href="#" onclick="var p=document.getElementById('intelPanel');if(p)p.classList.toggle('open');return false;">INTEL</a>
+    </div>
+    <div class="galaxy-detail" id="detailPanel"></div>
+    <div class="galaxy-detail" id="intelPanel" style="padding:var(--space-sm);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-sm);">
+        <span style="font-family:var(--mono);font-size:var(--font-xs);text-transform:uppercase;letter-spacing:0.1em;color:var(--dim);">INTEL TASKS</span>
+        <button style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;" onclick="document.getElementById('intelPanel').classList.remove('open')">&times;</button>
+      </div>
+      <div id="intelBody"></div>
+    </div>
+  </div>
+</div>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+#galaxyLoader.hidden { opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+/* Detail panel inline styles for galaxy.js-generated content */
+.dp-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm); border-bottom: 1px solid var(--glass-strong); }
+.dp-name { font-weight: 700; font-size: var(--font-base); }
+.dp-close { background: none; border: none; color: var(--dim); font-size: 20px; cursor: pointer; padding: 4px 8px; }
+.dp-close:hover { color: var(--fg); }
+.dp-ring { text-align: center; padding: var(--space-sm) 0; }
+.dp-tier { text-align: center; font-family: var(--mono); font-size: var(--font-sm); font-weight: 700; margin-bottom: var(--space-sm); }
+.dp-intel { padding: var(--space-xs) var(--space-sm); }
+.dp-intel-label { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); margin-bottom: 4px; }
+.dp-intel-value { color: var(--fg); font-size: var(--font-sm); }
+.dp-dims { display: flex; gap: 6px; flex-wrap: wrap; }
+.dp-dim-missing { font-family: var(--mono); font-size: 10px; color: #ff453a; background: rgba(255,69,58,0.1); padding: 2px 8px; border-radius: var(--radius-sm); }
+.dp-meta { padding: var(--space-xs) var(--space-sm); }
+.dp-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--glass-subtle); }
+.dp-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--dim); }
+.dp-value { font-size: var(--font-sm); }
+.dp-section { padding: var(--space-xs) var(--space-sm); }
+.dp-section-title { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); margin-bottom: 8px; }
+.dp-inheritors { display: flex; flex-wrap: wrap; gap: 6px; }
+.dp-child { font-family: var(--mono); font-size: 10px; padding: 3px 8px; border: 1px solid; border-radius: var(--radius-sm); cursor: pointer; transition: opacity var(--transition-fast); }
+.dp-child:hover { opacity: 0.7; }
+/* Intel panel rows */
+.intel-row { display: flex; align-items: center; gap: 8px; padding: 8px; cursor: pointer; border-radius: var(--radius-sm); transition: background var(--transition-fast); }
+.intel-row:hover { background: var(--glass-subtle); }
+.intel-bits { font-family: var(--mono); font-size: var(--font-sm); font-weight: 700; min-width: 32px; }
+.intel-info { flex: 1; min-width: 0; }
+.intel-scope { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.intel-action { font-size: 10px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.intel-gap { font-family: var(--mono); font-size: 9px; color: var(--accent); white-space: nowrap; }
+</style>

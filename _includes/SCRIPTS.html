@@ -18,6 +18,10 @@
 {% include SHOP.html %}
 <script src="{{ '/assets/js/shop.js' | relative_url }}"></script>
 {% endif %}
+{% if page.galaxy %}
+{% include GALAXY.html %}
+<script src="{{ '/assets/js/galaxy.js' | relative_url }}"></script>
+{% endif %}
 {% if page.talk %}
 {% unless include.minimal and page.talk == true %}{% include TALK.html %}{% endunless %}
 <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
@@ -26,6 +30,7 @@
 <script>
 {% if page.auth %}AUTH.init(); {% endif %}
 {% if include.deck %}DECK.init(); {% endif %}
+{% if page.galaxy %}GALAXY.init(); {% endif %}
 {% if page.shop %}SHOP.init(); {% endif %}
 {% if page.talk %}TALK.init(); {% endif %}
 </script>
