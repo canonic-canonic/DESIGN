@@ -19,6 +19,9 @@
 }
 
 @media (max-width: 640px) {
+    :root {
+        --nav-sub-h: 0px;
+    }
     .container { padding: var(--space-sm); }
     .grid, .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
     .card-grid { grid-template-columns: 1fr !important; }

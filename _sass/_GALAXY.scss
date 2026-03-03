@@ -43,6 +43,10 @@
     overflow: hidden;
     position: relative;
 }
+.galaxy-container--fullscreen {
+    height: calc(100vh - var(--header-offset) - 40px);
+    min-height: 500px;
+}
 
 /* Galaxy stats block */
 .galaxy {
@@ -139,7 +143,7 @@
 /* Galaxy dock overlay (bottom-center) */
 .galaxy-dock {
     position: absolute;
-    bottom: var(--space-sm);
+    bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
     left: 50%; transform: translateX(-50%);
     z-index: 10;
     display: flex;
@@ -183,7 +187,62 @@
 @media (max-width: 768px) {
     .galaxy-stats { grid-template-columns: repeat(2, 1fr); }
     .galaxy-hero-text { padding: 80px var(--space-md) var(--space-md); }
-    .galaxy-detail { width: 100%; bottom: 0; top: auto; height: auto; max-height: 50vh; transform: translateY(100%); border-left: none; border-top: 1px solid var(--glass-strong); }
+    .galaxy-hud { padding: var(--space-xs); }
+    .galaxy-hud svg { width: 70px; height: 70px; }
+    .galaxy-detail {
+        width: 100%; bottom: 0; top: auto; height: auto;
+        max-height: 60vh;
+        transform: translateY(100%);
+        border-left: none;
+        border-top: 1px solid var(--glass-strong);
+        border-radius: var(--radius) var(--radius) 0 0;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
     .galaxy-detail.open { transform: translateY(0); }
+}
+
+@media (max-width: 640px) {
+    .galaxy-container--fullscreen { min-height: 400px; }
+    .galaxy-hud {
+        top: var(--space-xs); left: var(--space-xs);
+        padding: var(--space-2xs);
+        max-width: 110px;
+    }
+    .galaxy-hud svg { width: 60px; height: 60px; }
+    .hud-label { font-size: 8px; }
+    .galaxy-search input {
+        width: 200px;
+        max-width: calc(100vw - var(--space-lg));
+    }
+    .galaxy-search input:focus {
+        width: 280px;
+        max-width: calc(100vw - var(--space-lg));
+    }
+}
+
+@media (max-width: 480px) {
+    .galaxy-container--fullscreen { min-height: 360px; }
+    .galaxy-hud {
+        top: var(--space-2xs); left: var(--space-2xs);
+        padding: var(--space-2xs);
+        max-width: 96px;
+    }
+    .galaxy-hud svg { width: 52px; height: 52px; }
+    .hud-label { font-size: 7px; letter-spacing: 0.05em; }
+    .galaxy-search input {
+        width: 180px;
+        font-size: var(--font-xs);
+    }
+    .galaxy-search input:focus {
+        width: 240px;
+        max-width: calc(100vw - var(--space-md));
+    }
+    .galaxy-dock {
+        padding: var(--space-2xs) var(--space-xs);
+        gap: var(--space-2xs);
+    }
+    .galaxy-dock a { font-size: 10px; padding: var(--space-2xs) var(--space-xs); }
+    .galaxy-detail { max-height: 70vh; }
+    .galaxy-detail .dp-ring svg { width: 100px; height: 100px; }
 }
 
