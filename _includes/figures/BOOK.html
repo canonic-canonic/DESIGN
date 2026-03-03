@@ -1,0 +1,17 @@
+<!-- BOOK | DESIGN.md 255 Map | Visual book with stats -->
+<div class="book-figure">
+  <svg viewBox="0 0 420 240" xmlns="http://www.w3.org/2000/svg" class="figure-svg">
+    <!-- Book shape -->
+    <rect x="130" y="20" width="160" height="200" rx="4" fill="rgba(var(--accent-rgb),0.08)" stroke="rgba(var(--accent-rgb),0.3)" stroke-width="1.5"/>
+    <line x1="140" y1="20" x2="140" y2="220" stroke="rgba(var(--accent-rgb),0.2)" stroke-width="1"/>
+    <!-- Title -->
+    <text x="210" y="70" text-anchor="middle" fill="var(--accent)" font-size="18" font-weight="800" letter-spacing="0.15em" font-family="var(--mono)">{{ include.items[0] | default: "BOOK" }}</text>
+    <!-- Stats -->
+    {% for item in include.items %}
+    {% if forloop.index > 1 %}
+    {% assign y_pos = forloop.index | minus: 1 | times: 28 | plus: 80 %}
+    <text x="210" y="{{ y_pos }}" text-anchor="middle" fill="var(--fg-secondary)" font-size="13" font-family="var(--mono)">{{ item }}</text>
+    {% endif %}
+    {% endfor %}
+  </svg>
+</div>

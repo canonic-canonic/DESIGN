@@ -1,0 +1,28 @@
+<!-- FEDERATION | DESIGN.md 255 Map | Distributed data network diagram -->
+<div class="federation-figure">
+  <svg viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg" class="figure-svg">
+    {% assign count = include.items | size %}
+    {% for item in include.items %}
+    {% assign idx = forloop.index0 %}
+    {% if idx < 3 %}
+      <!-- Node row: distributed sources -->
+      {% assign x = idx | times: 130 | plus: 80 %}
+      <rect x="{{ x | minus: 55 }}" y="20" width="110" height="40" rx="8" fill="rgba(var(--accent-rgb),0.08)" stroke="rgba(var(--accent-rgb),0.25)" stroke-width="1"/>
+      <text x="{{ x }}" y="45" text-anchor="middle" fill="var(--fg-secondary)" font-size="11" font-family="var(--mono)">{{ item }}</text>
+      <!-- Arrow down -->
+      <line x1="{{ x }}" y1="60" x2="{{ x }}" y2="100" stroke="rgba(var(--accent-rgb),0.3)" stroke-width="1" stroke-dasharray="4 3"/>
+      <polygon points="{{ x | minus: 4 }},96 {{ x | plus: 4 }},96 {{ x }},104" fill="rgba(var(--accent-rgb),0.3)"/>
+    {% elsif idx == 3 %}
+      <!-- Central aggregator -->
+      <rect x="105" y="110" width="210" height="50" rx="10" fill="rgba(var(--accent-rgb),0.15)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="210" y="140" text-anchor="middle" fill="var(--accent)" font-size="14" font-weight="700" font-family="var(--mono)">{{ item }}</text>
+    {% elsif idx == 4 %}
+      <!-- Output -->
+      <line x1="210" y1="160" x2="210" y2="200" stroke="rgba(var(--accent-rgb),0.3)" stroke-width="1" stroke-dasharray="4 3"/>
+      <polygon points="206,196 214,196 210,204" fill="rgba(var(--accent-rgb),0.3)"/>
+      <rect x="140" y="210" width="140" height="36" rx="8" fill="rgba(var(--accent-rgb),0.1)" stroke="var(--accent)" stroke-width="1"/>
+      <text x="210" y="233" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="800" font-family="var(--mono)">{{ item }}</text>
+    {% endif %}
+    {% endfor %}
+  </svg>
+</div>

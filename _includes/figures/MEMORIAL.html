@@ -1,0 +1,15 @@
+<!-- MEMORIAL | DESIGN.md 255 Map | Centered tribute card -->
+<div class="memorial-figure">
+  <svg viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg" class="figure-svg">
+    <!-- Subtle border frame -->
+    <rect x="20" y="10" width="380" height="200" rx="12" fill="none" stroke="rgba(var(--accent-rgb),0.2)" stroke-width="1"/>
+    <!-- Name -->
+    <text x="210" y="70" text-anchor="middle" fill="var(--fg)" font-size="24" font-weight="800" font-family="var(--font)">{{ include.items[0] | default: "" }}</text>
+    <!-- Dates -->
+    <text x="210" y="100" text-anchor="middle" fill="var(--fg-secondary)" font-size="16" font-weight="400" font-family="var(--mono)" letter-spacing="0.15em">{{ include.items[1] | default: "" }}</text>
+    <!-- Divider -->
+    <line x1="160" y1="120" x2="260" y2="120" stroke="rgba(var(--accent-rgb),0.3)" stroke-width="1"/>
+    <!-- Quote -->
+    <text x="210" y="155" text-anchor="middle" fill="var(--accent)" font-size="14" font-style="italic" font-family="var(--font)">{{ include.items[2] | default: "" }}</text>
+  </svg>
+</div>

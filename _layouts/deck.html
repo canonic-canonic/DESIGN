@@ -53,6 +53,9 @@
                 {% elsif fig.type == "gauge" %}{% include figures/GAUGE.html value=fig.value max=fig.max label=fig.label unit=fig.unit %}
                 {% elsif fig.type == "wallet-hero" %}{% include figures/WALLET-HERO.html id=fig.id balance=fig.balance actions=fig.actions %}
                 {% elsif fig.type == "transactions" %}{% include figures/TRANSACTIONS.html id=fig.id items=fig.items %}
+                {% elsif fig.type == "memorial" %}{% include figures/MEMORIAL.html items=fig.items %}
+                {% elsif fig.type == "book" %}{% include figures/BOOK.html items=fig.items %}
+                {% elsif fig.type == "federation" %}{% include figures/FEDERATION.html items=fig.items %}
                 {% else %}
                 <div class="figure-items">{% for item in fig.items %}<div class="figure-item">{{ item }}</div>{% endfor %}</div>
                 {% endif %}
