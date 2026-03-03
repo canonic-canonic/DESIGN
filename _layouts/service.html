@@ -1,0 +1,188 @@
+<!-- LAYOUT: service | STANDALONE | DESIGN.md 255 Map -->
+<!-- SERVICE contract viewer: tri-view (MD contract + HTML surface + TEX print). -->
+<!-- STANDALONE: No includes — Liquid stack overflow on content >44KB. -->
+<!-- TRI-VIEW: MD (contract prose) + HTML (hero + sections + TALK) + TEX (PDF.js). CONTROLS.viewTo() switches. -->
+{% assign scope_key = page.scope | default: site.scope | downcase %}
+{% assign sd = site.data[scope_key] %}
+{% assign scope_up = page.scope | default: site.scope | upcase %}
+{% assign back_label = page.back_label | default: sd.back_label | default: "SERVICES" %}
+{% assign back_href = page.back_href | default: sd.back_href | default: "/DEXTER/SERVICES/" %}
+{% assign badge_label = page.badge | default: sd.badge_label | default: scope_up %}
+{% assign accent = page.accent | default: sd.accent | default: site.accent %}
+{% assign accent_rgb = page.accent_rgb | default: sd.accent_rgb | default: site.accent_rgb %}
+{% assign fleet = site.data.fleet %}
+{% assign deps = site.data.deps %}
+{% assign current_view = page.view | default: "md" %}
+<!DOCTYPE html>
+<html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
+  <title>{{ page.title | default: sd.name | default: site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
+  <style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
+  <style>
+    /* SERVICE tri-view toggle bar */
+    .view-toggle{display:flex;gap:2px;align-items:center;}
+    .view-toggle-btn{
+      padding:4px 10px;font-size:var(--font-xs);font-family:var(--mono);font-weight:700;
+      letter-spacing:0.08em;border:1px solid var(--border);border-radius:var(--radius-sm);
+      background:transparent;color:var(--fg-secondary);cursor:pointer;transition:var(--transition-fast);
+    }
+    .view-toggle-btn:hover{color:var(--fg);border-color:var(--fg-secondary);}
+    .view-toggle-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+    /* Pipeline indicator between buttons */
+    .view-toggle-arrow{color:var(--fg-secondary);font-size:var(--font-xs);opacity:0.5;padding:0 2px;}
+  </style>
+</head>
+<body class="post-page paper-page service-page">
+
+  <!-- NAV (inlined, post mode) -->
+  <header class="nav" id="nav" role="navigation">
+    <div class="nav-left">
+      <a class="nav-brand" href="{{ fleet.brand.url | default: '/' | relative_url }}" aria-label="Home">
+        <span class="nav-mark">{{ fleet.brand.mark | default: "\u2229" }}</span>
+        <span class="nav-fleet">{{ fleet.brand.label | default: "CANONIC" }}</span>
+      </a>
+    </div>
+    <div class="nav-center">
+      {% if back_href %}<a href="{{ back_href | relative_url }}" class="nav-back">&larr; {{ back_label | default: "Back" }}</a>{% endif %}
+    </div>
+    <div class="nav-right">
+      <button class="nav-talk" type="button" onclick="TALK.open()" aria-label="Open TALK">
+        <span class="nav-dot"></span>
+        <span class="nav-talk-label">TALK</span>
+      </button>
+      <!-- TRI-VIEW TOGGLE: MD → HTML → TEX -->
+      <div class="view-toggle" id="viewToggle">
+        <button class="view-toggle-btn{% if current_view == 'md' %} active{% endif %}" type="button" data-target="md" onclick="CONTROLS.viewTo('md')" title="Service contract">MD</button>
+        <span class="view-toggle-arrow">&rarr;</span>
+        <button class="view-toggle-btn{% if current_view == 'html' %} active{% endif %}" type="button" data-target="html" onclick="CONTROLS.viewTo('html')" title="Web surface">HTML</button>
+        <span class="view-toggle-arrow">&rarr;</span>
+        <button class="view-toggle-btn{% if current_view == 'tex' %} active{% endif %}" type="button" data-target="tex" onclick="CONTROLS.viewTo('tex')" title="Print document"{% unless page.pdf %} style="opacity:0.3;pointer-events:none"{% endunless %}>TEX</button>
+      </div>
+      {% if page.pdf %}
+      <a href="{{ page.pdf | relative_url }}" class="nav-ctrl" download title="Download PDF">&#8615; PDF</a>
+      {% endif %}
+      <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">&#9790;</button>
+    </div>
+  </header>
+
+  <!-- ═══ VIEW: MD — The governance contract as prose ═══ -->
+  <article class="post paper container view-md"{% if current_view != "md" %} style="display:none"{% endif %}>
+    <header class="post-header">
+      <div class="hero-badge">{{ badge_label }}</div>
+      <h1 class="gradient-text">{{ page.title }}</h1>
+      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">SERVICE CONTRACT &middot; VIEW: MD</p>
+    </header>
+    <div class="paper-body prose">
+      {{ content }}
+    </div>
+    <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
+  </article>
+
+  <!-- ═══ VIEW: HTML — The compiled web surface (hero + sections) ═══ -->
+  <div class="view-html"{% if current_view != "html" %} style="display:none"{% endif %}>
+    {% if page.hero %}
+    <section class="hero">
+      {% if page.hero.badge %}<div class="hero-badge">{{ page.hero.badge }}</div>{% endif %}
+      {% if page.hero.title %}<h1 class="hero-title gradient-text">{{ page.hero.title }}</h1>{% endif %}
+      {% if page.hero.description %}<p class="hero-description">{{ page.hero.description }}</p>{% endif %}
+      {% if page.hero.cta %}
+      <div class="cta-buttons">
+        {% for btn in page.hero.cta %}
+        <a href="{{ btn.href | relative_url }}" class="btn {{ btn.class | default: 'btn-primary' }}"{% if btn.talk %} onclick="TALK.open();return false"{% endif %}>{{ btn.label }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {% if page.sections %}
+    <div class="container">
+      {% for section in page.sections %}
+      <section class="feature-block">
+        {% if section.title %}<h2 class="feature-title">{{ section.title }}</h2>{% endif %}
+        {% if section.text %}<p class="feature-text">{{ section.text }}</p>{% endif %}
+      </section>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Fallback: if no hero/sections, show content in HTML chrome -->
+    {% unless page.hero or page.sections %}
+    <div class="container" style="padding:var(--space-xl) 0;">
+      <div class="hero-badge" style="margin-bottom:var(--space-md);">{{ badge_label }}</div>
+      <h1 class="gradient-text" style="margin-bottom:var(--space-lg);">{{ page.title }}</h1>
+      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-bottom:var(--space-lg);">COMPILED SURFACE &middot; VIEW: HTML</p>
+      <div class="prose">{{ content }}</div>
+    </div>
+    {% endunless %}
+  </div>
+
+  {% if page.pdf %}
+  <!-- ═══ VIEW: TEX — PDF.js canvas (paginated, 2-col from PDF) ═══ -->
+  <div class="pdf-viewer-mode" id="pdfViewer"{% if current_view != "tex" %} style="display:none"{% endif %}>
+    <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
+    <button type="button" class="pdf-nav-btn pdf-nav-btn--prev" id="pdfPrev" aria-label="Previous page">&larr;</button>
+    <button type="button" class="pdf-nav-btn pdf-nav-btn--next" id="pdfNext" aria-label="Next page">&rarr;</button>
+    <nav class="pdf-nav">
+      <span class="pdf-page-counter">
+        <span id="pdfCurr">1</span> / <span id="pdfTotal">0</span>
+      </span>
+    </nav>
+  </div>
+  {% endif %}
+
+  <!-- FOOTER (inlined) -->
+  <footer id="footer">
+    {% if fleet.sites %}
+    {% for s in fleet.sites %}{% unless forloop.first %} &middot; {% endunless %}<a href="{{ s.url }}">{{ s.label }}</a>{% endfor %}
+     &middot; <a href="#" onclick="TALK.open();return false">TALK</a>
+    <br><br>{{ page.footerTagline | default: site.tagline | default: "CANONIC" }}
+    {% endif %}
+  </footer>
+
+  <!-- SCRIPTS (inlined) -->
+  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/controls.js' | relative_url }}"></script>
+  {% if page.talk %}
+  <!-- TALK (inlined) -->
+  <div class="talk-overlay" id="talkOverlay" data-position="{{ page.talk | default: 'side' }}">
+    <div class="talk-overlay-header">
+      <div class="talk-dot"></div>
+      <span class="talk-scope">{{ site.talk_label | default: "TALK" }}</span>
+      <select id="talkProviderSelect" onchange="TALK.switchProvider(this.value)" class="talk-provider-select">
+        <option value="auto">AUTO</option>
+        <option value="anthropic">ANTHROPIC</option>
+        <option value="runpod">RUNPOD</option>
+        <option value="vastai">VAST.AI</option>
+        <option value="deepseek">DEEPSEEK</option>
+      </select>
+      <span id="talkProviderLabel" class="talk-provider-label">AUTO</span>
+      <button type="button" class="talk-overlay-close" onclick="TALK.close()">ESC</button>
+    </div>
+    <div class="talk-messages" id="talkMessages"></div>
+    <div class="talk-input-row">
+      <input type="text" id="talkChatInput" placeholder="{{ page.talk_placeholder | default: 'Ask anything...' }}" autocomplete="off">
+      <button type="button" id="talkSend" onclick="TALK.send()">SEND</button>
+    </div>
+  </div>
+  <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
+  <script>TALK.init();</script>
+  {% endif %}
+
+  {% if page.pdf %}
+  <!-- PDF.js + pdf-viewer.js (conditional) — governed by DEPS.md -->
+  <script src="{{ deps.pdfjs.js }}" integrity="{{ deps.pdfjs.js_integrity }}" crossorigin="anonymous"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc='{{ deps.pdfjs.worker }}';</script>
+  <script src="{{ '/assets/js/pdf-viewer.js' | relative_url }}"></script>
+  <script>PDFVIEWER.init('{{ page.pdf | relative_url }}');</script>
+  {% endif %}
+
+</body>
+</html>
