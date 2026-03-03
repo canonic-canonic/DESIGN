@@ -17,8 +17,14 @@
       <div class="slide-container">
         {% for section in sections %}
         <div class="slide{% if forloop.first %} active{% endif %}" data-slide="{{ forloop.index }}">
+          {% assign _parts = section.title | split: " — " %}
+          {% if _parts.size > 1 %}
+          <div class="slide-eyebrow">{{ _parts[0] | upcase }}</div>
+          <h1 class="slide-heading">{{ _parts[1] }}</h1>
+          {% else %}
           {% if section.eyebrow %}<div class="slide-eyebrow">{{ section.eyebrow }}</div>{% endif %}
           {% if section.title %}<h1 class="slide-heading">{{ section.title }}</h1>{% endif %}
+          {% endif %}
           {% if section.description %}<div class="slide-story">{{ section.description }}</div>{% endif %}
 
           {% if section.dashboard %}
