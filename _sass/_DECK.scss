@@ -487,6 +487,20 @@ main.deck-main {
     border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* ── App Grid (APP-GRID.html) — deck override ────────────────────── */
+.deck-mode .app-grid {
+    grid-template-columns: repeat(7, 1fr);
+    width: 100%;
+    max-width: 900px;
+    gap: var(--space-sm);
+}
+.deck-mode .app-icon-glyph {
+    font-size: 36px;
+}
+.deck-mode .app-icon-label {
+    font-size: var(--font-2xs);
+}
+
 /* ── Funnel (FUNNEL.html) ─────────────────────────────────────────── */
 .funnel {
     display: flex;
