@@ -48,6 +48,28 @@
     min-height: 500px;
 }
 
+/* Full-bleed galaxy: extends behind transparent nav */
+.galaxy-page .galaxy-hero {
+    margin-top: calc(-1 * var(--header-offset));
+}
+.galaxy-page .galaxy-container--fullscreen {
+    height: 100vh;
+    height: 100dvh;
+}
+.galaxy-page .galaxy-hud {
+    top: calc(var(--header-offset) + var(--space-sm));
+}
+.galaxy-page .galaxy-search {
+    top: calc(var(--header-offset) + var(--space-sm));
+}
+/* Transparent nav over galaxy */
+.galaxy-page .nav {
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-bottom-color: transparent;
+}
+
 /* Galaxy stats block */
 .galaxy {
     background: var(--card);
@@ -204,9 +226,15 @@
 @media (max-width: 640px) {
     .galaxy-container--fullscreen { min-height: 400px; }
     .galaxy-hud {
-        top: var(--space-xs); left: var(--space-xs);
+        left: var(--space-xs);
         padding: var(--space-2xs);
         max-width: 110px;
+    }
+    .galaxy-page .galaxy-hud {
+        top: calc(var(--header-offset) + var(--space-xs));
+    }
+    .galaxy-page .galaxy-search {
+        top: calc(var(--header-offset) + var(--space-xs));
     }
     .galaxy-hud svg { width: 60px; height: 60px; }
     .hud-label { font-size: 8px; }
@@ -223,9 +251,15 @@
 @media (max-width: 480px) {
     .galaxy-container--fullscreen { min-height: 360px; }
     .galaxy-hud {
-        top: var(--space-2xs); left: var(--space-2xs);
+        left: var(--space-2xs);
         padding: var(--space-2xs);
         max-width: 96px;
+    }
+    .galaxy-page .galaxy-hud {
+        top: calc(var(--header-offset) + var(--space-2xs));
+    }
+    .galaxy-page .galaxy-search {
+        top: calc(var(--header-offset) + var(--space-2xs));
     }
     .galaxy-hud svg { width: 52px; height: 52px; }
     .hud-label { font-size: 7px; letter-spacing: 0.05em; }

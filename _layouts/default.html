@@ -13,7 +13,7 @@
 <head>
   {% include HEAD.html %}
 </head>
-<body>
+<body{% if page.galaxy %} class="galaxy-page"{% endif %}>
 
   {% include NAV-UNIFIED.html nav=nav %}
 
