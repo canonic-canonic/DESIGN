@@ -80,21 +80,22 @@
 /* ── Dashboard Grid ───────────────────────────────────────────────── */
 .slide-dashboard {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: var(--space-2xs);
     margin-top: var(--space-2xs);
     width: 100%;
     flex: 1;
     min-height: 0;
-    overflow: hidden;
+    align-content: start;
 }
 
 .slide-widget {
     background: var(--glass-subtle);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
-    padding: var(--space-xs) var(--space-xs-sm);
+    padding: var(--space-2xs) var(--space-xs);
     min-height: 0;
+    max-height: 240px;
     overflow: hidden;
 }
 
@@ -145,7 +146,7 @@
 .slide-figure .figure-svg {
     display: block;
     width: 100%;
-    max-width: 320px;
+    max-height: 180px;
     height: auto;
 }
 
