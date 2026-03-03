@@ -61,29 +61,29 @@
 /* ── Slide Content ────────────────────────────────────────────────── */
 .slide-eyebrow {
     font-family: var(--mono);
-    font-size: var(--font-xs);
+    font-size: var(--font-2xs);
     text-transform: uppercase;
     letter-spacing: 0.15em;
     color: var(--accent);
     font-weight: 600;
-    margin-bottom: var(--space-xs-sm);
+    margin-bottom: var(--space-2xs);
 }
 
 .slide-heading {
-    font-size: clamp(22px, 3vw, 42px);
+    font-size: clamp(18px, 2.2vw, 32px);
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.03em;
     color: var(--fg);
-    margin-bottom: var(--space-xs-sm);
+    margin-bottom: var(--space-2xs);
 }
 
 .slide-story {
-    font-size: clamp(12px, 1.3vw, 16px);
+    font-size: clamp(11px, 1.1vw, 14px);
     color: var(--dim);
-    line-height: 1.6;
+    line-height: 1.5;
     max-width: 85%;
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-xs);
 }
 
 /* ── Dashboard Grid ───────────────────────────────────────────────── */
@@ -99,8 +99,9 @@
     background: var(--glass-subtle);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
-    padding: var(--space-sm);
+    padding: var(--space-xs) var(--space-xs-sm);
     min-height: 0;
+    overflow: hidden;
 }
 
 .slide-widget.span-2 {
@@ -108,20 +109,22 @@
 }
 
 /* ── Metrics (reuse _FLEET.scss metric-card/value/label/change) ─── */
-.slide-widget .metric-card { padding: var(--space-2xs) 0; }
-.slide-widget .metric-value { font-size: 28px; }
+.slide-widget .metric-card { padding: 0; }
+.slide-widget .metric-value { font-size: 22px; }
+.slide-widget .metric-label { font-size: 9px; }
+.slide-widget .metric-change { font-size: 11px; }
 
 /* ── Tables ───────────────────────────────────────────────────────── */
 .slide-widget table {
     width: 100%;
     border-collapse: collapse;
-    font-size: var(--font-sm);
+    font-size: 11px;
 }
 
 .slide-widget table th {
     text-align: left;
-    padding: var(--space-xs) var(--space-xs-sm);
-    font-size: var(--font-2xs);
+    padding: 3px 6px;
+    font-size: 9px;
     color: var(--dim);
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -129,7 +132,7 @@
 }
 
 .slide-widget table td {
-    padding: var(--space-xs) var(--space-xs-sm);
+    padding: 3px 6px;
     border-bottom: 1px solid var(--glass-subtle);
     color: var(--fg);
 }
@@ -148,7 +151,7 @@
 .slide-figure .figure-svg {
     display: block;
     width: 100%;
-    max-width: 420px;
+    max-width: 320px;
     height: auto;
 }
 
