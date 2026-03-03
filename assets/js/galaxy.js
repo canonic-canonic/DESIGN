@@ -425,9 +425,19 @@ var GALAXY = (function () {
             var flagship = FLAGSHIPS[m.label];
             var bgColor = flagship ? flagship.color : (m.color || '#64748b');
             var displayName = m.kind === 'USER' ? titleCase(m.label.toLowerCase()) : m.label;
+            // Path context for disambiguation
+            var pathCtx = '';
+            if (m.id && m.id.indexOf('/') >= 0) {
+                var parts = m.id.split('/');
+                // Show last 2-3 path segments before the label
+                var ctxParts = parts.slice(0, -1).slice(-2);
+                pathCtx = ctxParts.join(' › ');
+            }
             html += '<div class="spotlight-row" onclick="GALAXY.focusScope(\'' + m.id + '\');GALAXY.closeSpotlight()">';
             html += '<div class="spotlight-row-icon" style="background:' + hexToRgba(bgColor, 0.2) + ';color:' + bgColor + '"><i class="fas" style="font-size:14px">&#x' + iconFor(m).charCodeAt(0).toString(16) + ';</i></div>';
-            html += '<div class="spotlight-row-info"><div class="spotlight-row-name" style="color:' + (m.color || '#f5f5f7') + '">' + displayName + '</div></div>';
+            html += '<div class="spotlight-row-info"><div class="spotlight-row-name" style="color:' + (m.color || '#f5f5f7') + '">' + displayName + '</div>';
+            if (pathCtx) html += '<div style="font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + pathCtx + '</div>';
+            html += '</div>';
             html += '<span class="spotlight-row-kind">' + (m.kind || 'SCOPE') + '</span>';
             if (typeof m.bits === 'number') html += '<span class="spotlight-row-bits" style="color:' + tier.color + '">' + m.bits + '</span>';
             html += '</div>';
@@ -530,13 +540,31 @@ var GALAXY = (function () {
             }
         });
 
+        // ── Disambiguate duplicate labels among branches ──
+        var labelCounts = {};
+        branches.forEach(function (n) {
+            labelCounts[n.label] = (labelCounts[n.label] || 0) + 1;
+        });
+        var STRUCTURAL_LABELS = { SERVICES: 1, TALK: 1, LEARNING: 1, FOUNDATION: 1, MAGIC: 1, SHOP: 1 };
+
+        function disambiguatedLabel(n) {
+            // Prefix structural duplicates with parent name for clarity
+            if ((labelCounts[n.label] > 1 || STRUCTURAL_LABELS[n.label]) && n.parent) {
+                var parent = nodeMap[n.parent];
+                if (parent && parent.label && parent.label !== n.label) {
+                    return parent.label + '/' + n.label;
+                }
+            }
+            return n.label;
+        }
+
         // ── Build branch nodes ──
         function makeBranchNode(n) {
             // Auth-aware: hide PRIVATE nodes the user cannot see
             if (n.privacy === 'PRIVATE' && !canSeeNode(n)) return null;
 
             var leafCount = hiddenLeaves[n.id] ? hiddenLeaves[n.id].length : 0;
-            var label = n.label;
+            var label = disambiguatedLabel(n);
             if (leafCount > 0) label += '\n+' + leafCount;
             // Mark PRIVATE scopes the user CAN see with a lock indicator
             var isPrivateVisible = n.privacy === 'PRIVATE' && canSeeNode(n);
