@@ -9,13 +9,25 @@
     </div>
     <div id="galaxy" style="width:100%;height:100%;"></div>
     <div class="galaxy-hud" id="hud"></div>
-    <div class="galaxy-search">
-      <input id="galaxySearch" type="text" placeholder="Search scopes..." autocomplete="off">
-    </div>
     <div class="galaxy-dock">
-      <a href="/MAGIC/GALAXY/ORGS/">ORGS</a>
-      <a href="/MAGIC/GALAXY/USERS/">USERS</a>
-      <a href="#" onclick="var p=document.getElementById('intelPanel');if(p)p.classList.toggle('open');return false;">INTEL</a>
+      <div class="dock-nav">
+        <button class="dock-btn" onclick="GALAXY.openSpotlight()" title="Search (⌘K)"><i class="fas fa-search"></i><span class="dock-label">SEARCH</span></button>
+        <a class="dock-btn" href="/MAGIC/GALAXY/ORGS/" title="Organizations"><i class="fas fa-building"></i><span class="dock-label">ORGS</span></a>
+        <a class="dock-btn" href="/MAGIC/GALAXY/USERS/" title="Users"><i class="fas fa-user"></i><span class="dock-label">USERS</span></a>
+        <button class="dock-btn" onclick="var p=document.getElementById('intelPanel');if(p)p.classList.toggle('open');return false;" title="Intel Tasks"><i class="fas fa-chart-bar"></i><span class="dock-label">INTEL</span></button>
+      </div>
+      <div class="dock-sep"></div>
+      <div class="dock-apps" id="dockApps"></div>
+    </div>
+    <div class="galaxy-spotlight" id="spotlight" style="display:none">
+      <div class="spotlight-scrim" onclick="GALAXY.closeSpotlight()"></div>
+      <div class="spotlight-panel">
+        <div class="spotlight-input-wrap">
+          <i class="fas fa-search spotlight-icon"></i>
+          <input id="spotlightInput" type="text" placeholder="Search scopes..." autocomplete="off">
+        </div>
+        <div class="spotlight-results" id="spotlightResults"></div>
+      </div>
     </div>
     <div class="galaxy-detail" id="detailPanel"></div>
     <div class="galaxy-detail" id="intelPanel" style="padding:var(--space-sm);">

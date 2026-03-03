@@ -79,7 +79,49 @@
     background: rgba(var(--accent-rgb), 0.06);
 }
 
+// ── VIEW TOGGLE BAR ──────────────────────────────
+// Universal tri-view toggle (MD → HTML → TEX). Data-driven from page.views.
+
+.view-toggle {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.view-toggle-btn {
+    padding: 4px 10px;
+    font-size: var(--font-xs);
+    font-family: var(--mono);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--fg-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.view-toggle-btn:hover {
+    color: var(--fg);
+    border-color: var(--fg-secondary);
+}
+
+.view-toggle-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.view-toggle-arrow {
+    color: var(--fg-secondary);
+    font-size: var(--font-xs);
+    opacity: 0.5;
+    padding: 0 2px;
+}
+
 // Print: hide controls
 @media print {
-    .controls-bar { display: none !important; }
+    .controls-bar,
+    .view-toggle { display: none !important; }
 }

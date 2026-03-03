@@ -106,6 +106,20 @@ var GALAXY = (function () {
         return SERVICE_ICONS[n.label] || CATEGORY_ICONS[n.category] || '\uf111';
     }
 
+    // ── FLAGSHIPS — promoted services with brand identity ──
+    var FLAGSHIPS = {
+        MAMMOCHAT:  { color: '#ec4899', url: '/TALK/MAMMOCHAT/', icon: '\uf4be' },
+        CARIBCHAT:  { color: '#f97316', url: '/TALK/CARIBCHAT/', icon: '\uf086' },
+        ONCOCHAT:   { color: '#3b82f6', url: '/TALK/ONCOCHAT/',  icon: '\uf610' },
+        MEDCHAT:    { color: '#00ff88', url: '/TALK/MEDCHAT/',    icon: '\uf0f1' },
+        LAWCHAT:    { color: '#94a3b8', url: '/TALK/LAWCHAT/',    icon: '\uf24e' },
+        FINCHAT:    { color: '#ff9f0a', url: '/TALK/FINCHAT/',    icon: '\uf155' },
+        DEV:        { color: '#22d3ee', url: '/TALK/DEV/',        icon: '\uf121' },
+        NONA:       { color: '#4ade80', url: '/SHOP/',            icon: '\uf07a' },
+        RUNNER:     { color: '#f59e0b', url: '/SERVICES/RUNNER/', icon: '\uf0e8' },
+        VITAE:      { color: '#bf5af2', url: '/SERVICES/VITAE/',  icon: '\uf2bb' },
+    };
+
     // ── TIER SHADOW (ambient glow from visual language contract) ──
     function tierShadow(bits) {
         var b = (typeof bits === 'number') ? bits : 0;
@@ -203,29 +217,87 @@ var GALAXY = (function () {
     }
 
     // ── COMPLIANCE RING SVG ──────────────────────────────
-    function ringHTML(bits, sz) {
+    // dims: optional array of 8 dimension names; missing_dims: which are missing
+    var MAGIC_DIMS = ['GOV', 'OPS', 'DATA', 'COIN', 'INTEL', 'CHAT', 'LANG', 'SPEC'];
+
+    function ringHTML(bits, sz, missing_dims) {
         sz = sz || 90;
         var cx = sz / 2, pct = Math.min(bits / 255, 1);
+        var tier = tierFor(bits);
         var svg = '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 ' + sz + ' ' + sz + '">';
-        [{ r: sz * 0.47, w: 4, o: 0.15 }, { r: sz * 0.40, w: 5, o: 0.35 }, { r: sz * 0.33, w: 6, o: 0.70 }].forEach(function (t) {
-            var c = 2 * Math.PI * t.r;
-            svg += '<circle cx="' + cx + '" cy="' + cx + '" r="' + t.r + '" fill="none" stroke="#00ff88" stroke-width="' + t.w + '" opacity="' + t.o + '" stroke-dasharray="' + (c * pct) + ' ' + c + '" stroke-linecap="round" transform="rotate(-90 ' + cx + ' ' + cx + ')"/>';
-        });
+
+        // 8-segment mode when missing_dims provided and < 8 missing
+        if (missing_dims && missing_dims.length > 0 && missing_dims.length < 8) {
+            var r = sz * 0.40, w = 6;
+            var gap = 0.06; // radians gap between segments
+            var segAngle = (2 * Math.PI - 8 * gap) / 8;
+            var missingSet = {};
+            missing_dims.forEach(function (d) { missingSet[d] = true; });
+            MAGIC_DIMS.forEach(function (dim, i) {
+                var startAngle = -Math.PI / 2 + i * (segAngle + gap);
+                var endAngle = startAngle + segAngle;
+                var x1 = cx + r * Math.cos(startAngle);
+                var y1 = cx + r * Math.sin(startAngle);
+                var x2 = cx + r * Math.cos(endAngle);
+                var y2 = cx + r * Math.sin(endAngle);
+                var filled = !missingSet[dim];
+                svg += '<path d="M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 0 1 ' + x2 + ' ' + y2 + '"'
+                    + ' fill="none" stroke="' + (filled ? tier.color : '#333') + '"'
+                    + ' stroke-width="' + w + '" stroke-linecap="round"'
+                    + ' opacity="' + (filled ? 0.8 : 0.25) + '"/>';
+            });
+        } else {
+            // Classic 3-ring mode
+            [{ r: sz * 0.47, w: 4, o: 0.15 }, { r: sz * 0.40, w: 5, o: 0.35 }, { r: sz * 0.33, w: 6, o: 0.70 }].forEach(function (t) {
+                var c = 2 * Math.PI * t.r;
+                svg += '<circle cx="' + cx + '" cy="' + cx + '" r="' + t.r + '" fill="none" stroke="' + tier.color + '" stroke-width="' + t.w + '" opacity="' + t.o + '" stroke-dasharray="' + (c * pct) + ' ' + c + '" stroke-linecap="round" transform="rotate(-90 ' + cx + ' ' + cx + ')"/>';
+            });
+        }
         svg += '<text x="' + cx + '" y="' + cx + '" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="' + (sz * 0.22) + '" font-weight="700">' + bits + '</text></svg>';
         return svg;
     }
 
-    // ── DETAIL PANEL ─────────────────────────────────────
+    // ── DETAIL PANEL — Quick Look ────────────────────────
+    function buildBreadcrumb(node) {
+        var parts = [];
+        var cur = node;
+        var seen = {};
+        while (cur) {
+            if (seen[cur.id]) break;
+            seen[cur.id] = true;
+            parts.unshift(cur);
+            if (cur.parent && nodeMap[cur.parent]) {
+                cur = nodeMap[cur.parent];
+            } else break;
+        }
+        if (parts.length <= 1) return '';
+        var html = '<div class="dp-breadcrumb">';
+        parts.forEach(function (p, i) {
+            if (i > 0) html += '<span class="dp-breadcrumb-sep">\u203a</span>';
+            if (p.id !== node.id) {
+                html += '<a href="#" onclick="GALAXY.focusScope(\'' + p.id + '\');return false">' + p.label + '</a>';
+            } else {
+                html += '<span style="color:var(--fg)">' + p.label + '</span>';
+            }
+        });
+        html += '</div>';
+        return html;
+    }
+
     function showDetail(node) {
         var panel = document.getElementById('detailPanel');
         if (!panel) return;
         var name = node.kind === 'USER' ? titleCase(node.label.toLowerCase()) : node.label;
-        var html = '<div class="dp-header"><span class="dp-name" style="color:' + (node.color || '#f5f5f7') + '">' + name + '</span><button class="dp-close" onclick="GALAXY.closeDetail()">\u00d7</button></div>';
+        var flagship = FLAGSHIPS[node.label];
+        var accentColor = flagship ? flagship.color : (node.color || 'transparent');
+        var html = '<div class="dp-header" style="border-top:3px solid ' + accentColor + '"><span class="dp-name" style="color:' + (node.color || '#f5f5f7') + '">' + name + '</span><button class="dp-close" onclick="GALAXY.closeDetail()">\u00d7</button></div>';
+        // Breadcrumb
+        html += buildBreadcrumb(node);
         // Compliance ring — THE PRODUCT (principals also get rings)
         if (node.kind !== 'USER' || node.principal) {
             var nodeBits = (typeof node.bits === 'number') ? node.bits : 0;
             var tierInfo = tierFor(nodeBits);
-            html += '<div class="dp-ring">' + ringHTML(nodeBits, 140) + '</div>';
+            html += '<div class="dp-ring">' + ringHTML(nodeBits, 140, node.missing_dims) + '</div>';
             html += '<div class="dp-tier" style="color:' + tierInfo.color + '">' + tierInfo.badge + ' ' + tierInfo.name + '</div>';
 
             // Missing dimensions
@@ -298,6 +370,11 @@ var GALAXY = (function () {
             if (kids.length > 20) html += '<span class="dp-child" style="border-color:#86868b;color:#86868b">+' + (kids.length - 20) + ' more</span>';
             html += '</div></div>';
         }
+        // Flagship launch button
+        if (flagship) {
+            html += '<a class="dp-launch" href="' + flagship.url + '">Open ' + node.label + ' \u2192</a>';
+        }
+
         panel.innerHTML = html;
         panel.classList.add('open');
     }
@@ -307,14 +384,20 @@ var GALAXY = (function () {
         if (panel) panel.classList.remove('open');
     }
 
-    // ── SEARCH ───────────────────────────────────────────
+    // ── SEARCH / SPOTLIGHT ──────────────────────────────
     function handleSearch(query) {
-        if (!network) return;
+        if (!galaxy) return;
         var q = query.toLowerCase().trim();
-        if (!q) { network.setSelection({ nodes: [], edges: [] }); return; }
+        var resultsEl = document.getElementById('spotlightResults');
+        if (!resultsEl) return;
+        if (!q) {
+            resultsEl.innerHTML = '<div class="spotlight-empty">Type to search scopes, services, users...</div>';
+            if (network) network.setSelection({ nodes: [], edges: [] });
+            return;
+        }
         var allNodes = galaxy.nodes.slice();
         Object.keys(FEDERATION).forEach(function (key) {
-            allNodes.push({ id: 'fed:' + key, label: FEDERATION[key].label, kind: 'ORG' });
+            allNodes.push({ id: 'fed:' + key, label: FEDERATION[key].label, kind: 'ORG', color: FEDERATION[key].color });
         });
         var matches = allNodes.filter(function (n) {
             return n.label.toLowerCase().indexOf(q) >= 0
@@ -322,13 +405,54 @@ var GALAXY = (function () {
                 || (n.category || '').toLowerCase().indexOf(q) >= 0
                 || (n.tier || '').toLowerCase().indexOf(q) >= 0;
         });
-        var visIds = [];
-        matches.forEach(function (m) { if (nodeDS.get(m.id)) visIds.push(m.id); });
-        network.setSelection({ nodes: visIds, edges: [] });
-        if (visIds.length === 1) {
-            network.focus(visIds[0], { scale: 1.5, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
-            showDetail(nodeMap[visIds[0]]);
+        // Sort: flagships first, then by bits descending
+        matches.sort(function (a, b) {
+            var aF = FLAGSHIPS[a.label] ? 1 : 0;
+            var bF = FLAGSHIPS[b.label] ? 1 : 0;
+            if (aF !== bF) return bF - aF;
+            return (b.bits || 0) - (a.bits || 0);
+        });
+        matches = matches.slice(0, 10);
+
+        if (matches.length === 0) {
+            resultsEl.innerHTML = '<div class="spotlight-empty">No results for "' + q + '"</div>';
+            return;
         }
+
+        var html = '';
+        matches.forEach(function (m) {
+            var tier = tierFor(m.bits || 0);
+            var flagship = FLAGSHIPS[m.label];
+            var bgColor = flagship ? flagship.color : (m.color || '#64748b');
+            var displayName = m.kind === 'USER' ? titleCase(m.label.toLowerCase()) : m.label;
+            html += '<div class="spotlight-row" onclick="GALAXY.focusScope(\'' + m.id + '\');GALAXY.closeSpotlight()">';
+            html += '<div class="spotlight-row-icon" style="background:' + hexToRgba(bgColor, 0.2) + ';color:' + bgColor + '"><i class="fas" style="font-size:14px">&#x' + iconFor(m).charCodeAt(0).toString(16) + ';</i></div>';
+            html += '<div class="spotlight-row-info"><div class="spotlight-row-name" style="color:' + (m.color || '#f5f5f7') + '">' + displayName + '</div></div>';
+            html += '<span class="spotlight-row-kind">' + (m.kind || 'SCOPE') + '</span>';
+            if (typeof m.bits === 'number') html += '<span class="spotlight-row-bits" style="color:' + tier.color + '">' + m.bits + '</span>';
+            html += '</div>';
+        });
+        resultsEl.innerHTML = html;
+    }
+
+    function openSpotlight() {
+        var el = document.getElementById('spotlight');
+        if (!el) return;
+        el.style.display = '';
+        requestAnimationFrame(function () {
+            el.classList.add('open');
+            var input = document.getElementById('spotlightInput');
+            if (input) { input.value = ''; input.focus(); }
+            var resultsEl = document.getElementById('spotlightResults');
+            if (resultsEl) resultsEl.innerHTML = '<div class="spotlight-empty">Type to search scopes, services, users...</div>';
+        });
+    }
+
+    function closeSpotlight() {
+        var el = document.getElementById('spotlight');
+        if (!el) return;
+        el.classList.remove('open');
+        setTimeout(function () { el.style.display = 'none'; }, 200);
     }
 
     function focusScope(id) {
@@ -438,6 +562,18 @@ var GALAXY = (function () {
                     font: { color: n.color || '#ec4899', size: 11, vadjust: 5, multi: true, face: '-apple-system,system-ui,sans-serif', bold: true },
                     shadow: tierShadow(nodeBits),
                     mass: 1.5
+                };
+            }
+
+            // Flagship promotion — larger, glowing, heavier
+            var flagship = FLAGSHIPS[n.label];
+            if (flagship) {
+                return {
+                    id: n.id, label: label, shape: 'icon',
+                    icon: { face: FA, weight: '900', code: flagship.icon, size: 44, color: flagship.color },
+                    font: { color: flagship.color, size: 12, vadjust: 6, multi: true, face: '-apple-system,system-ui,sans-serif', bold: true },
+                    shadow: { enabled: true, color: flagship.color, size: 30, x: 0, y: 0 },
+                    mass: 2.5
                 };
             }
 
@@ -703,27 +839,62 @@ var GALAXY = (function () {
         });
     }
 
-    // ── HUD ──────────────────────────────────────────────
+    // ── HUD — Rich Information Meter ─────────────────────
     function renderHUD() {
         var hud = document.getElementById('hud');
         if (!hud) return;
-        var users = 0, svcs = 0, orgs = 0, totalBits = 0, bitCount = 0;
+        var users = 0, svcs = 0, orgs = 0, scopes = 0, totalBits = 0, bitCount = 0, healthCount = 0;
         galaxy.nodes.forEach(function (n) {
             if (n.kind === 'USER') users++;
             else if (n.kind === 'SERVICE') svcs++;
             else if (n.kind === 'ORG') orgs++;
+            else scopes++;
             if (typeof n.bits === 'number' && n.kind !== 'USER') {
                 totalBits += n.bits;
                 bitCount++;
+                if (n.bits >= 35) healthCount++; // ≥ COMMUNITY tier
             }
         });
         orgs += Object.keys(FEDERATION).length;
         var avgBits = bitCount > 0 ? Math.round(totalBits / bitCount) : 0;
         var avgTier = tierFor(avgBits);
-        hud.innerHTML = ringHTML(avgBits, 90) +
-            '<div class="hud-label" style="color:' + avgTier.color + '">' + avgTier.name + '</div>' +
-            '<div class="hud-label">' + users + ' PEOPLE</div>' +
-            '<div class="hud-label" style="margin-top:2px;font-size:9px;opacity:0.6">' + orgs + ' ORGS \u00b7 ' + svcs + ' SERVICES</div>';
+        var healthPct = bitCount > 0 ? Math.round((healthCount / bitCount) * 100) : 0;
+
+        var html = ringHTML(avgBits, 100);
+        html += '<div class="hud-bits-display" style="color:' + avgTier.color + '">' + avgBits + ' / 255</div>';
+        html += '<div class="hud-label" style="color:' + avgTier.color + '">' + avgTier.badge + ' ' + avgTier.name + '</div>';
+        html += '<div class="hud-divider"></div>';
+        html += '<div class="hud-stats-grid">';
+        html += '<div class="hud-stat"><span class="hud-stat-val">' + users + '</span> USER</div>';
+        html += '<div class="hud-stat"><span class="hud-stat-val">' + orgs + '</span> ORGS</div>';
+        html += '<div class="hud-stat"><span class="hud-stat-val">' + svcs + '</span> SRVCS</div>';
+        html += '<div class="hud-stat"><span class="hud-stat-val">' + scopes + '</span> SCOPES</div>';
+        html += '</div>';
+        html += '<div class="hud-divider"></div>';
+        html += '<div class="hud-health">';
+        html += '<div class="hud-health-label">FLEET HEALTH</div>';
+        html += '<div class="hud-health-bar"><div class="hud-health-fill" style="width:' + healthPct + '%;background:' + avgTier.color + '"></div></div>';
+        html += '</div>';
+
+        hud.innerHTML = html;
+        // Dynamic border glow in tier color
+        hud.style.borderColor = hexToRgba(avgTier.color, 0.3);
+        hud.style.boxShadow = '0 0 16px ' + hexToRgba(avgTier.color, 0.15) + ', var(--shadow)';
+    }
+
+    // ── DOCK — Render flagship app icons ────────────────
+    function renderDock() {
+        var container = document.getElementById('dockApps');
+        if (!container) return;
+        var html = '';
+        Object.keys(FLAGSHIPS).forEach(function (key) {
+            var f = FLAGSHIPS[key];
+            html += '<a class="dock-app" href="' + f.url + '" title="' + key + '" style="background:' + hexToRgba(f.color, 0.2) + '">';
+            html += '<i class="fas" style="color:' + f.color + '">&#x' + f.icon.charCodeAt(0).toString(16) + ';</i>';
+            html += '<span class="dock-app-label">' + key + '</span>';
+            html += '</a>';
+        });
+        container.innerHTML = html;
     }
 
     // ── INTEL TASK MANAGER ──────────────────────────────────
@@ -831,15 +1002,29 @@ var GALAXY = (function () {
         }
         setTimeout(dismissLoader, 3000);
 
-        var search = document.getElementById('galaxySearch');
-        if (search) {
-            search.addEventListener('input', function () { handleSearch(this.value); });
-            search.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') { this.value = ''; handleSearch(''); this.blur(); }
+        renderDock();
+
+        // Spotlight search
+        var spotlightInput = document.getElementById('spotlightInput');
+        if (spotlightInput) {
+            spotlightInput.addEventListener('input', function () { handleSearch(this.value); });
+            spotlightInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') { closeSpotlight(); }
             });
         }
+        // Cmd+K / Ctrl+K opens spotlight
         document.addEventListener('keydown', function (e) {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                openSpotlight();
+                return;
+            }
             if (e.key === 'Escape') {
+                var spotEl = document.getElementById('spotlight');
+                if (spotEl && spotEl.classList.contains('open')) {
+                    closeSpotlight();
+                    return;
+                }
                 if (_collapseAll) _collapseAll();
                 closeDetail();
                 if (network) network.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
@@ -878,5 +1063,5 @@ var GALAXY = (function () {
         }
     }
 
-    return { init: init, closeDetail: closeDetail, focusScope: focusScope, auth: function () { return _authUser; } };
+    return { init: init, closeDetail: closeDetail, focusScope: focusScope, openSpotlight: openSpotlight, closeSpotlight: closeSpotlight, auth: function () { return _authUser; } };
 })();

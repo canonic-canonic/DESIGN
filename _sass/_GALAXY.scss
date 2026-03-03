@@ -59,9 +59,6 @@
 .galaxy-page .galaxy-hud {
     top: calc(var(--header-offset) + var(--space-sm));
 }
-.galaxy-page .galaxy-search {
-    top: calc(var(--header-offset) + var(--space-sm));
-}
 /* Transparent nav over galaxy — auto-hides on interaction */
 .galaxy-page .nav {
     background: transparent;
@@ -142,60 +139,211 @@
     margin-top: var(--space-2xs);
 }
 
-/* Galaxy search overlay (top-center) */
-.galaxy-search {
-    position: absolute;
-    top: var(--space-sm);
-    left: 50%; transform: translateX(-50%);
-    z-index: 10;
-}
-.galaxy-search input {
-    background: var(--panel);
-    -webkit-backdrop-filter: var(--blur-panel);
-    backdrop-filter: var(--blur-panel);
-    border: 1px solid var(--glass-strong);
-    border-radius: var(--radius-pill);
-    padding: var(--space-xs) var(--space-sm-md);
-    color: var(--fg);
-    font-size: var(--font-sm);
-    font-family: var(--font);
-    width: 240px;
-    outline: none;
-    transition: width var(--transition-slow) var(--ease-out);
-}
-.galaxy-search input:focus {
-    width: 360px;
-    border-color: var(--accent);
-}
-
-/* Galaxy dock overlay (bottom-center) */
+/* Galaxy dock overlay (bottom-center) — Icon Launcher Bar */
 .galaxy-dock {
     position: absolute;
     bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
     left: 50%; transform: translateX(-50%);
     z-index: 10;
     display: flex;
-    gap: var(--space-xs);
+    align-items: center;
+    gap: 0;
     background: var(--panel);
-    -webkit-backdrop-filter: var(--blur-panel);
-    backdrop-filter: var(--blur-panel);
+    -webkit-backdrop-filter: var(--blur-dock, var(--blur-panel));
+    backdrop-filter: var(--blur-dock, var(--blur-panel));
     border: 1px solid var(--glass-strong);
     border-radius: var(--radius-pill);
     padding: var(--space-xs) var(--space-sm);
     box-shadow: var(--shadow);
 }
-.galaxy-dock a {
-    font-size: var(--font-xs);
-    font-weight: 600;
-    color: var(--dim);
-    text-decoration: none;
-    padding: var(--space-2xs) var(--space-xs-sm);
-    border-radius: var(--radius-pill);
-    transition: all var(--transition-base) ease;
+.dock-nav, .dock-apps {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
 }
-.galaxy-dock a:hover { color: var(--accent); background: var(--glass-border); }
+.dock-sep {
+    width: 1px;
+    height: 28px;
+    background: var(--glass-strong);
+    margin: 0 var(--space-xs);
+    flex-shrink: 0;
+}
+.dock-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: var(--dim);
+    cursor: pointer;
+    padding: var(--space-2xs) var(--space-xs);
+    border-radius: var(--radius-lg, var(--radius));
+    font-family: var(--font);
+    text-decoration: none;
+    transition: all var(--transition-base) var(--ease-out);
+}
+.dock-btn i { font-size: 16px; }
+.dock-label {
+    font-family: var(--mono);
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.dock-btn:hover { color: var(--accent); background: var(--glass-subtle); }
+.dock-app {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-lg, 12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+    position: relative;
+}
+.dock-app:hover {
+    transform: translateY(-6px) scale(1.1);
+}
+.dock-app-label {
+    position: absolute;
+    bottom: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--mono);
+    font-size: 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--dim);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity var(--transition-base) ease;
+    pointer-events: none;
+}
+.dock-app:hover .dock-app-label { opacity: 1; }
 
-/* Galaxy detail panel (right) */
+/* Spotlight search modal (Cmd+K) */
+.galaxy-spotlight {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: var(--z-modal, 100);
+}
+.spotlight-scrim {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    -webkit-backdrop-filter: var(--blur-overlay, blur(8px));
+    backdrop-filter: var(--blur-overlay, blur(8px));
+}
+.spotlight-panel {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.95);
+    width: 520px;
+    max-width: calc(100vw - 32px);
+    background: var(--panel);
+    -webkit-backdrop-filter: var(--blur-overlay, blur(40px));
+    backdrop-filter: var(--blur-overlay, blur(40px));
+    border: 1px solid var(--glass-strong);
+    border-radius: var(--radius-xl, 16px);
+    box-shadow: var(--shadow-lg, 0 25px 50px rgba(0,0,0,0.5));
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.galaxy-spotlight.open .spotlight-panel {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+.spotlight-input-wrap {
+    display: flex;
+    align-items: center;
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid var(--glass-subtle);
+}
+.spotlight-icon {
+    color: var(--dim);
+    font-size: 16px;
+    margin-right: var(--space-sm);
+    flex-shrink: 0;
+}
+.spotlight-input-wrap input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--fg);
+    font-size: var(--font-base);
+    font-family: var(--font);
+    outline: none;
+}
+.spotlight-results {
+    max-height: 360px;
+    overflow-y: auto;
+}
+.spotlight-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-md);
+    cursor: pointer;
+    transition: background var(--transition-fast) ease;
+}
+.spotlight-row:hover { background: var(--glass-subtle); }
+.spotlight-row-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm, 6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.spotlight-row-info { flex: 1; min-width: 0; }
+.spotlight-row-name {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.spotlight-row-kind {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm, 4px);
+    background: var(--glass-subtle);
+    color: var(--dim);
+}
+.spotlight-row-bits {
+    font-family: var(--mono);
+    font-size: var(--font-sm);
+    font-weight: 700;
+    min-width: 32px;
+    text-align: right;
+}
+.spotlight-empty {
+    padding: var(--space-lg);
+    text-align: center;
+    color: var(--dim);
+    font-size: var(--font-sm);
+}
+.spotlight-hint {
+    padding: var(--space-xs) var(--space-md);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    text-align: right;
+    border-top: 1px solid var(--glass-subtle);
+}
+
+/* Galaxy detail panel (right) — Quick Look */
 .galaxy-detail {
     position: absolute;
     top: 0; right: 0;
@@ -211,12 +359,109 @@
     transition: transform var(--transition-slow) var(--ease-out);
 }
 .galaxy-detail.open { transform: translateX(0); }
+/* Quick Look detail enhancements */
+.dp-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: var(--space-xs) var(--space-sm);
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    flex-wrap: wrap;
+}
+.dp-breadcrumb a {
+    color: var(--dim);
+    text-decoration: none;
+    transition: color var(--transition-fast) ease;
+}
+.dp-breadcrumb a:hover { color: var(--accent); }
+.dp-breadcrumb-sep { opacity: 0.4; }
+.dp-launch {
+    display: block;
+    margin: var(--space-xs) var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--glass-subtle);
+    border: 1px solid var(--glass-strong);
+    border-radius: var(--radius);
+    color: var(--fg);
+    font-family: var(--mono);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: all var(--transition-base) ease;
+}
+.dp-launch:hover {
+    background: var(--glass-hover);
+    border-color: var(--accent);
+    color: var(--accent);
+}
 
+/* HUD enhancements */
+.hud-bits-display {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: var(--font-base);
+    font-weight: 700;
+    margin-top: var(--space-2xs);
+}
+.hud-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px var(--space-xs);
+    margin-top: var(--space-xs);
+}
+.hud-stat {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+.hud-stat-val {
+    color: var(--fg);
+    font-weight: 700;
+}
+.hud-divider {
+    height: 1px;
+    background: var(--glass-strong);
+    margin: var(--space-xs) 0;
+}
+.hud-health {
+    margin-top: var(--space-2xs);
+}
+.hud-health-label {
+    font-family: var(--mono);
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+    margin-bottom: 3px;
+}
+.hud-health-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--glass-strong);
+    overflow: hidden;
+}
+.hud-health-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s var(--ease-out);
+}
+
+/* ── Responsive ── */
 @media (max-width: 768px) {
     .galaxy-stats { grid-template-columns: repeat(2, 1fr); }
     .galaxy-hero-text { padding: 80px var(--space-md) var(--space-md); }
     .galaxy-hud { padding: var(--space-xs); }
-    .galaxy-hud svg { width: 70px; height: 70px; }
+    .galaxy-hud svg { width: 80px; height: 80px; }
+    .dock-label { display: none; }
+    .dock-btn { padding: var(--space-2xs); }
+    .dock-app { width: 36px; height: 36px; font-size: 16px; }
+    .spotlight-panel { width: 480px; }
     .galaxy-detail {
         width: 100%; bottom: 0; top: auto; height: auto;
         max-height: 60vh;
@@ -234,24 +479,15 @@
     .galaxy-hud {
         left: var(--space-xs);
         padding: var(--space-2xs);
-        max-width: 110px;
+        max-width: 120px;
     }
     .galaxy-page .galaxy-hud {
         top: calc(var(--header-offset) + var(--space-xs));
     }
-    .galaxy-page .galaxy-search {
-        top: calc(var(--header-offset) + var(--space-xs));
-    }
-    .galaxy-hud svg { width: 60px; height: 60px; }
+    .galaxy-hud svg { width: 70px; height: 70px; }
     .hud-label { font-size: 8px; }
-    .galaxy-search input {
-        width: 200px;
-        max-width: calc(100vw - var(--space-lg));
-    }
-    .galaxy-search input:focus {
-        width: 280px;
-        max-width: calc(100vw - var(--space-lg));
-    }
+    .dock-apps .dock-app:nth-child(n+6) { display: none; }
+    .spotlight-panel { max-width: calc(100vw - 32px); }
 }
 
 @media (max-width: 480px) {
@@ -259,30 +495,24 @@
     .galaxy-hud {
         left: var(--space-2xs);
         padding: var(--space-2xs);
-        max-width: 96px;
+        max-width: 100px;
     }
     .galaxy-page .galaxy-hud {
         top: calc(var(--header-offset) + var(--space-2xs));
     }
-    .galaxy-page .galaxy-search {
-        top: calc(var(--header-offset) + var(--space-2xs));
-    }
-    .galaxy-hud svg { width: 52px; height: 52px; }
+    .galaxy-hud svg { width: 60px; height: 60px; }
     .hud-label { font-size: 7px; letter-spacing: 0.05em; }
-    .galaxy-search input {
-        width: 180px;
-        font-size: var(--font-xs);
-    }
-    .galaxy-search input:focus {
-        width: 240px;
-        max-width: calc(100vw - var(--space-md));
-    }
+    .hud-stats-grid { gap: 1px 4px; }
+    .hud-stat { font-size: 8px; }
     .galaxy-dock {
         padding: var(--space-2xs) var(--space-xs);
-        gap: var(--space-2xs);
     }
-    .galaxy-dock a { font-size: 10px; padding: var(--space-2xs) var(--space-xs); }
+    .dock-nav { gap: var(--space-2xs); }
+    .dock-apps { gap: var(--space-2xs); }
+    .dock-apps .dock-app:nth-child(n+4) { display: none; }
+    .dock-app { width: 34px; height: 34px; font-size: 15px; }
     .galaxy-detail { max-height: 70vh; }
     .galaxy-detail .dp-ring svg { width: 100px; height: 100px; }
+    .spotlight-panel { max-width: calc(100vw - 24px); }
 }
 

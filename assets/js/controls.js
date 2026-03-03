@@ -19,28 +19,7 @@ var CONTROLS = (function() {
         });
     }
 
-    // Dual-view toggle (paper/book: tex ↔ md)
-    function view(btn) {
-        var mode = btn.dataset.view;
-        var next = mode === 'tex' ? 'md' : 'tex';
-        var pdfViewer = document.getElementById('pdfViewer');
-        var mdView = document.querySelector('.view-md');
-
-        if (next === 'md') {
-            if (pdfViewer) pdfViewer.style.display = 'none';
-            if (mdView) mdView.style.display = '';
-        } else {
-            if (pdfViewer) pdfViewer.style.display = '';
-            if (mdView) mdView.style.display = 'none';
-        }
-
-        document.querySelectorAll('.nav-view, .controls-view').forEach(function(b) {
-            b.dataset.view = next;
-            b.textContent = next.toUpperCase();
-        });
-    }
-
-    // Tri-view direct jump (service: md | html | tex)
+    // Universal view switch — works for 2-view (md↔tex, md↔html) and 3-view (md→html→tex)
     function viewTo(target) {
         var mdView = document.querySelector('.view-md');
         var htmlView = document.querySelector('.view-html');
@@ -62,5 +41,5 @@ var CONTROLS = (function() {
         });
     }
 
-    return { talk: talk, view: view, viewTo: viewTo };
+    return { talk: talk, viewTo: viewTo };
 })();

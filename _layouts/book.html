@@ -60,13 +60,16 @@
       <a href="{{ dl.href | relative_url }}" class="nav-ctrl nav-dl{% if page.gate == 'contribute' %} gated-ctrl{% endif %}" download title="Download {{ dl.label }}">&#8615; {{ dl.label }}</a>
       {% endfor %}
       {% endif %}
-      {% if page.view %}
-      {% assign initial_view = page.view %}
-      {% if page.gate == "contribute" %}{% assign initial_view = "md" %}{% endif %}
-      <button class="nav-ctrl nav-view{% if page.gate == 'contribute' %} gated-ctrl{% endif %}" type="button"
-        data-view="{{ initial_view }}" onclick="CONTROLS.view(this)" title="Toggle view">
-        {{ initial_view | upcase }}
-      </button>
+      {% if page.views and page.views.size > 1 %}
+      <div class="view-toggle{% if page.gate == 'contribute' %} gated-ctrl{% endif %}" id="viewToggle">
+        {% for v in page.views %}
+        {% unless forloop.first %}<span class="view-toggle-arrow">&rarr;</span>{% endunless %}
+        <button class="view-toggle-btn{% if page.view == v %} active{% endif %}"
+          type="button" data-target="{{ v }}" onclick="CONTROLS.viewTo('{{ v }}')"
+          {% if v == 'tex' and page.pdf == nil %}style="opacity:0.3;pointer-events:none"{% endif %}>
+          {{ v | upcase }}</button>
+        {% endfor %}
+      </div>
       {% endif %}
       {% if page.gate == "contribute" %}
       <a href="#Contribute" class="nav-ctrl gated-ctrl" title="Contribute">CONTRIBUTE</a>

@@ -17,10 +17,28 @@
 
   {% include NAV-UNIFIED.html nav=nav %}
 
+  {% assign current_view = page.view | default: "html" %}
   {% if page.galaxy %}
   {% include GALAXY.html %}
   {% else %}
 
+  <!-- ═══ VIEW: MD — The governance contract as prose ═══ -->
+  {% if page.views and page.views.size > 1 %}
+  <article class="post paper container view-md"{% if current_view != "md" %} style="display:none"{% endif %}>
+    <header class="post-header">
+      <div class="hero-badge">{{ page.scope | default: site.scope | upcase }}</div>
+      <h1 class="gradient-text">{{ page.title | default: site.title }}</h1>
+      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">CONTRACT &middot; VIEW: MD</p>
+    </header>
+    <div class="paper-body prose">
+      {{ content }}
+    </div>
+    <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
+  </article>
+  {% endif %}
+
+  <!-- ═══ VIEW: HTML — The compiled web surface ═══ -->
+  <div class="view-html"{% if current_view == "md" %} style="display:none"{% endif %}>
   <div id="hero">{% include HERO.html hero=hero %}</div>
 
   {% if page.stats %}<div id="stats">{% include STATS.html %}</div>{% endif %}
@@ -111,6 +129,7 @@
   {% if cta %}
   <section id="cta">{% include CTA.html cta=cta %}</section>
   {% endif %}
+  </div><!-- /view-html -->
 
   <footer id="footer">{% include FOOTER.html footer=footer_data %}</footer>
 

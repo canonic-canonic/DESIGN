@@ -46,11 +46,16 @@
         <span class="nav-talk-label">TALK</span>
       </button>{% endif %}
       {% if page.gate == "contribute" %}<a href="#Contribute" class="nav-ctrl" title="Contribute to this paper">CONTRIBUTE</a>{% endif %}
-      {% if page.view %}
-      <button class="nav-ctrl nav-view" type="button"
-        data-view="{{ page.view }}" onclick="CONTROLS.view(this)" title="Toggle view">
-        {{ page.view | upcase }}
-      </button>
+      {% if page.views and page.views.size > 1 %}
+      <div class="view-toggle" id="viewToggle">
+        {% for v in page.views %}
+        {% unless forloop.first %}<span class="view-toggle-arrow">&rarr;</span>{% endunless %}
+        <button class="view-toggle-btn{% if page.view == v %} active{% endif %}"
+          type="button" data-target="{{ v }}" onclick="CONTROLS.viewTo('{{ v }}')"
+          {% if v == 'tex' and page.pdf == nil %}style="opacity:0.3;pointer-events:none"{% endif %}>
+          {{ v | upcase }}</button>
+        {% endfor %}
+      </div>
       {% endif %}
       <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">&#9790;</button>
     </div>
