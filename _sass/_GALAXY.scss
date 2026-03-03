@@ -62,12 +62,18 @@
 .galaxy-page .galaxy-search {
     top: calc(var(--header-offset) + var(--space-sm));
 }
-/* Transparent nav over galaxy */
+/* Transparent nav over galaxy — auto-hides on interaction */
 .galaxy-page .nav {
     background: transparent;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     border-bottom-color: transparent;
+    transition: transform var(--transition-base) var(--ease-out), opacity var(--transition-base) var(--ease-out);
+}
+.galaxy-page .nav.nav-hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* Galaxy stats block */

@@ -845,6 +845,37 @@ var GALAXY = (function () {
                 if (network) network.fit({ animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
             }
         });
+
+        // Auto-hide nav on galaxy interaction
+        var nav = document.querySelector('.nav');
+        if (nav && document.body.classList.contains('galaxy-page')) {
+            var hideTimer = null;
+            function hideNav() { nav.classList.add('nav-hidden'); }
+            function showNav() { nav.classList.remove('nav-hidden'); clearTimeout(hideTimer); }
+            // Hide after 3s idle on load
+            hideTimer = setTimeout(hideNav, 3000);
+            // Hide when interacting with canvas
+            container.addEventListener('pointerdown', function () {
+                hideNav();
+                clearTimeout(hideTimer);
+            });
+            // Show when pointer enters top 60px zone
+            document.addEventListener('pointermove', function (e) {
+                if (e.clientY < 60) showNav();
+            });
+            // Show on touch at top of screen
+            document.addEventListener('touchstart', function (e) {
+                var t = e.touches[0];
+                if (t && t.clientY < 60) showNav();
+            }, { passive: true });
+            // Re-hide after 4s if no interaction with nav
+            nav.addEventListener('pointerleave', function () {
+                hideTimer = setTimeout(hideNav, 4000);
+            });
+            nav.addEventListener('pointerenter', function () {
+                clearTimeout(hideTimer);
+            });
+        }
     }
 
     return { init: init, closeDetail: closeDetail, focusScope: focusScope, auth: function () { return _authUser; } };
