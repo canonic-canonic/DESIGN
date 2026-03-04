@@ -128,14 +128,14 @@ var GALAXY = (function () {
 
     // ── FLAGSHIPS — promoted services with brand identity ──
     var FLAGSHIPS = {
-        MAMMOCHAT:  { color: '#ec4899', url: 'https://hadleylab.org/TALK/MAMMOCHAT/', icon: '\uf4be' },
-        CARIBCHAT:  { color: '#f97316', url: 'https://hadleylab.org/TALK/CARIBCHAT/', icon: '\uf086' },
-        ONCOCHAT:   { color: '#3b82f6', url: 'https://hadleylab.org/TALK/ONCOCHAT/',  icon: '\uf610' },
-        MEDCHAT:    { color: '#00ff88', url: 'https://hadleylab.org/TALK/MEDCHAT/',    icon: '\uf0f1' },
-        LAWCHAT:    { color: '#94a3b8', url: 'https://hadleylab.org/TALK/LAWCHAT/',    icon: '\uf24e' },
-        FINCHAT:    { color: '#ff9f0a', url: 'https://hadleylab.org/TALK/FINCHAT/',    icon: '\uf155' },
-        DEV:        { color: '#22d3ee', url: 'https://hadleylab.org/TALK/DEV/',        icon: '\uf121' },
-        NONA:       { color: '#4ade80', url: 'https://hadleylab.org/TALK/NONA/',       icon: '\uf07a' },
+        MAMMOCHAT:  { color: '#ec4899', url: 'https://hadleylab.org/TALKS/MAMMOCHAT/', icon: '\uf4be' },
+        CARIBCHAT:  { color: '#f97316', url: 'https://hadleylab.org/TALKS/CARIBCHAT/', icon: '\uf086' },
+        ONCOCHAT:   { color: '#3b82f6', url: 'https://hadleylab.org/TALKS/ONCOCHAT/',  icon: '\uf610' },
+        MEDCHAT:    { color: '#00ff88', url: 'https://hadleylab.org/TALKS/MEDCHAT/',    icon: '\uf0f1' },
+        LAWCHAT:    { color: '#94a3b8', url: 'https://hadleylab.org/TALKS/LAWCHAT/',    icon: '\uf24e' },
+        FINCHAT:    { color: '#ff9f0a', url: 'https://hadleylab.org/TALKS/FINCHAT/',    icon: '\uf155' },
+        DEV:        { color: '#22d3ee', url: 'https://hadleylab.org/TALKS/DEV/',        icon: '\uf121' },
+        NONA:       { color: '#4ade80', url: 'https://hadleylab.org/TALKS/NONA/',       icon: '\uf07a' },
         RUNNER:     { color: '#f59e0b', url: 'https://hadleylab.org/SERVICES/RUNNER/', icon: '\uf0e8' },
         VITAE:      { color: '#bf5af2', url: 'https://hadleylab.org/SERVICES/VITAE/',   icon: '\uf2bb' },
     };
