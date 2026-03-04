@@ -2,7 +2,10 @@
 <!-- Same section data as default, rendered as slides instead of scrollable page -->
 {% assign scope_key = page.scope | default: site.scope | downcase %}
 {% assign sd = site.data[scope_key] %}
+{% assign scope_up = page.scope | default: site.scope | upcase %}
+{% assign badge_label = page.badge | default: sd.badge_label | default: scope_up %}
 {% assign sections = page.sections | default: sd.sections %}
+{% assign current_view = page.view | default: "web" %}
 <!DOCTYPE html>
 <html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
 <head>
@@ -12,6 +15,21 @@
 
   {% include NAV-UNIFIED.html mode="deck" slide_count=sections.size %}
 
+  <!-- ═══ VIEW: GOV — The governance contract as prose ═══ -->
+  <article class="post paper container view-gov"{% if current_view != "gov" %} style="display:none"{% endif %}>
+    <header class="post-header">
+      <div class="hero-badge">{{ badge_label }}</div>
+      <h1 class="gradient-text">{{ page.title | default: site.title }}</h1>
+      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">CONTRACT &middot; VIEW: GOV</p>
+    </header>
+    <div class="paper-body prose">
+      {{ content }}
+    </div>
+    <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
+  </article>
+
+  <!-- ═══ VIEW: WEB — The compiled deck surface ═══ -->
+  <div class="view-web"{% if current_view == "gov" %} style="display:none"{% endif %}>
   <main class="deck-main">
     <div class="slide-area">
       <div class="slide-container">
@@ -99,6 +117,7 @@
   {% include CONTROLS.html %}
 
   <footer class="deck-footer">{{ page.footerTagline | default: page.title | default: site.title }}</footer>
+  </div><!-- /view-web -->
 
   {% include SCRIPTS.html deck=true %}
 </body>

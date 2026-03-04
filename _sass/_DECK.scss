@@ -921,3 +921,16 @@ main.deck-main {
 .deck-mode[data-theme="light"] .slide-card strong { color: #fff; }
 .deck-mode[data-theme="light"] .slide-card p { color: rgba(255, 255, 255, 0.6); }
 .deck-mode[data-theme="light"] .tl-node { border-left-color: rgba(var(--accent-rgb), 0.3); }
+
+/* ── Contract view override for deck-mode ──────────────────────── */
+/* GOV view shows governance contract prose — needs scrollable light background */
+.deck-mode .view-gov {
+    background: var(--bg);
+    min-height: 100vh;
+    padding-top: var(--nav-h);
+    overflow-y: auto;
+}
+.deck-mode.contract-view {
+    overflow: auto;
+    background: var(--bg);
+}

@@ -13,16 +13,16 @@
 </head>
 <body class="post-page">
 
-  {% assign current_view = page.view | default: "html" %}
+  {% assign current_view = page.view | default: "web" %}
   {% include NAV-UNIFIED.html mode="post" back_href=back_href back_label=back_label scope_label=scope %}
 
-  <!-- ═══ VIEW: MD — The governance contract as prose ═══ -->
+  <!-- ═══ VIEW: GOV — The governance contract as prose ═══ -->
   {% if page.views and page.views.size > 1 %}
-  <article class="post paper container view-md"{% if current_view != "md" %} style="display:none"{% endif %}>
+  <article class="post paper container view-gov"{% if current_view != "gov" %} style="display:none"{% endif %}>
     <header class="post-header">
       <div class="hero-badge">{{ badge_label }}</div>
       <h1 class="gradient-text">{{ page.title }}</h1>
-      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">CONTRACT &middot; VIEW: MD</p>
+      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">CONTRACT &middot; VIEW: GOV</p>
     </header>
     <div class="paper-body prose">
       {{ content }}
@@ -31,8 +31,8 @@
   </article>
   {% endif %}
 
-  <!-- ═══ VIEW: HTML — The rendered post ═══ -->
-  <article class="post container view-html"{% if current_view == "md" %} style="display:none"{% endif %}>
+  <!-- ═══ VIEW: WEB — The rendered post ═══ -->
+  <article class="post container view-web"{% if current_view == "gov" %} style="display:none"{% endif %}>
     <header class="post-header{% if page.hero.cover %} post-header-cover{% endif %}">
       {% if page.hero.cover %}
       <div class="post-cover">

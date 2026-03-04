@@ -45,6 +45,8 @@ var DECK = (function () {
     function wireKeyboard() {
         document.addEventListener('keydown', function (e) {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            var webView = document.querySelector('.view-web');
+            if (webView && webView.style.display === 'none') return;
             if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); showSlide(_current + 1); }
             if (e.key === 'ArrowLeft') { e.preventDefault(); showSlide(_current - 1); }
         });
@@ -58,6 +60,8 @@ var DECK = (function () {
             startY = e.changedTouches[0].screenY;
         }, { passive: true });
         document.addEventListener('touchend', function (e) {
+            var webView = document.querySelector('.view-web');
+            if (webView && webView.style.display === 'none') return;
             var dx = e.changedTouches[0].screenX - startX;
             var dy = e.changedTouches[0].screenY - startY;
             if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;

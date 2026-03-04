@@ -1,5 +1,5 @@
 // CONTROLS — Inline nav-right controller
-// Four dimensions: TALK (position), DOWNLOAD (assets), VIEW (md|html|tex), THEME (light|dark)
+// Four dimensions: TALK (position), DOWNLOAD (assets), VIEW (gov|web|tex), THEME (light|dark)
 // GOV declares → Compiler emits → NAV renders inline → This toggles
 var CONTROLS = (function() {
     'use strict';
@@ -19,20 +19,20 @@ var CONTROLS = (function() {
         });
     }
 
-    // Universal view switch — works for 2-view (md↔tex, md↔html) and 3-view (md→html→tex)
+    // Universal view switch — GOV → WEB → TEX
     function viewTo(target) {
-        var mdView = document.querySelector('.view-md');
-        var htmlView = document.querySelector('.view-html');
+        var govView = document.querySelector('.view-gov');
+        var webView = document.querySelector('.view-web');
         var pdfViewer = document.getElementById('pdfViewer');
 
         // Hide all views
-        if (mdView) mdView.style.display = 'none';
-        if (htmlView) htmlView.style.display = 'none';
+        if (govView) govView.style.display = 'none';
+        if (webView) webView.style.display = 'none';
         if (pdfViewer) pdfViewer.style.display = 'none';
 
         // Show target view
-        if (target === 'md' && mdView) mdView.style.display = '';
-        if (target === 'html' && htmlView) htmlView.style.display = '';
+        if (target === 'gov' && govView) govView.style.display = '';
+        if (target === 'web' && webView) webView.style.display = '';
         if (target === 'tex' && pdfViewer) {
             pdfViewer.style.display = '';
             // Re-render PDF when revealed from hidden (fixes 0×0 canvas)
@@ -43,6 +43,15 @@ var CONTROLS = (function() {
         document.querySelectorAll('.view-toggle-btn').forEach(function(b) {
             b.classList.toggle('active', b.dataset.target === target);
         });
+
+        // Adapt body for contract view (deck overflow, chrome visibility)
+        document.body.classList.toggle('contract-view', target === 'gov');
+
+        // Hide deck-specific chrome when not in WEB view
+        var deckCounter = document.querySelector('.nav-deck-counter');
+        var deckTimer = document.querySelector('.nav-deck-timer');
+        if (deckCounter) deckCounter.style.display = (target === 'web') ? '' : 'none';
+        if (deckTimer) deckTimer.style.display = (target === 'web') ? '' : 'none';
     }
 
     return { talk: talk, viewTo: viewTo };

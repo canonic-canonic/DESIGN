@@ -87,12 +87,9 @@
   <div class="gated-content" id="gatedContent">
   {% endif %}
 
-  <!-- PDF VIEWER: tex view (PDF.js canvas — no browser iframe) -->
+  <!-- TEX VIEW: PDF.js book-spread viewer -->
   {% if page.pdf %}
   <div id="pdfViewer" class="pdf-viewer-mode"{% unless page.view == "tex" %} style="display:none"{% endunless %}>
-    <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
-    <button type="button" class="pdf-nav-btn pdf-nav-btn--prev" id="pdfPrev" aria-label="Previous page">&larr;</button>
-    <button type="button" class="pdf-nav-btn pdf-nav-btn--next" id="pdfNext" aria-label="Next page">&rarr;</button>
     <nav class="pdf-nav">
       <span class="pdf-page-counter">
         <span id="pdfCurr">1</span> / <span id="pdfTotal">0</span>
@@ -101,8 +98,19 @@
   </div>
   {% endif %}
 
-  <!-- ARTICLE: html view (default — 1-col like blog posts) -->
-  <article class="post container view-md"{% if page.view == "tex" and page.pdf %} style="display:none"{% endif %}>
+  <!-- GOV VIEW: governance contract prose -->
+  <article class="post paper container view-gov"{% unless page.view == "gov" %} style="display:none"{% endunless %}>
+    <header class="post-header">
+      <div class="hero-badge">{{ page.badge | default: scope_up }}</div>
+      <h1 class="gradient-text">{{ page.title }}</h1>
+      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">CONTRACT &middot; VIEW: GOV</p>
+    </header>
+    <div class="paper-body prose">{{ content }}</div>
+    <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
+  </article>
+
+  <!-- WEB VIEW: article with figures + math (default) -->
+  <article class="post container view-web"{% if page.view == "gov" or page.view == "tex" %} style="display:none"{% endif %}>
     <header class="post-header">
       <div class="hero-badge">{{ page.badge | default: scope_up }}</div>
       <h1 class="gradient-text">{{ page.title }}</h1>

@@ -12,7 +12,7 @@
 {% assign accent_rgb = page.accent_rgb | default: sd.accent_rgb | default: site.accent_rgb %}
 {% assign fleet = site.data.fleet %}
 {% assign deps = site.data.deps %}
-{% assign current_view = page.view | default: "md" %}
+{% assign current_view = page.view | default: "web" %}
 <!DOCTYPE html>
 <html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
 <head>
@@ -60,12 +60,12 @@
     </div>
   </header>
 
-  <!-- ═══ VIEW: MD — The governance contract as prose ═══ -->
-  <article class="post paper container view-md"{% if current_view != "md" %} style="display:none"{% endif %}>
+  <!-- ═══ VIEW: GOV — The governance contract as prose ═══ -->
+  <article class="post paper container view-gov"{% if current_view != "gov" %} style="display:none"{% endif %}>
     <header class="post-header">
       <div class="hero-badge">{{ badge_label }}</div>
       <h1 class="gradient-text">{{ page.title }}</h1>
-      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">SERVICE CONTRACT &middot; VIEW: MD</p>
+      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">CONTRACT &middot; VIEW: GOV</p>
     </header>
     <div class="paper-body prose">
       {{ content }}
@@ -73,8 +73,8 @@
     <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
   </article>
 
-  <!-- ═══ VIEW: HTML — The compiled web surface (hero + sections) ═══ -->
-  <div class="view-html"{% if current_view != "html" %} style="display:none"{% endif %}>
+  <!-- ═══ VIEW: WEB — The compiled web surface (hero + sections) ═══ -->
+  <div class="view-web"{% if current_view != "web" %} style="display:none"{% endif %}>
     {% if page.hero %}
     <section class="hero">
       {% if page.hero.badge %}<div class="hero-badge">{{ page.hero.badge }}</div>{% endif %}
@@ -106,18 +106,15 @@
     <div class="container" style="padding:var(--space-xl) 0;">
       <div class="hero-badge" style="margin-bottom:var(--space-md);">{{ badge_label }}</div>
       <h1 class="gradient-text" style="margin-bottom:var(--space-lg);">{{ page.title }}</h1>
-      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-bottom:var(--space-lg);">COMPILED SURFACE &middot; VIEW: HTML</p>
+      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-bottom:var(--space-lg);">COMPILED SURFACE &middot; VIEW: WEB</p>
       <div class="prose">{{ content }}</div>
     </div>
     {% endunless %}
   </div>
 
   {% if page.pdf %}
-  <!-- ═══ VIEW: TEX — PDF.js canvas (paginated, 2-col from PDF) ═══ -->
+  <!-- ═══ VIEW: TEX — PDF.js book-spread viewer ═══ -->
   <div class="pdf-viewer-mode" id="pdfViewer"{% if current_view != "tex" %} style="display:none"{% endif %}>
-    <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
-    <button type="button" class="pdf-nav-btn pdf-nav-btn--prev" id="pdfPrev" aria-label="Previous page">&larr;</button>
-    <button type="button" class="pdf-nav-btn pdf-nav-btn--next" id="pdfNext" aria-label="Next page">&rarr;</button>
     <nav class="pdf-nav">
       <span class="pdf-page-counter">
         <span id="pdfCurr">1</span> / <span id="pdfTotal">0</span>
