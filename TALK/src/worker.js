@@ -57,6 +57,21 @@ function addCors(headers, origin) {
   return h;
 }
 
+/** Strict env read — fails fast if not set in wrangler.toml [vars]. */
+function requireEnv(env, key, context) {
+    const v = env[key];
+    if (v === undefined || v === null || v === '')
+        throw new Error(key + ' not set in wrangler.toml [vars] (' + context + ')');
+    return String(v).trim();
+}
+
+function requireIntEnv(env, key, context) {
+    const v = requireEnv(env, key, context);
+    const n = parseInt(v, 10);
+    if (isNaN(n)) throw new Error(key + ' is not a valid integer (' + context + ')');
+    return n;
+}
+
 /**
  * fetchWithRetry — exponential backoff wrapper for external fetches.
  * Retries on network errors and 5xx responses. Respects timeoutMs per attempt.
@@ -124,7 +139,7 @@ const PROVIDERS = {
     parse(data) { return data.content?.[0]?.text; },
     async preflight(env) {
       const started = Date.now();
-      const model = env.MODEL || 'claude-sonnet-4-20250514';
+      const model = requireEnv(env, 'MODEL', 'chat');
       if (!env.ANTHROPIC_API_KEY) return { status: 'error', key_valid: false, model, error: 'ANTHROPIC_API_KEY not configured', elapsed_ms: 0 };
       const timeout = intEnv(env, 'PREFLIGHT_TIMEOUT_MS', 5000);
       try {
@@ -142,7 +157,7 @@ const PROVIDERS = {
           const text = await res.text();
           const isAuth = res.status === 401 || res.status === 403;
           let detail = `HTTP ${res.status}`;
-          try { const j = JSON.parse(text); if (j.error && j.error.message) detail = j.error.message; } catch (_) {}
+          try { const j = JSON.parse(text); if (j.error && j.error.message) detail = j.error.message; } catch (e) { console.error('[TALK]', e.message || e); }
           const isCredit = res.status === 400 && detail.toLowerCase().includes('credit');
           return { status: (isAuth || isCredit) ? 'error' : 'degraded', key_valid: !isAuth, model, ...rl, error: clampString(redactSecrets(detail), 200), elapsed_ms: Date.now() - started };
         }
@@ -179,7 +194,7 @@ const PROVIDERS = {
     parse(data) { return data.choices?.[0]?.message?.content; },
     async preflight(env) {
       const started = Date.now();
-      const model = env.OPENAI_MODEL || env.MODEL || 'gpt-4o-mini';
+      const model = env.OPENAI_MODEL || requireEnv(env, 'MODEL', 'openai');
       if (!env.OPENAI_API_KEY) return { status: 'error', key_valid: false, model, error: 'OPENAI_API_KEY not configured', elapsed_ms: 0 };
       const timeout = intEnv(env, 'PREFLIGHT_TIMEOUT_MS', 5000);
       try {
@@ -194,7 +209,7 @@ const PROVIDERS = {
           const text = await res.text();
           const isAuth = res.status === 401 || res.status === 403;
           let detail = `HTTP ${res.status}`;
-          try { const j = JSON.parse(text); if (j.error && j.error.message) detail = j.error.message; } catch (_) {}
+          try { const j = JSON.parse(text); if (j.error && j.error.message) detail = j.error.message; } catch (e) { console.error('[TALK]', e.message || e); }
           return { status: isAuth ? 'error' : 'degraded', key_valid: !isAuth, model, ...rl, error: clampString(redactSecrets(detail), 200), elapsed_ms: Date.now() - started };
         }
         const deg = preflightDegraded(rl);
@@ -230,7 +245,7 @@ const PROVIDERS = {
     parse(data) { return data.choices?.[0]?.message?.content; },
     async preflight(env) {
       const started = Date.now();
-      const model = env.DEEPSEEK_MODEL || env.MODEL || 'deepseek-chat';
+      const model = env.DEEPSEEK_MODEL || requireEnv(env, 'MODEL', 'deepseek');
       if (!env.DEEPSEEK_API_KEY) return { status: 'error', key_valid: false, model, error: 'DEEPSEEK_API_KEY not configured', elapsed_ms: 0 };
       const timeout = intEnv(env, 'PREFLIGHT_TIMEOUT_MS', 5000);
       try {
@@ -245,7 +260,7 @@ const PROVIDERS = {
           const text = await res.text();
           const isAuth = res.status === 401 || res.status === 403;
           let detail = `HTTP ${res.status}`;
-          try { const j = JSON.parse(text); if (j.error && j.error.message) detail = j.error.message; } catch (_) {}
+          try { const j = JSON.parse(text); if (j.error && j.error.message) detail = j.error.message; } catch (e) { console.error('[TALK]', e.message || e); }
           return { status: isAuth ? 'error' : 'degraded', key_valid: !isAuth, model, ...rl, error: clampString(redactSecrets(detail), 200), elapsed_ms: Date.now() - started };
         }
         const deg = preflightDegraded(rl);
@@ -386,8 +401,8 @@ function parseIntEnv(env, key) {
 
 function maxTokens(env) {
   // Governance: clamp requested max_tokens to an explicit min/max envelope.
-  const lo = parseIntEnv(env, 'TOKENS_MIN') ?? 16;
-  const hi = parseIntEnv(env, 'TOKENS_MAX') ?? 4096;
+  const lo = requireIntEnv(env, 'TOKENS_MIN', 'tokens');
+  const hi = requireIntEnv(env, 'TOKENS_MAX', 'tokens');
   const req = parseIntEnv(env, 'MAX_TOKENS') ?? hi;
   return clampInt(req, lo, hi);
 }
@@ -395,8 +410,8 @@ function maxTokens(env) {
 function maxTokensFor(providerName, env) {
   // Provider-specific clamps override global min/max when set.
   const prefix = String(providerName || '').toUpperCase();
-  const lo = parseIntEnv(env, `${prefix}_TOKENS_MIN`) ?? parseIntEnv(env, 'TOKENS_MIN') ?? 16;
-  const hi = parseIntEnv(env, `${prefix}_TOKENS_MAX`) ?? parseIntEnv(env, 'TOKENS_MAX') ?? 4096;
+  const lo = parseIntEnv(env, `${prefix}_TOKENS_MIN`) ?? requireIntEnv(env, 'TOKENS_MIN', 'tokens');
+  const hi = parseIntEnv(env, `${prefix}_TOKENS_MAX`) ?? requireIntEnv(env, 'TOKENS_MAX', 'tokens');
   const req = parseIntEnv(env, 'MAX_TOKENS') ?? hi;
   return clampInt(req, lo, hi);
 }
@@ -404,9 +419,9 @@ function maxTokensFor(providerName, env) {
 function timeoutMsFor(providerName, env) {
   // Defaults: Runpod cold starts can hang behind Cloudflare 504s; keep a short
   // timeout and fallback rather than taking down /chat.
-  if (providerName === 'runpod') return parseIntEnv(env, 'RUNPOD_TIMEOUT_MS') ?? 12000;
-  if (providerName === 'vastai') return parseIntEnv(env, 'VASTAI_TIMEOUT_MS') ?? (parseIntEnv(env, 'PROVIDER_TIMEOUT_MS') ?? 25000);
-  return parseIntEnv(env, 'PROVIDER_TIMEOUT_MS') ?? 25000;
+  if (providerName === 'runpod') return requireIntEnv(env, 'RUNPOD_TIMEOUT_MS', 'runpod');
+  if (providerName === 'vastai') return parseIntEnv(env, 'VASTAI_TIMEOUT_MS') ?? requireIntEnv(env, 'PROVIDER_TIMEOUT_MS', 'timeout');
+  return requireIntEnv(env, 'PROVIDER_TIMEOUT_MS', 'timeout');
 }
 
 function redactSecrets(s) {
@@ -530,7 +545,7 @@ async function stripeApiRequest(env, method, path, formFields) {
     const res = await fetchWithRetry(stripeApiBase(env) + path, { method, headers, body }, { maxRetries: 2, timeoutMs: 15000 });
     const raw = await res.text();
     let data;
-    try { data = JSON.parse(raw); } catch { data = { raw }; }
+    try { data = JSON.parse(raw); } catch (e) { console.error('[TALK]', e.message || e); data = { raw }; }
     if (!res.ok) {
       const msg = (data && data.error && data.error.message) ? data.error.message : `Stripe ${res.status}`;
       return { ok: false, status: res.status, error: msg, data };
@@ -681,12 +696,12 @@ let _reqOrigin = '*';
 async function deepHealth(env) {
   const vanity = (env.GOV_VANITY_DOMAINS || '').split(',').filter(Boolean);
   const privateSet = new Set((env.GOV_PRIVATE_SCOPES || '').split(',').filter(Boolean));
-  const CACHE_TTL = parseInt(env.HEALTH_CACHE_TTL_S || '300', 10) * 1000;
-  const BUDGET = parseInt(env.HEALTH_BUDGET || '18', 10);
+  const CACHE_TTL = requireIntEnv(env, 'HEALTH_CACHE_TTL_S', 'health') * 1000;
+  const BUDGET = requireIntEnv(env, 'HEALTH_BUDGET', 'health');
   const CACHE_KEY = 'health:deep:cache';
 
   // ── Auto-discover all governed surfaces from compiled manifest ──
-  const fleetRoots = (env.GOV_FLEET_ROOTS || 'https://hadleylab.org,https://canonic.org').split(',').filter(Boolean);
+  const fleetRoots = requireEnv(env, 'GOV_FLEET_ROOTS', 'health').split(',').filter(Boolean);
   const sitemap = [];
   const allChecks = [];
   const seen = new Set();
@@ -712,7 +727,7 @@ async function deepHealth(env) {
         }
         discovered = true;
       }
-    } catch (_) {}
+    } catch (e) { console.error('[TALK]', e.message || e); }
 
     // Fallback to env var lists if surfaces.json unavailable
     if (!discovered) {
@@ -752,7 +767,7 @@ async function deepHealth(env) {
   try {
     const raw = env.TALK_KV ? await env.TALK_KV.get(CACHE_KEY) : null;
     if (raw) cached = JSON.parse(raw);
-  } catch (_) { /* cache miss */ }
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
   const now = Date.now();
 
   // ── Partition: stale (need re-check) vs fresh (serve from cache)
@@ -808,7 +823,7 @@ async function deepHealth(env) {
     if (env.TALK_KV) {
       await env.TALK_KV.put(CACHE_KEY, JSON.stringify(cached), { expirationTtl: Math.ceil(CACHE_TTL * 2 / 1000) });
     }
-  } catch (_) { /* non-fatal */ }
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
   // ── Assemble response ─────────────────────────────────────────
   // Combine: freshResults + cached fresh entries + private scopes + any remaining unchecked
@@ -874,7 +889,7 @@ async function deepHealth(env) {
   // TALK_PREFLIGHT: live API probe for configured providers (GOV: TALK/TALK.md § Preflight)
   if (boolEnv(env, 'PREFLIGHT_HEALTH', false)) {
     const PREFLIGHT_CACHE_KEY = 'health:preflight:cache';
-    const PREFLIGHT_TTL = parseInt(env.PREFLIGHT_CACHE_TTL_S || '120', 10) * 1000;
+    const PREFLIGHT_TTL = requireIntEnv(env, 'PREFLIGHT_CACHE_TTL_S', 'preflight') * 1000;
     let preflightResult = null;
 
     try {
@@ -887,7 +902,7 @@ async function deepHealth(env) {
           preflightResult._cached_age_s = Math.round((now - cached.ts) / 1000);
         }
       }
-    } catch (_) {}
+    } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
     if (!preflightResult) {
       try {
@@ -898,7 +913,7 @@ async function deepHealth(env) {
             await env.TALK_KV.put(PREFLIGHT_CACHE_KEY, JSON.stringify(preflightResult), {
               expirationTtl: Math.ceil(PREFLIGHT_TTL * 2 / 1000),
             });
-          } catch (_) {}
+          } catch (e) { console.error('[TALK_KV]', e.message || e); }
         }
       } catch (e) {
         preflightResult = { service: 'TALK_PREFLIGHT', status: 'error', error: String(e.message || e) };
@@ -966,14 +981,14 @@ async function deepHealth(env) {
   services.push({ service: 'TALK_SCOPES', status: 'ok', count: talkScopes.length, scopes: talkScopes });
 
   // ── INTEL testing (autodiscovered from CANON.json testbanks) ──
-  const INTEL_TTL = parseInt(env.HEALTH_INTEL_TTL_S || '3600', 10) * 1000;
+  const INTEL_TTL = requireIntEnv(env, 'HEALTH_INTEL_TTL_S', 'intel') * 1000;
   const INTEL_CACHE_KEY = 'health:intel:cache';
 
   let intelCached = {};
   try {
     const raw = env.TALK_KV ? await env.TALK_KV.get(INTEL_CACHE_KEY) : null;
     if (raw) intelCached = JSON.parse(raw);
-  } catch (_) {}
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
   // Collect all known surface URLs (accessible or cached ok)
   const accessibleUrls = surfaces
@@ -1177,7 +1192,7 @@ async function deepHealth(env) {
     if (env.TALK_KV) {
       await env.TALK_KV.put(INTEL_CACHE_KEY, JSON.stringify(intelCached), { expirationTtl: Math.ceil(INTEL_TTL * 2 / 1000) });
     }
-  } catch (_) {}
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
   // Assemble intel section — only report actual test results (not no_test/skip)
   const intelChecks = [];
@@ -1446,7 +1461,7 @@ async function omicsProxy(request, env) {
         upstream_status: res.status,
         ip: request.headers.get('CF-Connecting-IP') || 'unknown',
         work_ref: `omics:${source}:${Date.now()}`
-      }).catch(function() {}); // fire-and-forget
+      }).catch(function(e) { console.error('[TALK]', e.message || e); }); // fire-and-forget
 
       return new Response(body, { status: res.status, headers });
     }
@@ -1548,12 +1563,11 @@ function tokenBoundsForEntry(entry, env) {
   const profile = String((entry && entry.profile) || 'talk').toLowerCase();
   const lo =
     parseIntEnv(env, `${provider}_TOKENS_MIN`) ??
-    parseIntEnv(env, 'TOKENS_MIN') ??
-    16;
+    requireIntEnv(env, 'TOKENS_MIN', 'tokens');
   const hi =
     parseIntEnv(env, `${provider}_${profile === 'kilocode' ? 'KILOCODE_TOKENS_MAX' : 'TOKENS_MAX'}`) ??
     parseIntEnv(env, `${provider}_TOKENS_MAX`) ??
-    (provider === 'RUNPOD' ? 512 : (parseIntEnv(env, 'TOKENS_MAX') ?? 4096));
+    (provider === 'RUNPOD' ? 512 : requireIntEnv(env, 'TOKENS_MAX', 'tokens'));
   return { lo, hi };
 }
 
@@ -1838,9 +1852,10 @@ async function runpodProxyReady(baseUrl, env) {
   try {
     const r = await fetchWithTimeout(b + '/models', {
       headers: { 'Accept': 'application/json' },
-    }, parseIntEnv(env, 'RUNPOD_HEALTH_TIMEOUT_MS') ?? 2000);
+    }, requireIntEnv(env, 'RUNPOD_HEALTH_TIMEOUT_MS', 'health'));
     return { ok: r.ok, status: r.status };
-  } catch {
+  } catch (e) {
+    console.error('[TALK]', e.message || e);
     return null;
   }
 }
@@ -1856,10 +1871,11 @@ async function runpodHealth(endpointId, env) {
         // Runpod health accepts raw key. (Bearer also often works, but keep canonical.)
         'Authorization': String(env.RUNPOD_API_KEY || ''),
       },
-    }, parseIntEnv(env, 'RUNPOD_HEALTH_TIMEOUT_MS') ?? 2000);
+    }, requireIntEnv(env, 'RUNPOD_HEALTH_TIMEOUT_MS', 'health'));
     if (!r.ok) return null;
     return await r.json();
-  } catch {
+  } catch (e) {
+    console.error('[TALK]', e.message || e);
     return null;
   }
 }
@@ -1938,7 +1954,7 @@ async function oaiResponses(request, env) {
 
   let body;
   try { body = await request.json(); }
-  catch { return oaiError(400, 'Invalid JSON'); }
+  catch (e) { console.error('[TALK]', e.message || e); return oaiError(400, 'Invalid JSON'); }
 
   const model = (body && body.model ? String(body.model) : '').trim();
   const audience = String(
@@ -1995,7 +2011,7 @@ async function oaiResponses(request, env) {
   }
 
   let data;
-  try { data = JSON.parse(text); } catch { return oaiError(502, 'Upstream returned invalid JSON', 'api_error'); }
+  try { data = JSON.parse(text); } catch (e) { console.error('[TALK]', e.message || e); return oaiError(502, 'Upstream returned invalid JSON', 'api_error'); }
   const content = data && data.choices && data.choices[0] && data.choices[0].message
     ? String(data.choices[0].message.content || '')
     : '';
@@ -2083,7 +2099,7 @@ async function oaiChatCompletions(request, env) {
 
   let body;
   try { body = await request.json(); }
-  catch { return oaiError(400, 'Invalid JSON'); }
+  catch (e) { console.error('[TALK]', e.message || e); return oaiError(400, 'Invalid JSON'); }
 
   const messagesIn = body && Array.isArray(body.messages) ? body.messages : null;
   if (!messagesIn || !messagesIn.length) return oaiError(400, 'Missing messages');
@@ -2166,7 +2182,7 @@ async function oaiChatCompletions(request, env) {
       return oaiError(502, `Anthropic ${res.status}: ${safe}`, 'api_error');
     }
     let data;
-    try { data = JSON.parse(text); } catch { return oaiError(502, 'Anthropic returned invalid JSON', 'api_error'); }
+    try { data = JSON.parse(text); } catch (e) { console.error('[TALK]', e.message || e); return oaiError(502, 'Anthropic returned invalid JSON', 'api_error'); }
     const content = data && data.content && data.content[0] && data.content[0].text ? String(data.content[0].text) : '';
 
     const h = addCors({ 'Content-Type': 'application/json' });
@@ -2584,7 +2600,7 @@ async function oaiBakeoff(request, env) {
 
   let body;
   try { body = await request.json(); }
-  catch { return oaiError(400, 'Invalid JSON'); }
+  catch (e) { console.error('[TALK]', e.message || e); return oaiError(400, 'Invalid JSON'); }
 
   const reg = listGatewayModels(env);
   const models = Array.isArray(body.models) ? body.models.map(String).map(s => s.trim()).filter(Boolean) : [];
@@ -2624,7 +2640,7 @@ async function oaiBakeoff(request, env) {
 async function chat(request, env) {
   let body;
   try { body = await request.json(); }
-  catch { return json({ error: 'Invalid JSON' }, 400); }
+  catch (e) { console.error('[TALK]', e.message || e); return json({ error: 'Invalid JSON' }, 400); }
 
   const { message, history = [], system, scope } = body;
   if (!message) return json({ error: 'Missing message' }, 400);
@@ -2642,7 +2658,7 @@ async function chat(request, env) {
   const trace_id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
 
   const primary = env.PROVIDER;
-  const fallback = env.FALLBACK_PROVIDER || 'anthropic';
+  const fallback = requireEnv(env, 'FALLBACK_PROVIDER', 'chat');
   const chain = env.PROVIDER_CHAIN
     ? String(env.PROVIDER_CHAIN).split(',').map(s => s.trim()).filter(Boolean)
     : (primary === 'runpod' ? [primary, fallback] : [primary]);
@@ -2676,8 +2692,8 @@ async function chat(request, env) {
       model: reqBody && reqBody.model ? reqBody.model : null,
       max_tokens: reqBody && reqBody.max_tokens ? reqBody.max_tokens : null,
       messages: Array.isArray(reqBody && reqBody.messages) ? reqBody.messages.length : null,
-      tokens_min: parseIntEnv(env, 'TOKENS_MIN') ?? 16,
-      tokens_max: parseIntEnv(env, 'TOKENS_MAX') ?? 4096,
+      tokens_min: requireIntEnv(env, 'TOKENS_MIN', 'tokens'),
+      tokens_max: requireIntEnv(env, 'TOKENS_MAX', 'tokens'),
       provider_tokens_max: parseIntEnv(env, `${String(name || '').toUpperCase()}_TOKENS_MAX`),
     };
     try {
@@ -2796,7 +2812,7 @@ async function shopCheckout(request, env) {
 
   let body;
   try { body = await request.json(); }
-  catch { return json({ error: 'Invalid JSON' }, 400); }
+  catch (e) { console.error('[TALK]', e.message || e); return json({ error: 'Invalid JSON' }, 400); }
 
   const eventType = normalizeShopEvent(body && body.event) || '';
   if (!eventType || !['SALE', 'DONATION', 'INVEST'].includes(eventType)) {
@@ -2815,11 +2831,13 @@ async function shopCheckout(request, env) {
   const name = clampString(String((body && body.name) || ''), 120);
   const email = clampString(String((body && body.email) || ''), 240);
   const coinToCents = Math.max(1, intEnv(env, 'SHOP_COIN_USD_CENTS', 100));
-  const currency = String(env.SHOP_CURRENCY || 'usd').toLowerCase();
+  const currency = requireEnv(env, 'SHOP_CURRENCY', 'shop').toLowerCase();
   const unitAmount = amountCoin * coinToCents;
-  const origin = String(env.SHOP_ORIGIN || 'https://hadleylab-dexter.github.io').replace(/\/+$/, '');
-  const successDefault = `${origin}/BOOKS/?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
-  const cancelDefault = `${origin}/BOOKS/?checkout=cancel`;
+  const origin = requireEnv(env, 'SHOP_ORIGIN', 'shop').replace(/\/+$/, '');
+  const successPath = requireEnv(env, 'SHOP_SUCCESS_PATH', 'shop');
+  const cancelPath = requireEnv(env, 'SHOP_CANCEL_PATH', 'shop');
+  const successDefault = `${origin}${successPath}`;
+  const cancelDefault = `${origin}${cancelPath}`;
   const successUrl = String((body && body.success_url) || env.SHOP_SUCCESS_URL || successDefault).trim();
   const cancelUrl = String((body && body.cancel_url) || env.SHOP_CANCEL_URL || cancelDefault).trim();
 
@@ -2884,7 +2902,7 @@ async function shopStripeWebhook(request, env) {
 
   let evt;
   try { evt = JSON.parse(raw); }
-  catch { return json({ error: 'Invalid Stripe event JSON' }, 400); }
+  catch (e) { console.error('[TALK]', e.message || e); return json({ error: 'Invalid Stripe event JSON' }, 400); }
 
   const typ = String(evt && evt.type || '');
   const obj = evt && evt.data && evt.data.object ? evt.data.object : {};
@@ -2913,7 +2931,8 @@ async function shopStripeWebhook(request, env) {
         body: JSON.stringify(relayPayload),
       });
       relayed = true;
-    } catch {
+    } catch (e) {
+      console.error('[TALK]', e.message || e);
       relayed = false;
     }
   }
@@ -3024,7 +3043,7 @@ function authConfig(env) {
 async function authGitHub(request, env) {
   let body;
   try { body = await request.json(); }
-  catch { return json({ error: 'Invalid JSON' }, 400); }
+  catch (e) { console.error('[TALK]', e.message || e); return json({ error: 'Invalid JSON' }, 400); }
 
   const { code, redirect_uri } = body;
   if (!code) return json({ error: 'Missing code' }, 400);
@@ -3231,14 +3250,14 @@ async function emailSend(request, env) {
 
   let body;
   try { body = await request.json(); }
-  catch { return json({ error: 'Invalid JSON' }, 400); }
+  catch (e) { console.error('[TALK]', e.message || e); return json({ error: 'Invalid JSON' }, 400); }
 
   const { to, subject, html, from, cc, bcc, reply_to } = body;
   if (!to || !subject || !html) {
     return json({ error: 'Missing to, subject, or html' }, 400);
   }
 
-  const sender = from || env.EMAIL_FROM || 'founder@canonic.org';
+  const sender = from || requireEnv(env, 'EMAIL_FROM', 'email');
   const recipient = Array.isArray(to) ? to[0] : to;
 
   const payload = { from: sender, to: [recipient], subject, html };
@@ -3323,7 +3342,7 @@ async function appendToLedger(env, type, scope, fields) {
   try {
     const raw = await env.TALK_KV.get(key);
     if (raw) ledger = JSON.parse(raw);
-  } catch {}
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
   const ts = new Date().toISOString();
   const prev = ledger.length ? ledger[ledger.length - 1].id : '000000000000';
@@ -3351,7 +3370,7 @@ async function talkLedgerWrite(request, env) {
   // Rate limit: 100 ledger writes per scope per hour
   let body;
   try { body = await request.json(); }
-  catch { return json({ error: 'Invalid JSON' }, 400); }
+  catch (e) { console.error('[TALK]', e.message || e); return json({ error: 'Invalid JSON' }, 400); }
 
   const { scope, trace_id, provider_used, elapsed_ms } = body;
   const user_message = sanitize(body.user_message);
@@ -3370,7 +3389,7 @@ async function talkLedgerWrite(request, env) {
   try {
     const raw = await env.TALK_KV.get(key);
     if (raw) ledger = JSON.parse(raw);
-  } catch {}
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
   // Hash chain: id = content hash, prev = last entry's id
   const prev = ledger.length ? ledger[ledger.length - 1].id : '000000000000';
@@ -3410,7 +3429,7 @@ async function talkLedgerWrite(request, env) {
     try {
       const raw = await env.TALK_KV.get(inboxKey);
       if (raw) inbox = JSON.parse(raw);
-    } catch {}
+    } catch (e) { console.error('[TALK_KV]', e.message || e); }
     inbox.push({
       id,
       ts,
@@ -3439,7 +3458,7 @@ async function talkLedgerRead(request, env) {
   try {
     const raw = await env.TALK_KV.get(key);
     if (raw) ledger = JSON.parse(raw);
-  } catch {}
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 200);
   const offset = parseInt(url.searchParams.get('offset') || '0', 10);
@@ -3455,7 +3474,7 @@ async function talkSend(request, env) {
 
   let body;
   try { body = await request.json(); }
-  catch { return json({ error: 'Invalid JSON' }, 400); }
+  catch (e) { console.error('[TALK]', e.message || e); return json({ error: 'Invalid JSON' }, 400); }
 
   const { from, to, message, context } = body;
   if (!from || !to || !message) return json({ error: 'Missing from, to, or message' }, 400);
@@ -3470,7 +3489,7 @@ async function talkSend(request, env) {
   try {
     const raw = await env.TALK_KV.get(key);
     if (raw) inbox = JSON.parse(raw);
-  } catch {}
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
   inbox.push(entry);
   if (inbox.length > 500) inbox = inbox.slice(-500);
@@ -3483,7 +3502,7 @@ async function talkSend(request, env) {
   try {
     const raw = await env.TALK_KV.get(outKey);
     if (raw) outbox = JSON.parse(raw);
-  } catch {}
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
   outbox.push(entry);
   if (outbox.length > 500) outbox = outbox.slice(-500);
   await env.TALK_KV.put(outKey, JSON.stringify(outbox));
@@ -3511,7 +3530,7 @@ async function talkInbox(request, env) {
   try {
     const raw = await env.TALK_KV.get(key);
     if (raw) inbox = JSON.parse(raw);
-  } catch {}
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
   const unreadOnly = url.searchParams.get('unread') === 'true';
   const messages = unreadOnly ? inbox.filter(m => !m.read) : inbox;
@@ -3524,7 +3543,7 @@ async function talkAck(request, env) {
 
   let body;
   try { body = await request.json(); }
-  catch { return json({ error: 'Invalid JSON' }, 400); }
+  catch (e) { console.error('[TALK]', e.message || e); return json({ error: 'Invalid JSON' }, 400); }
 
   const { scope, message_ids } = body;
   if (!scope || !Array.isArray(message_ids)) return json({ error: 'Missing scope or message_ids' }, 400);
@@ -3534,7 +3553,7 @@ async function talkAck(request, env) {
   try {
     const raw = await env.TALK_KV.get(key);
     if (raw) inbox = JSON.parse(raw);
-  } catch {}
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
   const idSet = new Set(message_ids);
   let acked = 0;
@@ -3556,7 +3575,7 @@ async function contribute(request, env) {
 
   let body;
   try { body = await request.json(); }
-  catch { return json({ error: 'Invalid JSON' }, 400); }
+  catch (e) { console.error('[TALK]', e.message || e); return json({ error: 'Invalid JSON' }, 400); }
 
   const { scope, contributor, email, affiliation, chapter, source } = body;
   const story = sanitize(body.story);
@@ -3575,7 +3594,7 @@ async function contribute(request, env) {
   try {
     const raw = await env.TALK_KV.get(key);
     if (raw) ledger = JSON.parse(raw);
-  } catch {}
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
   // Hash chain: id = content hash, prev = last entry's id
   const prev = ledger.length ? ledger[ledger.length - 1].id : '000000000000';
@@ -3662,8 +3681,8 @@ async function contribute(request, env) {
           html: emailHtml,
         }),
       });
-    } catch (emailErr) {
-      // Email failure must not block the contribution response
+    } catch (e) {
+      console.error('[TALK]', e.message || e);
     }
   }
 
@@ -3682,7 +3701,7 @@ async function contributeRead(request, env) {
   try {
     const raw = await env.TALK_KV.get(key);
     if (raw) ledger = JSON.parse(raw);
-  } catch {}
+  } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 200);
   const offset = parseInt(url.searchParams.get('offset') || '0', 10);

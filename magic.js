@@ -19,8 +19,8 @@ var GALAXY = (function () {
     var _collapseAll = null;
     var _authUser = null;
 
-    // ── AUTH ────────────────────────────────────────────────
-    var AUTH_API = 'https://api.canonic.org';
+    // ── AUTH (sourced from compiled galaxy.json — no hardcoding) ──
+    var AUTH_API = ''; // set from galaxy.api_base in init()
 
     async function validateGalaxyAuth() {
         var token = null;
@@ -58,13 +58,13 @@ var GALAXY = (function () {
         return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
     }
 
-    // ── TIER ─────────────────────────────────────────────
+    // ── TIER (sourced from compiled galaxy.json tiers — no hardcoding) ──
+    var _compiledTiers = []; // set from galaxy.tiers in init()
+
     function tierFor(bits) {
-        if (bits >= 255) return { name: 'MAGIC', color: '#00ff88', badge: '\u2726' };
-        if (bits >= 127) return { name: 'AGENT', color: '#2997ff', badge: '\u25C6' };
-        if (bits >= 63)  return { name: 'ENTERPRISE', color: '#bf5af2', badge: 'E' };
-        if (bits >= 43)  return { name: 'BUSINESS', color: '#ff9f0a', badge: 'B' };
-        if (bits >= 35)  return { name: 'COMMUNITY', color: '#fbbf24', badge: 'C' };
+        for (var i = 0; i < _compiledTiers.length; i++) {
+            if (bits >= _compiledTiers[i].threshold) return _compiledTiers[i];
+        }
         return { name: 'NONE', color: '#ff453a', badge: '\u2014' };
     }
 
@@ -812,6 +812,10 @@ var GALAXY = (function () {
         var res = await fetch('./galaxy.json');
         var raw = await res.json();
         galaxy = Array.isArray(raw) ? transformScopes(raw) : raw;
+
+        // Hydrate from compiled galaxy.json (no hardcoding)
+        AUTH_API = galaxy.api_base || '';
+        _compiledTiers = galaxy.tiers || [];
         var container = el || document.getElementById('galaxy');
         if (!container) return;
         buildGraph(container);
