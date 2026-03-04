@@ -489,7 +489,7 @@ var GALAXY = (function () {
         var node = nodeMap[id];
         if (!node) return;
         if (nodeDS.get(id)) {
-            network.focus(id, { scale: 1.5, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+            network.focus(id, { scale: 2.5, animation: { duration: 600, easingFunction: 'easeInOutCubic' } });
         }
         showDetail(node);
         // Close intel panel when focusing a scope
@@ -781,17 +781,20 @@ var GALAXY = (function () {
         network = new vis.Network(container, { nodes: nodeDS, edges: edgeDS }, {
             physics: {
                 barnesHut: {
-                    gravitationalConstant: -8000,
-                    centralGravity: 0.2,
-                    springLength: 180,
-                    springConstant: 0.04,
-                    damping: 0.9
+                    gravitationalConstant: -18000,
+                    centralGravity: 0.08,
+                    springLength: 280,
+                    springConstant: 0.02,
+                    damping: 0.4,
+                    avoidOverlap: 0.6
                 },
-                stabilization: { iterations: 500 }
+                maxVelocity: 80,
+                minVelocity: 0.3,
+                stabilization: { iterations: 800, updateInterval: 25 }
             },
             nodes: { shape: 'dot' },
-            edges: { arrows: { to: { enabled: false } } },
-            interaction: { hover: true, tooltipDelay: 200, zoomView: true, dragView: true }
+            edges: { arrows: { to: { enabled: false } }, smooth: { forceDirection: 'none' } },
+            interaction: { hover: true, tooltipDelay: 150, zoomView: true, dragView: true, zoomSpeed: 0.08 }
         });
 
         // ── Expand / Collapse ──
@@ -871,7 +874,7 @@ var GALAXY = (function () {
                         collapseBranch(nid);
                     } else {
                         expandBranch(nid);
-                        network.focus(nid, { scale: 1.5, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+                        network.focus(nid, { scale: 2.0, animation: { duration: 600, easingFunction: 'easeInOutCubic' } });
                     }
                 }
                 if (node) showDetail(node);
@@ -882,7 +885,7 @@ var GALAXY = (function () {
 
         network.on('doubleClick', function (params) {
             if (params.nodes.length === 1) {
-                network.focus(params.nodes[0], { scale: 2.5, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+                network.focus(params.nodes[0], { scale: 3.5, animation: { duration: 800, easingFunction: 'easeInOutCubic' } });
             }
         });
     }
@@ -1097,13 +1100,20 @@ var GALAXY = (function () {
         renderHUD();
         renderIntelPanel();
 
-        // Dismiss loading spinner after physics stabilization (with timeout fallback)
+        // Dismiss loading spinner + cinematic zoom after stabilization
         var loaderDismissed = false;
         function dismissLoader() {
             if (loaderDismissed) return;
             loaderDismissed = true;
             var loader = document.getElementById('galaxyLoader');
             if (loader) loader.classList.add('hidden');
+            // Cinematic zoom-in: start wide, ease into the galaxy
+            if (network) {
+                network.moveTo({ scale: 0.5, animation: false });
+                setTimeout(function () {
+                    network.fit({ animation: { duration: 1800, easingFunction: 'easeInOutCubic' } });
+                }, 100);
+            }
         }
         if (network) {
             network.once('stabilizationIterationsDone', dismissLoader);
