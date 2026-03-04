@@ -563,6 +563,17 @@ main.deck-main {
 
 .funnel-bridge {
     flex-shrink: 0;
+    text-align: center;
+}
+
+.bridge-label {
+    font-family: var(--mono);
+    font-size: var(--font-2xs);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: var(--space-2xs);
 }
 
 .bridge-circle {

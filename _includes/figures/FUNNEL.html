@@ -1,8 +1,9 @@
 <!-- FUNNEL | DESIGN.md 255 Map | Decomposed from PMWC/DECK/ slide 6 -->
 {% assign lh = include.left.header | default: include.left_label | default: include.left %}
 {% assign li = include.left.items | default: include.left_items %}
-{% assign bl = include.bridge.label | default: include.bridge_label | default: include.bridge %}
-{% assign bs = include.bridge.sub | default: include.bridge_sub %}
+{% assign bc = include.bridge %}
+{% assign bl = include.bridge_label | default: include.bridge.label %}
+{% assign bs = include.bridge_sub | default: include.bridge.sub %}
 {% assign rh = include.right.header | default: include.right_label | default: include.right %}
 {% assign ri = include.right.items | default: include.right_items %}
 <div class="funnel">
@@ -14,8 +15,9 @@
   </div>
   <div class="funnel-flow">&rarr;</div>
   <div class="funnel-bridge">
+    {% if bl %}<div class="bridge-label">{{ bl }}</div>{% endif %}
     <div class="bridge-circle">
-      <div class="bridge-c">{{ bl }}</div>
+      <div class="bridge-c">{{ bc }}</div>
       <div class="bridge-sub">{{ bs }}</div>
     </div>
   </div>
