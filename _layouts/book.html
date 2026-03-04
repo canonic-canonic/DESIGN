@@ -72,7 +72,7 @@
       </div>
       {% endif %}
       {% if page.gate == "contribute" %}
-      <a href="#Contribute" class="nav-ctrl gated-ctrl" title="Contribute">CONTRIBUTE</a>
+      <a href="#Contribute" class="nav-ctrl gated-ctrl" title="Contribute" onclick="event.preventDefault();var s=document.getElementById('Contribute');if(s){s.scrollIntoView({behavior:'smooth'});}">CONTRIBUTE</a>
       {% endif %}
       <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">&#9790;</button>
     </div>
@@ -110,6 +110,20 @@
     <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
   </article>
 
+  <!-- ═══ DASHBOARD SECTIONS (data-driven, from _data/{scope}.json) ═══ -->
+  {% assign sections = sd.sections %}
+  {% if sections %}
+  {% for section in sections %}
+  {% if section.dashboard %}
+  <section id="{{ section.id }}" class="container view-web" style="margin-bottom:var(--space-2xl){% if page.view == 'gov' or (page.pdf and page.view == 'tex' and page.gate != 'contribute') %};display:none{% endif %}">
+    {% if section.eyebrow %}<div class="section-eyebrow text-center" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.15em;color:var(--muted);margin-bottom:var(--space-xs)">{{ section.eyebrow }}</div>{% endif %}
+    {% if section.title %}<h2 class="section-title text-center" style="margin-bottom:var(--space-lg)">{{ section.title }}</h2>{% endif %}
+    {% include DASHBOARD.html widgets=section.dashboard %}
+  </section>
+  {% endif %}
+  {% endfor %}
+  {% endif %}
+
   <!-- ═══ WEB VIEW (forced visible when gate:contribute) ═══ -->
   <div class="view-web"{% if page.view == "gov" or (page.pdf and page.view == "tex" and page.gate != "contribute") %} style="display:none"{% endif %}>
   <article class="post paper book container">
@@ -142,7 +156,7 @@
     <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
 
     {% if page.gate == "contribute" %}
-    <div class="contribute-section">
+    <div class="contribute-section" id="Contribute">
       <h2>Contribute</h2>
       <p class="contribute-sub">Have a story, a quote we missed, a correction, a moment? Every contribution is governed and attributed.</p>
       <form class="gate-form" id="contribForm">

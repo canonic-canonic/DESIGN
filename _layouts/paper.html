@@ -45,7 +45,7 @@
         <span class="nav-dot"></span>
         <span class="nav-talk-label">TALK</span>
       </button>{% endif %}
-      {% if page.gate == "contribute" %}<a href="#Contribute" class="nav-ctrl" title="Contribute to this paper">CONTRIBUTE</a>{% endif %}
+      {% if page.gate == "contribute" %}<a href="#Contribute" class="nav-ctrl" title="Contribute to this paper" onclick="event.preventDefault();var s=document.getElementById('Contribute');if(s){s.scrollIntoView({behavior:'smooth'});}">CONTRIBUTE</a>{% endif %}
       {% if page.views and page.views.size > 1 %}
       <div class="view-toggle" id="viewToggle">
         {% for v in page.views %}

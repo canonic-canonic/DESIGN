@@ -167,7 +167,7 @@ window._termSwitch = function(idx) {
 
 {% elsif hero.cover %}
 <!-- Hero with cover art -->
-<div class="hero hero-cover">
+<div class="hero hero-cover"{% if hero.background %} style="background-image:url('{{ hero.background }}');background-size:cover;background-position:top center"{% endif %}>
   <div class="hero-cover-inner">
     <div class="hero-cover-image">
       <img src="{{ hero.cover }}" alt="{{ hero.title }} cover art" loading="lazy"/>
