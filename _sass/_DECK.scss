@@ -95,7 +95,7 @@ main.deck-main {
     gap: var(--space-sm);
     margin-top: var(--space-sm);
     width: 100%;
-    max-width: 1100px;
+    max-width: 1200px;
     flex: 0 1 auto;
     min-height: 0;
 }
@@ -454,7 +454,7 @@ main.deck-main {
 }
 
 .hero-number {
-    font-size: clamp(36px, 4.5vw, 64px);
+    font-size: clamp(48px, 7vw, 110px);
     font-weight: 800;
     color: var(--accent);
     line-height: 1;
@@ -463,11 +463,11 @@ main.deck-main {
 
 .hero-label {
     font-family: var(--mono);
-    font-size: var(--font-xs);
+    font-size: var(--font-sm);
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--dim);
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: var(--space-2xs);
 }
 
@@ -511,7 +511,7 @@ main.deck-main {
 
 .funnel-col {
     flex: 1;
-    max-width: 220px;
+    max-width: 260px;
 }
 
 .funnel-header {
@@ -556,7 +556,7 @@ main.deck-main {
 }
 
 .funnel-flow {
-    font-size: 20px;
+    font-size: 28px;
     color: var(--accent);
     flex-shrink: 0;
 }
@@ -566,8 +566,8 @@ main.deck-main {
 }
 
 .bridge-circle {
-    width: 64px;
-    height: 64px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     border: 2px solid var(--accent);
     display: flex;
@@ -578,28 +578,30 @@ main.deck-main {
 }
 
 .bridge-c {
-    font-size: 20px;
+    font-size: 32px;
     font-weight: 800;
     color: var(--accent);
     font-family: var(--mono);
 }
 
 .bridge-sub {
-    font-size: 8px;
-    letter-spacing: 0.15em;
+    font-size: 9px;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--dim);
     font-family: var(--mono);
+    margin-top: 2px;
 }
 
 .funnel-result {
     text-align: center;
-    margin-top: var(--space-xs-sm);
+    margin-top: var(--space-sm);
     font-family: var(--mono);
-    font-size: var(--font-sm);
+    font-size: var(--font-base);
     font-weight: 700;
     color: var(--accent);
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 /* ── Architecture (ARCHITECTURE.html) ─────────────────────────────── */

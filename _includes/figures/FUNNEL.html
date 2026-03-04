@@ -1,9 +1,9 @@
 <!-- FUNNEL | DESIGN.md 255 Map | Decomposed from PMWC/DECK/ slide 6 -->
-{% assign lh = include.left.header | default: include.left_label %}
+{% assign lh = include.left.header | default: include.left_label | default: include.left %}
 {% assign li = include.left.items | default: include.left_items %}
-{% assign bl = include.bridge.label | default: include.bridge_label %}
+{% assign bl = include.bridge.label | default: include.bridge_label | default: include.bridge %}
 {% assign bs = include.bridge.sub | default: include.bridge_sub %}
-{% assign rh = include.right.header | default: include.right_label %}
+{% assign rh = include.right.header | default: include.right_label | default: include.right %}
 {% assign ri = include.right.items | default: include.right_items %}
 <div class="funnel">
   <div class="funnel-col funnel-left">
