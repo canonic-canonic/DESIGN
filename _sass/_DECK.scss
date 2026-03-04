@@ -505,14 +505,14 @@ main.deck-main {
 .funnel {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
-    justify-content: center;
+    gap: var(--space-lg);
+    justify-content: space-between;
     width: 100%;
+    max-width: 1000px;
 }
 
 .funnel-col {
-    flex: 1;
-    max-width: 300px;
+    flex: 1 1 250px;
 }
 
 .funnel-header {
