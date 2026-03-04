@@ -1,0 +1,27 @@
+<!-- VIEW-GOV | Composable governance contract view | DESIGN.md 255 Map -->
+<!-- Renders CANON data from site.data[scope].canon when available, falls back to {{ content }} -->
+{% assign _scope_key = page.scope | default: site.scope | downcase %}
+{% assign _sd = site.data[_scope_key] %}
+{% assign _canon = _sd.canon %}
+{% assign _badge = include.badge | default: page.badge | default: page.scope | default: site.scope | upcase %}
+{% assign _current_view = page.view | default: "web" %}
+<article class="post paper container view-gov"{% if _current_view != "gov" %} style="display:none"{% endif %}>
+  <header class="post-header">
+    <div class="hero-badge">{{ _badge }}</div>
+    <h1 class="gradient-text">{{ page.title | default: site.title }}</h1>
+    <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">CONTRACT &middot; VIEW: GOV</p>
+  </header>
+  <div class="paper-body prose">
+    {% if _canon %}
+    {% if _canon.inherits %}<p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.05em;">inherits: {{ _canon.inherits }}</p>{% endif %}
+    <h2>Axiom</h2>
+    <p><strong>{{ _canon.axiom }}</strong></p>
+    <h2>Constraints</h2>
+    <pre style="white-space:pre-wrap;font-size:var(--font-sm);">{{ _canon.constraints }}</pre>
+    {% if _canon.privacy %}<p class="muted" style="margin-top:var(--space-md);">privacy: {{ _canon.privacy }}</p>{% endif %}
+    {% else %}
+    {{ content }}
+    {% endif %}
+  </div>
+  <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
+</article>

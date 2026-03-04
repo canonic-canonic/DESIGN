@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GALAXY — Intelligence Command Center</title>
+    <meta name="description" content="CANONIC GALAXY. Intelligence command center. Compliance IS the product. INTEL IS the service.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #000; --fg: #f5f5f7; --dim: #86868b;
+            --panel: rgba(28,28,30,0.95); --border: rgba(255,255,255,0.08);
+            --glass-hover: rgba(255,255,255,0.06);
+            --mono: 'SF Mono', 'Menlo', 'Monaco', monospace;
+        }
+
+        body { background: var(--bg); color: var(--fg); font-family: -apple-system, system-ui, sans-serif; overflow: hidden; height: 100vh; }
+
+        /* ═══ LOADING ═══ */
+        .galaxy-loader {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: var(--bg); z-index: 999; transition: opacity 0.6s ease;
+        }
+        .galaxy-loader.hidden { opacity: 0; pointer-events: none; }
+        .loader-ring {
+            width: 48px; height: 48px;
+            border: 3px solid rgba(255,255,255,0.06);
+            border-top-color: #00ff88;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loader-label { font-family: var(--mono); font-size: 10px; color: var(--dim); letter-spacing: 0.15em; margin-top: 16px; }
+
+        /* ═══ GALAXY (full viewport) ═══ */
+        #galaxy { width: 100vw; height: 100vh; }
+
+        /* ═══ SEARCH ═══ */
+        .search {
+            position: fixed; top: 28px; left: 50%; transform: translateX(-50%);
+            width: 280px; padding: 10px 16px;
+            background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+            color: var(--fg); font-family: var(--mono); font-size: 12px;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            outline: none; transition: width 0.3s, border-color 0.3s; z-index: 100;
+        }
+        .search:focus { width: 400px; border-color: rgba(0,255,136,0.3); }
+        .search::placeholder { color: var(--dim); }
+
+        /* ═══ HUD (top-left) ═══ */
+        .hud { position: fixed; top: 28px; left: 36px; z-index: 100; text-align: center; }
+        .hud-label { font-family: var(--mono); font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 8px; }
+
+        /* ═══ DETAIL PANEL (right) ═══ */
+        .detail-panel {
+            position: fixed; right: -380px; top: 50%; transform: translateY(-50%);
+            width: 340px; max-height: 80vh; overflow-y: auto;
+            background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            z-index: 100; transition: right 0.3s ease;
+        }
+        .detail-panel.open { right: 36px; }
+        .detail-panel::-webkit-scrollbar { width: 4px; }
+        .detail-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        .dp-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 12px; border-bottom: 1px solid var(--border); }
+        .dp-name { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .dp-close { background: none; border: none; color: var(--dim); font-size: 20px; cursor: pointer; padding: 4px 8px; }
+        .dp-close:hover { color: var(--fg); }
+
+        .dp-ring { text-align: center; padding: 24px 0 12px; }
+        .dp-tier { text-align: center; font-family: var(--mono); font-size: 13px; font-weight: 700; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+
+        .dp-meta { padding: 16px 24px; }
+        .dp-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .dp-row:last-child { border: none; }
+        .dp-label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        .dp-value { font-family: var(--mono); font-size: 12px; }
+
+        .dp-section { padding: 12px 24px; border-top: 1px solid var(--border); }
+        .dp-section-title { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+        .dp-inheritors { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .dp-child { padding: 6px 10px; border: 1px solid; border-radius: 8px; font-family: var(--mono); font-size: 10px; font-weight: 600; text-align: center; cursor: pointer; transition: background 0.2s; }
+        .dp-child:hover { background: var(--glass-hover); }
+
+        /* ═══ INTELLIGENCE (detail panel sections) ═══ */
+        .dp-intel { padding: 8px 24px; border-top: 1px solid var(--border); }
+        .dp-intel-label { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+        .dp-intel-value { font-family: var(--mono); font-size: 12px; color: var(--fg); }
+        .dp-dims { display: flex; flex-wrap: wrap; gap: 4px; }
+        .dp-dim-missing { font-family: var(--mono); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: rgba(255,69,58,0.12); color: #ff453a; letter-spacing: 0.05em; }
+
+        /* ═══ INTEL TASK MANAGER (left) ═══ */
+        .intel-panel {
+            position: fixed; left: -420px; top: 50%; transform: translateY(-50%);
+            width: 380px; max-height: 80vh; overflow-y: auto;
+            background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            z-index: 100; transition: left 0.3s ease;
+        }
+        .intel-panel.open { left: 36px; }
+        .intel-panel::-webkit-scrollbar { width: 4px; }
+        .intel-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        .intel-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px 12px; border-bottom: 1px solid var(--border); }
+        .intel-title { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: #2997ff; }
+        .intel-body { padding: 8px 12px; }
+        .intel-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; border-radius: 10px; margin-bottom: 4px;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .intel-row:hover { background: var(--glass-hover); }
+        .intel-bits { font-family: var(--mono); font-size: 18px; font-weight: 700; min-width: 36px; text-align: right; }
+        .intel-info { flex: 1; min-width: 0; }
+        .intel-scope { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.05em; }
+        .intel-action { font-size: 10px; color: var(--dim); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .intel-gap { font-family: var(--mono); font-size: 9px; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.04); color: var(--dim); white-space: nowrap; }
+
+        /* ═══ DOCK (bottom-center) ═══ */
+        .dock {
+            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+            background: rgba(28,28,30,0.7); border: 1px solid var(--border); border-radius: 20px;
+            padding: 8px 16px; display: flex; gap: 4px; align-items: center;
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); z-index: 100;
+        }
+        .dock-item {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            padding: 8px 12px; border-radius: 12px; cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+            text-decoration: none; color: var(--fg);
+        }
+        .dock-item:hover { transform: scale(1.35) translateY(-8px); background: var(--glass-hover); }
+        .dock-glyph { font-size: 24px; line-height: 1; }
+        .dock-glyph i { font-size: 20px; }
+        .dock-label { font-family: var(--mono); font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--dim); }
+        .dock-sep { width: 1px; height: 32px; background: var(--border); margin: 0 4px; }
+        .dock-mark { font-size: 22px; font-weight: 700; line-height: 1; }
+        .dock-mark-h { display: inline-block; transform: rotate(90deg); font-size: 20px; }
+
+        @media (max-width: 768px) {
+            .detail-panel { width: 100%; right: -100%; top: auto; bottom: 0; transform: none; max-height: 60vh; border-radius: 16px 16px 0 0; }
+            .detail-panel.open { right: 0; }
+            .intel-panel { width: 100%; left: -100%; top: auto; bottom: 0; transform: none; max-height: 50vh; border-radius: 16px 16px 0 0; }
+            .intel-panel.open { left: 0; }
+            .search { width: 200px; }
+            .search:focus { width: 280px; }
+            .hud { top: auto; bottom: 80px; left: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="galaxyLoader" class="galaxy-loader">
+        <div class="loader-ring"></div>
+        <div class="loader-label">LOADING GALAXY</div>
+    </div>
+
+    <div id="galaxy"></div>
+
+    <input type="text" class="search" id="galaxySearch" placeholder="/ SEARCH GALAXY" autocomplete="off">
+
+    <div class="hud" id="hud"></div>
+
+    <div class="detail-panel" id="detailPanel"></div>
+
+    <div class="intel-panel" id="intelPanel">
+        <div class="intel-header">
+            <span class="intel-title">INTEL TASK MANAGER</span>
+            <button class="dp-close" onclick="document.getElementById('intelPanel').classList.remove('open')">&times;</button>
+        </div>
+        <div class="intel-body" id="intelBody"></div>
+    </div>
+
+    <div class="dock">
+        <a class="dock-item" href="./">
+            <span class="dock-glyph"><i class="fas fa-magic"></i></span>
+            <span class="dock-label">MAGIC</span>
+        </a>
+        <a class="dock-item" onclick="document.getElementById('intelPanel').classList.toggle('open')">
+            <span class="dock-glyph"><i class="fas fa-tasks"></i></span>
+            <span class="dock-label">Intel</span>
+        </a>
+        <div class="dock-sep"></div>
+        <a class="dock-item" href="https://hadleylab-canonic.github.io/CHAT/MAMMOCHAT/">
+            <span class="dock-glyph"><i class="fas fa-x-ray"></i></span>
+            <span class="dock-label">Mammo</span>
+        </a>
+        <a class="dock-item" href="https://hadleylab-canonic.github.io/CHAT/ONCOCHAT/">
+            <span class="dock-glyph"><i class="fas fa-dna"></i></span>
+            <span class="dock-label">Onco</span>
+        </a>
+        <a class="dock-item" href="https://hadleylab-canonic.github.io/CHAT/MEDCHAT/">
+            <span class="dock-glyph"><i class="fas fa-stethoscope"></i></span>
+            <span class="dock-label">Med</span>
+        </a>
+        <a class="dock-item" href="https://hadleylab-canonic.github.io/CHAT/OMICSCHAT/">
+            <span class="dock-glyph"><i class="fas fa-atom"></i></span>
+            <span class="dock-label">Omics</span>
+        </a>
+        <a class="dock-item" href="https://hadleylab-canonic.github.io/CHAT/LAWCHAT/">
+            <span class="dock-glyph"><i class="fas fa-gavel"></i></span>
+            <span class="dock-label">Law</span>
+        </a>
+        <a class="dock-item" href="https://hadleylab-canonic.github.io/CHAT/FINCHAT/">
+            <span class="dock-glyph"><i class="fas fa-dollar-sign"></i></span>
+            <span class="dock-label">Fin</span>
+        </a>
+        <div class="dock-sep"></div>
+        <a class="dock-item" href="https://hadleylab-canonic.github.io/SERVICES/TALK/">
+            <span class="dock-glyph"><i class="fas fa-comments"></i></span>
+            <span class="dock-label">Talk</span>
+        </a>
+        <a class="dock-item" href="https://hadleylab-canonic.github.io/SERVICES/EMAIL/">
+            <span class="dock-glyph"><i class="fas fa-envelope"></i></span>
+            <span class="dock-label">Email</span>
+        </a>
+        <a class="dock-item" href="https://hadleylab-canonic.github.io/SERVICES/SHOP/">
+            <span class="dock-glyph"><i class="fas fa-shopping-cart"></i></span>
+            <span class="dock-label">Shop</span>
+        </a>
+        <div class="dock-sep"></div>
+        <a class="dock-item" href="https://canonic-canonic.github.io/">
+            <span class="dock-mark">&cap;</span>
+            <span class="dock-label">Canonic</span>
+        </a>
+        <a class="dock-item" href="https://hadleylab-canonic.github.io/">
+            <span class="dock-mark"><span class="dock-mark-h">&#9778;</span></span>
+            <span class="dock-label">Hadley</span>
+        </a>
+    </div>
+
+    <script src="./magic.js"></script>
+    <script>GALAXY.init();</script>
+</body>
+</html>

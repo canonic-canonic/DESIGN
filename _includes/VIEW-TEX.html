@@ -1,0 +1,12 @@
+<!-- VIEW-TEX | Composable PDF viewer | DESIGN.md 255 Map -->
+<!-- Renders PDF.js canvas viewer when page.pdf is set -->
+{% if page.pdf %}
+{% assign _current_view = page.view | default: "web" %}
+<div class="pdf-viewer-mode" id="pdfViewer"{% if _current_view != "tex" %} style="display:none"{% endif %}>
+  <nav class="pdf-nav">
+    <span class="pdf-page-counter">
+      <span id="pdfCurr">1</span> / <span id="pdfTotal">0</span>
+    </span>
+  </nav>
+</div>
+{% endif %}

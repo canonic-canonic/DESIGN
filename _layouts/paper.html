@@ -87,27 +87,9 @@
   <div class="gated-content" id="gatedContent">
   {% endif %}
 
-  <!-- TEX VIEW: PDF.js book-spread viewer -->
-  {% if page.pdf %}
-  <div id="pdfViewer" class="pdf-viewer-mode"{% unless page.view == "tex" %} style="display:none"{% endunless %}>
-    <nav class="pdf-nav">
-      <span class="pdf-page-counter">
-        <span id="pdfCurr">1</span> / <span id="pdfTotal">0</span>
-      </span>
-    </nav>
-  </div>
-  {% endif %}
+  {% include VIEW-TEX.html %}
 
-  <!-- GOV VIEW: governance contract prose -->
-  <article class="post paper container view-gov"{% unless page.view == "gov" %} style="display:none"{% endunless %}>
-    <header class="post-header">
-      <div class="hero-badge">{{ page.badge | default: scope_up }}</div>
-      <h1 class="gradient-text">{{ page.title }}</h1>
-      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">CONTRACT &middot; VIEW: GOV</p>
-    </header>
-    <div class="paper-body prose">{{ content }}</div>
-    <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
-  </article>
+  {% include VIEW-GOV.html %}
 
   <!-- WEB VIEW: article with figures + math (default) -->
   <article class="post container view-web"{% if page.view == "gov" or page.view == "tex" %} style="display:none"{% endif %}>

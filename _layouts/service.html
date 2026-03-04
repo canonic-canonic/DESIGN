@@ -60,18 +60,7 @@
     </div>
   </header>
 
-  <!-- ═══ VIEW: GOV — The governance contract as prose ═══ -->
-  <article class="post paper container view-gov"{% if current_view != "gov" %} style="display:none"{% endif %}>
-    <header class="post-header">
-      <div class="hero-badge">{{ badge_label }}</div>
-      <h1 class="gradient-text">{{ page.title }}</h1>
-      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">CONTRACT &middot; VIEW: GOV</p>
-    </header>
-    <div class="paper-body prose">
-      {{ content }}
-    </div>
-    <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
-  </article>
+  {% include VIEW-GOV.html badge=badge_label %}
 
   <!-- ═══ VIEW: WEB — The compiled web surface (hero + sections) ═══ -->
   <div class="view-web"{% if current_view != "web" %} style="display:none"{% endif %}>
@@ -101,8 +90,22 @@
     </div>
     {% endif %}
 
-    <!-- Fallback: if no hero/sections, show content in HTML chrome -->
-    {% unless page.hero or page.sections %}
+    <!-- Dashboard sections from _data/{scope}.json (compiled by build-surfaces) -->
+    {% assign data_sections = sd.sections %}
+    {% if data_sections %}
+    {% for section in data_sections %}
+    {% if section.dashboard %}
+    <section id="{{ section.id }}" class="container" style="margin-bottom:var(--space-2xl)">
+      {% if section.eyebrow %}<div class="section-eyebrow text-center" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.15em;color:var(--muted);margin-bottom:var(--space-xs)">{{ section.eyebrow }}</div>{% endif %}
+      {% if section.title %}<h2 class="section-title text-center" style="margin-bottom:var(--space-lg)">{{ section.title }}</h2>{% endif %}
+      {% include DASHBOARD.html widgets=section.dashboard %}
+    </section>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+
+    <!-- Fallback: if no hero/sections/dashboard, show content in HTML chrome -->
+    {% unless page.hero or page.sections or data_sections %}
     <div class="container" style="padding:var(--space-xl) 0;">
       <div class="hero-badge" style="margin-bottom:var(--space-md);">{{ badge_label }}</div>
       <h1 class="gradient-text" style="margin-bottom:var(--space-lg);">{{ page.title }}</h1>
@@ -112,16 +115,7 @@
     {% endunless %}
   </div>
 
-  {% if page.pdf %}
-  <!-- ═══ VIEW: TEX — PDF.js book-spread viewer ═══ -->
-  <div class="pdf-viewer-mode" id="pdfViewer"{% if current_view != "tex" %} style="display:none"{% endif %}>
-    <nav class="pdf-nav">
-      <span class="pdf-page-counter">
-        <span id="pdfCurr">1</span> / <span id="pdfTotal">0</span>
-      </span>
-    </nav>
-  </div>
-  {% endif %}
+  {% include VIEW-TEX.html %}
 
   <!-- FOOTER (inlined) -->
   <footer id="footer">

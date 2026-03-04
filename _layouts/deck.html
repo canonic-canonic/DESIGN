@@ -15,18 +15,7 @@
 
   {% include NAV-UNIFIED.html mode="deck" slide_count=sections.size %}
 
-  <!-- ═══ VIEW: GOV — The governance contract as prose ═══ -->
-  <article class="post paper container view-gov"{% if current_view != "gov" %} style="display:none"{% endif %}>
-    <header class="post-header">
-      <div class="hero-badge">{{ badge_label }}</div>
-      <h1 class="gradient-text">{{ page.title | default: site.title }}</h1>
-      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">CONTRACT &middot; VIEW: GOV</p>
-    </header>
-    <div class="paper-body prose">
-      {{ content }}
-    </div>
-    <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
-  </article>
+  {% include VIEW-GOV.html badge=badge_label %}
 
   <!-- ═══ VIEW: WEB — The compiled deck surface ═══ -->
   <div class="view-web"{% if current_view == "gov" %} style="display:none"{% endif %}>

@@ -22,20 +22,7 @@
   {% include GALAXY.html %}
   {% else %}
 
-  <!-- ═══ VIEW: GOV — The governance contract as prose ═══ -->
-  {% if page.views and page.views.size > 1 %}
-  <article class="post paper container view-gov"{% if current_view != "gov" %} style="display:none"{% endif %}>
-    <header class="post-header">
-      <div class="hero-badge">{{ page.scope | default: site.scope | upcase }}</div>
-      <h1 class="gradient-text">{{ page.title | default: site.title }}</h1>
-      <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">CONTRACT &middot; VIEW: GOV</p>
-    </header>
-    <div class="paper-body prose">
-      {{ content }}
-    </div>
-    <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
-  </article>
-  {% endif %}
+  {% include VIEW-GOV.html %}
 
   <!-- ═══ VIEW: WEB — The compiled web surface ═══ -->
   <div class="view-web"{% if current_view == "gov" %} style="display:none"{% endif %}>
