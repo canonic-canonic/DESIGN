@@ -1421,6 +1421,27 @@ export default {
       return omicsProxy(request, env);
     }
 
+    // STAR — personal portal (governed by MAGIC/SERVICES/STAR)
+    if (path.startsWith('/star/')) {
+      const starPath = path.slice(5); // strip '/star'
+      if (starPath === '/status') return starStatus(request, env);
+      if (starPath === '/gov') return starGov(request, env);
+      // All other STAR routes require auth
+      const token = extractSessionToken(request);
+      if (!token) return json({ error: 'Missing session token' }, 401);
+      const sessRaw = await env.TALK_KV.get(`session:${token}`);
+      if (!sessRaw) return json({ error: 'Invalid or expired session' }, 401);
+      const sess = JSON.parse(sessRaw);
+      if (new Date(sess.expires) < new Date()) return json({ error: 'Session expired' }, 401);
+      if (starPath === '/timeline') return starTimeline(request, env, sess);
+      if (starPath === '/services') return starServices(request, env, sess);
+      if (starPath === '/intel') return starIntel(request, env, sess);
+      if (starPath === '/econ') return starEcon(request, env, sess);
+      if (starPath === '/identity') return starIdentity(request, env, sess);
+      if (starPath === '/media') return starMedia(request, env, sess);
+      return json({ error: 'Unknown STAR route' }, 404);
+    }
+
     console.log(JSON.stringify({ ts: new Date().toISOString(), path, method: request.method, ip: _ip, status: 404, latency_ms: Date.now() - _t0 }));
     return json({ error: 'Not found' }, 404);
   },
@@ -3708,4 +3729,126 @@ async function contributeRead(request, env) {
   const slice = ledger.slice(-(offset + limit), offset ? -offset : undefined);
 
   return json({ scope, total: ledger.length, entries: slice });
+}
+
+// ── STAR — Personal Portal Handlers ──────────────────────────────────────────
+// Governed by: canonic-canonic/MAGIC/SERVICES/STAR/STAR.md
+
+async function starTimeline(request, env, session) {
+  const url = new URL(request.url);
+  const principal = session.user?.toUpperCase() || '';
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10),
+    parseInt(env.STAR_TIMELINE_LIMIT || '500', 10));
+  const streamFilter = url.searchParams.get('stream')?.toUpperCase() || null;
+  const primitiveFilter = url.searchParams.get('primitive')?.toUpperCase() || null;
+  const offset = parseInt(url.searchParams.get('offset') || '0', 10);
+
+  // Read compiled STAR-TIMELINE.json from STAR_KV
+  let timeline = [];
+  const cacheKey = `star:timeline:${principal}`;
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const cached = await kv.get(cacheKey);
+    if (cached) {
+      const data = JSON.parse(cached);
+      timeline = data.entries || data || [];
+    }
+  } catch (e) {
+    console.error('[STAR] timeline read:', e.message || e);
+  }
+
+  if (streamFilter) timeline = timeline.filter(e => e.stream === streamFilter);
+  if (primitiveFilter) timeline = timeline.filter(e => e.primitive === primitiveFilter);
+
+  const total = timeline.length;
+  const entries = timeline.slice(offset, offset + limit);
+
+  return json({ principal, total, offset, limit, entries });
+}
+
+async function starServices(request, env, session) {
+  const principal = session.user?.toUpperCase() || '';
+  let services = [];
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const raw = await kv.get('star:services:' + principal);
+    if (raw) services = JSON.parse(raw);
+  } catch (e) {
+    console.error('[STAR] services read:', e.message || e);
+  }
+  return json({ principal, total: services.length, services });
+}
+
+async function starIntel(request, env, session) {
+  const principal = session.user?.toUpperCase() || '';
+  let patterns = [];
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const raw = await kv.get('star:intel:' + principal);
+    if (raw) patterns = JSON.parse(raw);
+  } catch (e) {
+    console.error('[STAR] intel read:', e.message || e);
+  }
+  return json({ principal, total: patterns.length, patterns });
+}
+
+async function starEcon(request, env, session) {
+  const principal = session.user?.toUpperCase() || '';
+  let econ = {};
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const raw = await kv.get('star:econ:' + principal);
+    if (raw) econ = JSON.parse(raw);
+  } catch (e) {
+    console.error('[STAR] econ read:', e.message || e);
+  }
+  return json({ principal, ...econ });
+}
+
+async function starIdentity(request, env, session) {
+  const principal = session.user?.toUpperCase() || '';
+  let identity = {};
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const raw = await kv.get('star:identity:' + principal);
+    if (raw) identity = JSON.parse(raw);
+  } catch (e) {
+    console.error('[STAR] identity read:', e.message || e);
+  }
+  return json({ principal, ...identity });
+}
+
+async function starMedia(request, env, session) {
+  const principal = session.user?.toUpperCase() || '';
+  let media = [];
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const raw = await kv.get('star:media:' + principal);
+    if (raw) media = JSON.parse(raw);
+  } catch (e) {
+    console.error('[STAR] media read:', e.message || e);
+  }
+  return json({ principal, total: media.length, media });
+}
+
+async function starGov(request, env) {
+  let scopes = [];
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const raw = await kv.get('star:gov');
+    if (raw) scopes = JSON.parse(raw);
+  } catch (e) {
+    console.error('[STAR] gov read:', e.message || e);
+  }
+  return json({ total: scopes.length, scopes });
+}
+
+async function starStatus(request, env) {
+  return json({
+    status: 'ok',
+    service: 'STAR',
+    star_kv: !!env.STAR_KV,
+    talk_kv: !!env.TALK_KV,
+    ts: new Date().toISOString(),
+  });
 }

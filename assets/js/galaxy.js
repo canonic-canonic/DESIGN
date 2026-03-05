@@ -136,8 +136,9 @@ var GALAXY = (function () {
         FINCHAT:    { color: '#ff9f0a', url: 'https://hadleylab.org/TALKS/FINCHAT/',    icon: '\uf155' },
         DEV:        { color: '#22d3ee', url: 'https://hadleylab.org/TALKS/DEV/',        icon: '\uf121' },
         NONA:       { color: '#4ade80', url: 'https://hadleylab.org/TALKS/NONA/',       icon: '\uf07a' },
-        RUNNER:     { color: '#f59e0b', url: 'https://hadleylab.org/SERVICES/RUNNER/', icon: '\uf0e8' },
+        RUNNER:     { color: '#f59e0b', url: 'https://hadleylab.org/TALKS/RUNNER/',    icon: '\uf0e8' },
         VITAE:      { color: '#bf5af2', url: 'https://hadleylab.org/SERVICES/VITAE/',   icon: '\uf2bb' },
+        STAR:       { color: '#ffd60a', url: 'https://hadleylab.org/SERVICES/STAR/',    icon: '\uf005' },
     };
 
     // ── TIER SHADOW (ambient glow from visual language contract) ──

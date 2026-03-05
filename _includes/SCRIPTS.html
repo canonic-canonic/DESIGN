@@ -25,6 +25,10 @@
 {% unless include.minimal and page.talk == true %}{% include TALK.html %}{% endunless %}
 <script src="{{ '/assets/js/talk.js' | relative_url }}"></script>
 {% endif %}
+{% if page.star %}
+{% include STAR.html %}
+<script src="{{ '/assets/js/star.js' | relative_url }}"></script>
+{% endif %}
 <script src="{{ '/assets/js/controls.js' | relative_url }}"></script>
 <script>
 {% if page.auth %}AUTH.init(); {% endif %}
@@ -32,4 +36,5 @@
 {% if page.galaxy %}GALAXY.init(); {% endif %}
 {% if page.shop %}SHOP.init(); {% endif %}
 {% if page.talk %}TALK.init(); {% endif %}
+{% if page.star %}STAR.init(); {% endif %}
 </script>
