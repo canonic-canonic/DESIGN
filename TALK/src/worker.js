@@ -1363,6 +1363,10 @@ export default {
       return authGrants(request, env);
     }
 
+    if (path === '/galaxy/auth' && request.method === 'GET') {
+      return galaxyAuth(request, env);
+    }
+
     if (path === '/chat' && request.method === 'POST') {
       const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
       if (await checkRate(env, 'chat', ip, 60)) return json({ error: 'Rate limited' }, 429);
@@ -3250,6 +3254,31 @@ async function authGrants(request, env) {
   }
 
   return json({ granted: false, user: session.user, reason: 'not_reader' });
+}
+
+// ── GALAXY AUTH — Private nodes for authenticated users ──
+async function galaxyAuth(request, env) {
+  const token = extractSessionToken(request);
+  if (!token) return json({ error: 'unauthorized' }, 401);
+  const sessRaw = await env.TALK_KV.get(`session:${token}`);
+  if (!sessRaw) return json({ error: 'unauthorized' }, 401);
+  const sess = JSON.parse(sessRaw);
+  if (new Date(sess.expires) < new Date()) return json({ error: 'session expired' }, 401);
+
+  const raw = await env.TALK_KV.get('galaxy:auth');
+  if (!raw) return json({ nodes: [], edges: [] });
+  const data = JSON.parse(raw);
+
+  const user = sess.user;
+  const visible = data.nodes.filter(n => {
+    const readers = n.readers || [];
+    if (readers.length === 0) return true;
+    return readers.includes('*') || readers.includes(user);
+  });
+  const visIds = new Set(visible.map(n => n.id));
+  const visEdges = data.edges.filter(e => visIds.has(e.from) || visIds.has(e.to));
+
+  return json({ nodes: visible, edges: visEdges });
 }
 
 function extractSessionToken(request) {
