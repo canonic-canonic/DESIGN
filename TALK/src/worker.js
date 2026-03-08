@@ -3767,7 +3767,7 @@ async function starTimeline(request, env, session) {
   const url = new URL(request.url);
   const principal = session.user?.toUpperCase() || '';
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10),
-    parseInt(env.STAR_TIMELINE_LIMIT || '500', 10));
+    parseInt(env.STAR_TIMELINE_LIMIT, 10));
   const streamFilter = url.searchParams.get('stream')?.toUpperCase() || null;
   const primitiveFilter = url.searchParams.get('primitive')?.toUpperCase() || null;
   const offset = parseInt(url.searchParams.get('offset') || '0', 10);

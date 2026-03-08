@@ -1249,6 +1249,9 @@ var worker_default = {
     if (path === "/auth/grants" && request.method === "GET") {
       return authGrants(request, env);
     }
+    if (path === "/galaxy/auth" && request.method === "GET") {
+      return galaxyAuth(request, env);
+    }
     if (path === "/chat" && request.method === "POST") {
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       if (await checkRate(env, "chat", ip, 60)) return json({ error: "Rate limited" }, 429);
@@ -1295,6 +1298,24 @@ var worker_default = {
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       if (await checkRate(env, "omics", ip, 200)) return json({ error: "Rate limited" }, 429);
       return omicsProxy(request, env);
+    }
+    if (path.startsWith("/star/")) {
+      const starPath = path.slice(5);
+      if (starPath === "/status") return starStatus(request, env);
+      if (starPath === "/gov") return starGov(request, env);
+      const token = extractSessionToken(request);
+      if (!token) return json({ error: "Missing session token" }, 401);
+      const sessRaw = await env.TALK_KV.get(`session:${token}`);
+      if (!sessRaw) return json({ error: "Invalid or expired session" }, 401);
+      const sess = JSON.parse(sessRaw);
+      if (new Date(sess.expires) < /* @__PURE__ */ new Date()) return json({ error: "Session expired" }, 401);
+      if (starPath === "/timeline") return starTimeline(request, env, sess);
+      if (starPath === "/services") return starServices(request, env, sess);
+      if (starPath === "/intel") return starIntel(request, env, sess);
+      if (starPath === "/econ") return starEcon(request, env, sess);
+      if (starPath === "/identity") return starIdentity(request, env, sess);
+      if (starPath === "/media") return starMedia(request, env, sess);
+      return json({ error: "Unknown STAR route" }, 404);
     }
     console.log(JSON.stringify({ ts: (/* @__PURE__ */ new Date()).toISOString(), path, method: request.method, ip: _ip, status: 404, latency_ms: Date.now() - _t0 }));
     return json({ error: "Not found" }, 404);
@@ -2873,6 +2894,27 @@ async function authGrants(request, env) {
   return json({ granted: false, user: session.user, reason: "not_reader" });
 }
 __name(authGrants, "authGrants");
+async function galaxyAuth(request, env) {
+  const token = extractSessionToken(request);
+  if (!token) return json({ error: "unauthorized" }, 401);
+  const sessRaw = await env.TALK_KV.get(`session:${token}`);
+  if (!sessRaw) return json({ error: "unauthorized" }, 401);
+  const sess = JSON.parse(sessRaw);
+  if (new Date(sess.expires) < /* @__PURE__ */ new Date()) return json({ error: "session expired" }, 401);
+  const raw = await env.TALK_KV.get("galaxy:auth");
+  if (!raw) return json({ nodes: [], edges: [] });
+  const data = JSON.parse(raw);
+  const user = sess.user;
+  const visible = data.nodes.filter((n) => {
+    const readers = n.readers || [];
+    if (readers.length === 0) return true;
+    return readers.includes("*") || readers.includes(user);
+  });
+  const visIds = new Set(visible.map((n) => n.id));
+  const visEdges = data.edges.filter((e) => visIds.has(e.from) || visIds.has(e.to));
+  return json({ nodes: visible, edges: visEdges });
+}
+__name(galaxyAuth, "galaxyAuth");
 function extractSessionToken(request) {
   const authHeader = request.headers.get("Authorization");
   if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -3295,6 +3337,122 @@ async function contributeRead(request, env) {
   return json({ scope, total: ledger.length, entries: slice });
 }
 __name(contributeRead, "contributeRead");
+async function starTimeline(request, env, session) {
+  const url = new URL(request.url);
+  const principal = session.user?.toUpperCase() || "";
+  const limit = Math.min(
+    parseInt(url.searchParams.get("limit") || "50", 10),
+    parseInt(env.STAR_TIMELINE_LIMIT, 10)
+  );
+  const streamFilter = url.searchParams.get("stream")?.toUpperCase() || null;
+  const primitiveFilter = url.searchParams.get("primitive")?.toUpperCase() || null;
+  const offset = parseInt(url.searchParams.get("offset") || "0", 10);
+  let timeline = [];
+  const cacheKey = `star:timeline:${principal}`;
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const cached = await kv.get(cacheKey);
+    if (cached) {
+      const data = JSON.parse(cached);
+      timeline = data.entries || data || [];
+    }
+  } catch (e) {
+    console.error("[STAR] timeline read:", e.message || e);
+  }
+  if (streamFilter) timeline = timeline.filter((e) => e.stream === streamFilter);
+  if (primitiveFilter) timeline = timeline.filter((e) => e.primitive === primitiveFilter);
+  const total = timeline.length;
+  const entries = timeline.slice(offset, offset + limit);
+  return json({ principal, total, offset, limit, entries });
+}
+__name(starTimeline, "starTimeline");
+async function starServices(request, env, session) {
+  const principal = session.user?.toUpperCase() || "";
+  let services = [];
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const raw = await kv.get("star:services:" + principal);
+    if (raw) services = JSON.parse(raw);
+  } catch (e) {
+    console.error("[STAR] services read:", e.message || e);
+  }
+  return json({ principal, total: services.length, services });
+}
+__name(starServices, "starServices");
+async function starIntel(request, env, session) {
+  const principal = session.user?.toUpperCase() || "";
+  let patterns = [];
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const raw = await kv.get("star:intel:" + principal);
+    if (raw) patterns = JSON.parse(raw);
+  } catch (e) {
+    console.error("[STAR] intel read:", e.message || e);
+  }
+  return json({ principal, total: patterns.length, patterns });
+}
+__name(starIntel, "starIntel");
+async function starEcon(request, env, session) {
+  const principal = session.user?.toUpperCase() || "";
+  let econ = {};
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const raw = await kv.get("star:econ:" + principal);
+    if (raw) econ = JSON.parse(raw);
+  } catch (e) {
+    console.error("[STAR] econ read:", e.message || e);
+  }
+  return json({ principal, ...econ });
+}
+__name(starEcon, "starEcon");
+async function starIdentity(request, env, session) {
+  const principal = session.user?.toUpperCase() || "";
+  let identity = {};
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const raw = await kv.get("star:identity:" + principal);
+    if (raw) identity = JSON.parse(raw);
+  } catch (e) {
+    console.error("[STAR] identity read:", e.message || e);
+  }
+  return json({ principal, ...identity });
+}
+__name(starIdentity, "starIdentity");
+async function starMedia(request, env, session) {
+  const principal = session.user?.toUpperCase() || "";
+  let media = [];
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const raw = await kv.get("star:media:" + principal);
+    if (raw) media = JSON.parse(raw);
+  } catch (e) {
+    console.error("[STAR] media read:", e.message || e);
+  }
+  return json({ principal, total: media.length, media });
+}
+__name(starMedia, "starMedia");
+async function starGov(request, env) {
+  let scopes = [];
+  try {
+    const kv = env.STAR_KV || env.TALK_KV;
+    const raw = await kv.get("star:gov");
+    if (raw) scopes = JSON.parse(raw);
+  } catch (e) {
+    console.error("[STAR] gov read:", e.message || e);
+  }
+  return json({ total: scopes.length, scopes });
+}
+__name(starGov, "starGov");
+async function starStatus(request, env) {
+  return json({
+    status: "ok",
+    service: "STAR",
+    star_kv: !!env.STAR_KV,
+    talk_kv: !!env.TALK_KV,
+    ts: (/* @__PURE__ */ new Date()).toISOString()
+  });
+}
+__name(starStatus, "starStatus");
 
 // ../../../../../opt/homebrew/Cellar/cloudflare-wrangler/4.60.0/libexec/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
 var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
@@ -3353,7 +3511,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-tMvm1r/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-LFxSC2/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_scheduled_default,
@@ -3386,7 +3544,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-tMvm1r/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-LFxSC2/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

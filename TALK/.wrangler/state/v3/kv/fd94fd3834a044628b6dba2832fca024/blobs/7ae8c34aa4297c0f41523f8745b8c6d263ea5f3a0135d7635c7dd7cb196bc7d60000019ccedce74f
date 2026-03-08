@@ -1,0 +1,517 @@
+{
+  "_generated": {
+    "contract": "canonic-canonic/MAGIC/TOOLCHAIN/TOOLCHAIN.md",
+    "rule": "edit the contract or compiler \u2014 not this file"
+  },
+  "generated": "2026-03-08T19:11:48Z",
+  "kv_key": "galaxy:auth",
+  "nodes": [
+    {
+      "id": "hadleylab-canonic/AVINASH",
+      "kind": "SCOPE",
+      "label": "AVINASH",
+      "repo": "hadleylab-canonic",
+      "path": "AVINASH",
+      "parent": "hadleylab-canonic",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "readers": [
+        "iDrDex"
+      ],
+      "bits": 255,
+      "tier": "FULL",
+      "missing_dims": [],
+      "has_intel": false,
+      "learning_count": 4,
+      "children": 2
+    },
+    {
+      "id": "hadleylab-canonic/DEXTER/PATENTS/APPLICATIONS",
+      "kind": "SCOPE",
+      "label": "APPLICATIONS",
+      "repo": "hadleylab-canonic",
+      "path": "DEXTER/PATENTS/APPLICATIONS",
+      "parent": "hadleylab-canonic/DEXTER/PATENTS",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "bits": 223,
+      "tier": "NONE",
+      "missing_dims": [
+        "S"
+      ],
+      "has_intel": false,
+      "next_tier": "FULL",
+      "next_tier_gap": 32,
+      "learning_count": 16,
+      "readers": [
+        "iDrDex"
+      ],
+      "children": 0
+    },
+    {
+      "id": "hadleylab-canonic/DEXTER/PATENTS",
+      "kind": "SCOPE",
+      "label": "PATENTS",
+      "repo": "hadleylab-canonic",
+      "path": "DEXTER/PATENTS",
+      "parent": "hadleylab-canonic/DEXTER",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "readers": [
+        "iDrDex"
+      ],
+      "bits": 255,
+      "tier": "FULL",
+      "missing_dims": [],
+      "has_intel": false,
+      "learning_count": 14,
+      "children": 5
+    },
+    {
+      "id": "hadleylab-canonic/DEXTER/PATENTS/DISCLOSURES",
+      "kind": "SCOPE",
+      "label": "DISCLOSURES",
+      "repo": "hadleylab-canonic",
+      "path": "DEXTER/PATENTS/DISCLOSURES",
+      "parent": "hadleylab-canonic/DEXTER/PATENTS",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "bits": 223,
+      "tier": "NONE",
+      "missing_dims": [
+        "S"
+      ],
+      "has_intel": false,
+      "next_tier": "FULL",
+      "next_tier_gap": 32,
+      "learning_count": 7,
+      "readers": [
+        "iDrDex"
+      ],
+      "children": 0
+    },
+    {
+      "id": "hadleylab-canonic/DEXTER/PATENTS/DUE-DILIGENCE",
+      "kind": "SCOPE",
+      "label": "DUE-DILIGENCE",
+      "repo": "hadleylab-canonic",
+      "path": "DEXTER/PATENTS/DUE-DILIGENCE",
+      "parent": "hadleylab-canonic/DEXTER/PATENTS",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "bits": 223,
+      "tier": "NONE",
+      "missing_dims": [
+        "S"
+      ],
+      "has_intel": false,
+      "next_tier": "FULL",
+      "next_tier_gap": 32,
+      "readers": [
+        "iDrDex"
+      ],
+      "children": 0
+    },
+    {
+      "id": "hadleylab-canonic/DEXTER/PATENTS/OUTPUT",
+      "kind": "SCOPE",
+      "label": "OUTPUT",
+      "repo": "hadleylab-canonic",
+      "path": "DEXTER/PATENTS/OUTPUT",
+      "parent": "hadleylab-canonic/DEXTER/PATENTS",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "bits": 223,
+      "tier": "NONE",
+      "missing_dims": [
+        "S"
+      ],
+      "has_intel": false,
+      "next_tier": "FULL",
+      "next_tier_gap": 32,
+      "roadmap_now": "Finalize all 6 provisional patent filings (90 claims) before PMWC March 4",
+      "learning_count": 3,
+      "readers": [
+        "iDrDex"
+      ],
+      "children": 0
+    },
+    {
+      "id": "hadleylab-canonic/DEXTER/PATENTS/PROVISIONALS",
+      "kind": "SCOPE",
+      "label": "PROVISIONALS",
+      "repo": "hadleylab-canonic",
+      "path": "DEXTER/PATENTS/PROVISIONALS",
+      "parent": "hadleylab-canonic/DEXTER/PATENTS",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "bits": 223,
+      "tier": "NONE",
+      "missing_dims": [
+        "S"
+      ],
+      "has_intel": false,
+      "next_tier": "FULL",
+      "next_tier_gap": 32,
+      "learning_count": 7,
+      "readers": [
+        "iDrDex"
+      ],
+      "children": 0
+    },
+    {
+      "id": "hadleylab-canonic/DEXTER/USERS",
+      "kind": "SCOPE",
+      "label": "USERS",
+      "repo": "hadleylab-canonic",
+      "path": "DEXTER/USERS",
+      "parent": "hadleylab-canonic/DEXTER",
+      "color": "#ec4899",
+      "category": "SERVICES",
+      "privacy": "PRIVATE",
+      "bits": 239,
+      "tier": "BUSINESS",
+      "missing_dims": [
+        "O"
+      ],
+      "has_intel": false,
+      "next_tier": "FULL",
+      "next_tier_gap": 16,
+      "roadmap_now": "Wire ONBOARD pipeline (SOP-011) into AGENT runtime",
+      "readers": [
+        "iDrDex"
+      ],
+      "children": 3
+    },
+    {
+      "id": "hadleylab-canonic/FATIMA",
+      "kind": "SCOPE",
+      "label": "FATIMA",
+      "repo": "hadleylab-canonic",
+      "path": "FATIMA",
+      "parent": "hadleylab-canonic",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "readers": [
+        "iDrDex"
+      ],
+      "bits": 255,
+      "tier": "FULL",
+      "missing_dims": [],
+      "has_intel": false,
+      "learning_count": 39,
+      "children": 2
+    },
+    {
+      "id": "hadleylab-canonic/ILYA",
+      "kind": "SCOPE",
+      "label": "ILYA",
+      "repo": "hadleylab-canonic",
+      "path": "ILYA",
+      "parent": "hadleylab-canonic",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "readers": [
+        "iDrDex",
+        "ir4y"
+      ],
+      "github": "ir4y",
+      "bits": 255,
+      "tier": "FULL",
+      "missing_dims": [],
+      "has_intel": false,
+      "learning_count": 4,
+      "children": 2
+    },
+    {
+      "id": "hadleylab-canonic/ISABELLA",
+      "kind": "SCOPE",
+      "label": "ISABELLA",
+      "repo": "hadleylab-canonic",
+      "path": "ISABELLA",
+      "parent": "hadleylab-canonic",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "readers": [
+        "iDrDex"
+      ],
+      "bits": 255,
+      "tier": "FULL",
+      "missing_dims": [],
+      "has_intel": false,
+      "learning_count": 4,
+      "children": 2
+    },
+    {
+      "id": "hadleylab-canonic/JP",
+      "kind": "SCOPE",
+      "label": "JP",
+      "repo": "hadleylab-canonic",
+      "path": "JP",
+      "parent": "hadleylab-canonic",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "readers": [
+        "iDrDex"
+      ],
+      "bits": 255,
+      "tier": "FULL",
+      "missing_dims": [],
+      "has_intel": false,
+      "learning_count": 7,
+      "children": 2
+    },
+    {
+      "id": "hadleylab-canonic/ROBERT",
+      "kind": "SCOPE",
+      "label": "ROBERT",
+      "repo": "hadleylab-canonic",
+      "path": "ROBERT",
+      "parent": "hadleylab-canonic",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "readers": [
+        "iDrDex"
+      ],
+      "github": "\u2014 (pending onboarding)",
+      "bits": 255,
+      "tier": "FULL",
+      "missing_dims": [],
+      "has_intel": false,
+      "roadmap_now": "Bootstrap ROBERT principal \u2014 VITAE identity record for Robert Glover, Realtor at The Pinnacle Group",
+      "learning_count": 1,
+      "children": 2
+    },
+    {
+      "id": "hadleylab-canonic/YANA",
+      "kind": "SCOPE",
+      "label": "YANA",
+      "repo": "hadleylab-canonic",
+      "path": "YANA",
+      "parent": "hadleylab-canonic",
+      "color": "#64748b",
+      "category": "ORG",
+      "privacy": "PRIVATE",
+      "readers": [
+        "iDrDex",
+        "yanabeda"
+      ],
+      "github": "yanabeda",
+      "bits": 255,
+      "tier": "FULL",
+      "missing_dims": [],
+      "has_intel": false,
+      "learning_count": 4,
+      "children": 2
+    }
+  ],
+  "edges": [
+    {
+      "kind": "INHERITS",
+      "from": "hadleylab-canonic/AVINASH",
+      "to": "canonic-canonic/MAGIC"
+    },
+    {
+      "kind": "INHERITS",
+      "from": "hadleylab-canonic/DEXTER/PATENTS",
+      "to": "hadleylab-canonic/DEXTER/SERVICES/SHOP"
+    },
+    {
+      "kind": "INHERITS",
+      "from": "hadleylab-canonic/FATIMA",
+      "to": "canonic-canonic/MAGIC"
+    },
+    {
+      "kind": "INHERITS",
+      "from": "hadleylab-canonic/ILYA",
+      "to": "canonic-canonic/MAGIC"
+    },
+    {
+      "kind": "INHERITS",
+      "from": "hadleylab-canonic/ISABELLA",
+      "to": "canonic-canonic/MAGIC"
+    },
+    {
+      "kind": "INHERITS",
+      "from": "hadleylab-canonic/JP",
+      "to": "canonic-canonic/MAGIC"
+    },
+    {
+      "kind": "INHERITS",
+      "from": "hadleylab-canonic/ROBERT",
+      "to": "canonic-canonic/MAGIC"
+    },
+    {
+      "kind": "INHERITS",
+      "from": "hadleylab-canonic/YANA",
+      "to": "canonic-canonic/MAGIC"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/AVINASH",
+      "to": "hadleylab-canonic"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/AVINASH/CHAT",
+      "to": "hadleylab-canonic/AVINASH"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/DEXTER/PATENTS/APPLICATIONS",
+      "to": "hadleylab-canonic/DEXTER/PATENTS"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/DEXTER/PATENTS",
+      "to": "hadleylab-canonic/DEXTER"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/DEXTER/PATENTS/DISCLOSURES",
+      "to": "hadleylab-canonic/DEXTER/PATENTS"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/DEXTER/PATENTS/DUE-DILIGENCE",
+      "to": "hadleylab-canonic/DEXTER/PATENTS"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/DEXTER/PATENTS/OUTPUT",
+      "to": "hadleylab-canonic/DEXTER/PATENTS"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/DEXTER/PATENTS/PROVISIONALS",
+      "to": "hadleylab-canonic/DEXTER/PATENTS"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/DEXTER/USERS",
+      "to": "hadleylab-canonic/DEXTER"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/DEXTER/USERS/craig-jackson",
+      "to": "hadleylab-canonic/DEXTER/USERS"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/DEXTER/USERS/fatima-boukrim",
+      "to": "hadleylab-canonic/DEXTER/USERS"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/DEXTER/USERS/sarah-roddy",
+      "to": "hadleylab-canonic/DEXTER/USERS"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/FATIMA",
+      "to": "hadleylab-canonic"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/FATIMA/CHAT",
+      "to": "hadleylab-canonic/FATIMA"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/ILYA",
+      "to": "hadleylab-canonic"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/ILYA/CHAT",
+      "to": "hadleylab-canonic/ILYA"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/ISABELLA",
+      "to": "hadleylab-canonic"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/ISABELLA/CHAT",
+      "to": "hadleylab-canonic/ISABELLA"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/JP",
+      "to": "hadleylab-canonic"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/JP/CHAT",
+      "to": "hadleylab-canonic/JP"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/ROBERT",
+      "to": "hadleylab-canonic"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/ROBERT/CHAT",
+      "to": "hadleylab-canonic/ROBERT"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/YANA",
+      "to": "hadleylab-canonic"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/YANA/CHAT",
+      "to": "hadleylab-canonic/YANA"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/AVINASH/SERVICES",
+      "to": "hadleylab-canonic/AVINASH"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/FATIMA/SERVICES",
+      "to": "hadleylab-canonic/FATIMA"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/ILYA/SERVICES",
+      "to": "hadleylab-canonic/ILYA"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/ISABELLA/SERVICES",
+      "to": "hadleylab-canonic/ISABELLA"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/JP/SERVICES",
+      "to": "hadleylab-canonic/JP"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/ROBERT/SERVICES",
+      "to": "hadleylab-canonic/ROBERT"
+    },
+    {
+      "kind": "PARENT",
+      "from": "hadleylab-canonic/YANA/SERVICES",
+      "to": "hadleylab-canonic/YANA"
+    }
+  ]
+}

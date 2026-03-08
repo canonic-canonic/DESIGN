@@ -286,7 +286,7 @@ var GALAXY = (function () {
         while (cur) {
             if (seen[cur.id]) break;
             seen[cur.id] = true;
-            parts.unshift(cur);
+            if (canSeeNode(cur)) parts.unshift(cur);
             if (cur.parent && nodeMap[cur.parent]) {
                 cur = nodeMap[cur.parent];
             } else break;
@@ -370,7 +370,7 @@ var GALAXY = (function () {
         if (isFed) {
             var fedKey = node.id.replace('fed:', '');
             var members = galaxy.nodes.filter(function (n) {
-                return n.kind === 'USER' && USER_ORGS[userKey(n.id)] === fedKey;
+                return n.kind === 'USER' && USER_ORGS[userKey(n.id)] === fedKey && canSeeNode(n);
             });
             if (members.length) {
                 html += '<div class="dp-section"><div class="dp-section-title">Members (' + members.length + ')</div><div class="dp-inheritors">';
@@ -381,7 +381,7 @@ var GALAXY = (function () {
             }
         }
 
-        var kids = galaxy.nodes.filter(function (c) { return c.parent === node.id; });
+        var kids = galaxy.nodes.filter(function (c) { return c.parent === node.id && canSeeNode(c); });
         if (kids.length) {
             html += '<div class="dp-section"><div class="dp-section-title">Contains (' + kids.length + ')</div><div class="dp-inheritors">';
             kids.slice(0, 20).forEach(function (c) {
@@ -421,6 +421,7 @@ var GALAXY = (function () {
             allNodes.push({ id: 'fed:' + key, label: FEDERATION[key].label, kind: 'ORG', color: FEDERATION[key].color });
         });
         var matches = allNodes.filter(function (n) {
+            if (!canSeeNode(n)) return false;
             return n.label.toLowerCase().indexOf(q) >= 0
                 || (n.kind || '').toLowerCase().indexOf(q) >= 0
                 || (n.category || '').toLowerCase().indexOf(q) >= 0
@@ -897,6 +898,7 @@ var GALAXY = (function () {
         if (!hud) return;
         var users = 0, svcs = 0, orgs = 0, scopes = 0, totalBits = 0, bitCount = 0, healthCount = 0;
         galaxy.nodes.forEach(function (n) {
+            if (!canSeeNode(n)) return;
             if (n.kind === 'USER') users++;
             else if (n.kind === 'SERVICE') svcs++;
             else if (n.kind === 'ORG') orgs++;
@@ -1016,7 +1018,7 @@ var GALAXY = (function () {
 
         // Collect actionable scopes: non-USER, bits < 255, has next_tier
         var tasks = galaxy.nodes.filter(function (n) {
-            return n.kind !== 'USER' && typeof n.bits === 'number' && n.bits < 255 && n.bits > 0 && n.next_tier;
+            return canSeeNode(n) && n.kind !== 'USER' && typeof n.bits === 'number' && n.bits < 255 && n.bits > 0 && n.next_tier;
         });
 
         // Sort by gap ascending (smallest gap = most actionable)
@@ -1095,6 +1097,21 @@ var GALAXY = (function () {
         var res = await fetch('../galaxy.json');
         var raw = await res.json();
         galaxy = Array.isArray(raw) ? transformScopes(raw) : raw;
+
+        // Merge auth-gated private nodes if authenticated
+        if (_authUser && galaxy.api_base) {
+            try {
+                var authRes = await fetch(galaxy.api_base + '/galaxy/auth', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('canonic_session_token') }
+                });
+                if (authRes.ok) {
+                    var priv = await authRes.json();
+                    if (priv.nodes) galaxy.nodes = galaxy.nodes.concat(priv.nodes);
+                    if (priv.edges) galaxy.edges = galaxy.edges.concat(priv.edges);
+                }
+            } catch (_) {}
+        }
+
         var container = el || document.getElementById('galaxy');
         if (!container) return;
         buildGraph(container);
