@@ -12,7 +12,7 @@
  *
  * RUNNER | CANONIC | 2026
  */
-const RUNNER = {
+window.RUNNER = {
   user: null,
   tasks: [],
   runners: [],
