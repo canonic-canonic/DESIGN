@@ -57,7 +57,7 @@ window.RUNNER = {
     }
     // Handle Stripe checkout return
     if (window.location.search.indexOf('checkout=success') !== -1) {
-      this.toast('COIN Purchased!', 'Your balance has been updated.');
+      this.toast('Credits Purchased!', 'Your balance has been updated.');
       this.loadBalance();
       window.history.replaceState({}, '', window.location.pathname);
     }
@@ -139,7 +139,7 @@ window.RUNNER = {
     var data = await this.api('/balance?user_id=' + this.user.id);
     this.balance = data.balance || 0;
     var el = document.getElementById('runnerBalance');
-    if (el) el.textContent = this.balance + ' COIN';
+    if (el) el.textContent = this.balance + ' Credits';
   },
 
   async buyCoin(amount) {
@@ -155,12 +155,12 @@ window.RUNNER = {
     }
   },
 
-  COIN_PACKS: [
-    { coin: 25, price: 25, label: '25 COIN', badge: 'Starter' },
-    { coin: 50, price: 50, label: '50 COIN', badge: 'Popular' },
-    { coin: 100, price: 95, label: '100 COIN', badge: 'Save 5%' },
-    { coin: 250, price: 225, label: '250 COIN', badge: 'Save 10%' },
-    { coin: 500, price: 425, label: '500 COIN', badge: 'Best Value' },
+  CREDIT_PACKS: [
+    { coin: 25, price: 25, label: '25 Credits', badge: 'Starter' },
+    { coin: 50, price: 50, label: '50 Credits', badge: 'Popular' },
+    { coin: 100, price: 95, label: '100 Credits', badge: 'Save 5%' },
+    { coin: 250, price: 225, label: '250 Credits', badge: 'Save 10%' },
+    { coin: 500, price: 425, label: '500 Credits', badge: 'Best Value' },
   ],
 
   showBuyModal() {
@@ -169,15 +169,15 @@ window.RUNNER = {
     overlay.className = 'runner-modal-overlay';
     overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
     var html = '<div class="runner-modal">' +
-      '<div class="runner-modal-header"><h3>Buy COIN</h3><button class="runner-btn runner-btn-ghost runner-btn-sm" onclick="this.closest(\'.runner-modal-overlay\').remove()">Close</button></div>' +
-      '<p class="runner-muted" style="margin:0 0 1rem;font-size:0.85rem">COIN powers every task on RUNNER. Pick a pack:</p>' +
+      '<div class="runner-modal-header"><h3>Buy Credits</h3><button class="runner-btn runner-btn-ghost runner-btn-sm" onclick="this.closest(\'.runner-modal-overlay\').remove()">Close</button></div>' +
+      '<p class="runner-muted" style="margin:0 0 1rem;font-size:0.85rem">Credits power every task on Runner. Pick a pack:</p>' +
       '<div class="runner-pack-grid">';
-    for (var i = 0; i < this.COIN_PACKS.length; i++) {
-      var p = this.COIN_PACKS[i];
+    for (var i = 0; i < this.CREDIT_PACKS.length; i++) {
+      var p = this.CREDIT_PACKS[i];
       html += '<button class="runner-pack" data-coin="' + p.coin + '">' +
         '<span class="runner-pack-badge">' + this.esc(p.badge) + '</span>' +
         '<span class="runner-pack-amount">' + p.coin + '</span>' +
-        '<span class="runner-pack-label">COIN</span>' +
+        '<span class="runner-pack-label">CREDITS</span>' +
         '<span class="runner-pack-price">$' + p.price + '</span>' +
       '</button>';
     }
@@ -215,7 +215,7 @@ window.RUNNER = {
       this.render();
       this.toast('Task Posted!', 'Your task is now live for runners.');
     } else if (data.error === 'Insufficient COIN') {
-      this.toast('Not Enough COIN', 'You need ' + data.required + ' COIN. Balance: ' + data.balance);
+      this.toast('Not Enough Credits', 'You need ' + data.required + ' credits. Balance: ' + data.balance);
     }
     return data;
   },
@@ -254,7 +254,7 @@ window.RUNNER = {
     if (data.success) {
       await this.loadTasks();
       this.render();
-      this.toast('Task Completed!', 'COIN earned.');
+      this.toast('Task Completed!', 'Credits earned.');
     }
   },
 
@@ -368,8 +368,8 @@ window.RUNNER = {
         '<div><h2>' + this.esc(title) + '</h2><p class="runner-header-name">' + this.esc(this.user.name) + '</p></div>' +
       '</div>' +
       '<div class="runner-header-right">' +
-        '<span class="runner-coin-badge" id="runnerBalance">' + this.balance + ' COIN</span>' +
-        '<button class="runner-btn runner-btn-accent runner-btn-sm" onclick="RUNNER.showBuyModal()">Buy COIN</button>' +
+        '<span class="runner-coin-badge" id="runnerBalance">' + this.balance + ' Credits</span>' +
+        '<button class="runner-btn runner-btn-accent runner-btn-sm" onclick="RUNNER.showBuyModal()">Buy Credits</button>' +
         '<button class="runner-btn runner-btn-ghost" onclick="RUNNER.logout()">Sign Out</button>' +
       '</div>' +
     '</div>';
@@ -470,7 +470,7 @@ window.RUNNER = {
     return '<div class="runner-card">' +
       '<div class="runner-stat-row">' +
         '<div class="runner-stat"><span class="runner-stat-value">' + completed.length + '</span><span class="runner-stat-label">Completed</span></div>' +
-        '<div class="runner-stat"><span class="runner-stat-value">' + total + '</span><span class="runner-stat-label">COIN Earned</span></div>' +
+        '<div class="runner-stat"><span class="runner-stat-value">' + total + '</span><span class="runner-stat-label">Credits Earned</span></div>' +
       '</div>' +
       this.renderTaskList(completed, 'Completed Tasks') +
     '</div>';
@@ -483,7 +483,7 @@ window.RUNNER = {
       '<p class="runner-muted">' + this.esc(this.user.email || 'No email') + '</p>' +
       '<div class="runner-stat-row" style="margin-top:1rem">' +
         '<div class="runner-stat"><span class="runner-stat-value">' + (p.completed_tasks || 0) + '</span><span class="runner-stat-label">Tasks</span></div>' +
-        '<div class="runner-stat"><span class="runner-stat-value">' + (p.total_earned_coin || 0) + '</span><span class="runner-stat-label">COIN</span></div>' +
+        '<div class="runner-stat"><span class="runner-stat-value">' + (p.total_earned_coin || 0) + '</span><span class="runner-stat-label">Credits</span></div>' +
         '<div class="runner-stat"><span class="runner-stat-value">' + (p.avg_rating || '-') + '</span><span class="runner-stat-label">Rating</span></div>' +
       '</div>' +
     '</div>';
@@ -520,7 +520,7 @@ window.RUNNER = {
       '<div class="runner-stat"><span class="runner-stat-value">' + (s.total_tasks || 0) + '</span><span class="runner-stat-label">Total Tasks</span></div>' +
       '<div class="runner-stat"><span class="runner-stat-value">' + (s.active_tasks || 0) + '</span><span class="runner-stat-label">Active</span></div>' +
       '<div class="runner-stat"><span class="runner-stat-value">' + (s.completed_tasks || 0) + '</span><span class="runner-stat-label">Completed</span></div>' +
-      '<div class="runner-stat"><span class="runner-stat-value">' + (s.total_coin || 0) + '</span><span class="runner-stat-label">COIN</span></div>' +
+      '<div class="runner-stat"><span class="runner-stat-value">' + (s.total_coin || 0) + '</span><span class="runner-stat-label">Credits</span></div>' +
       '<div class="runner-stat"><span class="runner-stat-value">' + (s.total_runners || 0) + '</span><span class="runner-stat-label">Runners</span></div>' +
     '</div>';
   },
@@ -566,7 +566,7 @@ window.RUNNER = {
         (task.title ? '<p class="runner-card-title">' + this.esc(task.title) + '</p>' : '') +
         '<p class="runner-muted">' + this.esc((task.location || {}).address || '') + '</p>' +
         '<div class="runner-card-meta">' +
-          '<span class="runner-coin">' + (task.fee_coin || 0) + ' COIN</span>' +
+          '<span class="runner-coin">' + (task.fee_coin || 0) + ' Credits</span>' +
           (task.scheduled_time ? '<span class="runner-muted">' + this.esc(task.scheduled_time) + '</span>' : '') +
         '</div>' +
       '</div>';
@@ -603,7 +603,7 @@ window.RUNNER = {
   promptRate(taskId) {
     var rating = prompt('Rate this task (1-5):', '5');
     if (rating === null) return;
-    var tip = prompt('Tip (COIN, 0 for none):', '0');
+    var tip = prompt('Tip (credits, 0 for none):', '0');
     this.rateTask(taskId, parseInt(rating) || 5, parseInt(tip) || 0);
   },
 
