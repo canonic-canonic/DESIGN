@@ -20,6 +20,11 @@
   {% assign current_view = page.view | default: "web" %}
   {% if page.galaxy %}
   {% include GALAXY.html %}
+  {% elsif current_view == "html" %}
+
+  <!-- ═══ VIEW: HTML — Raw passthrough, no GOV/WEB wrapper ═══ -->
+  {{ content }}
+
   {% else %}
 
   {% include VIEW-GOV.html %}
