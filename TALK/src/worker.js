@@ -33,7 +33,7 @@
  */
 
 const CORS_DEFAULTS = {
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
@@ -1444,6 +1444,13 @@ export default {
       if (starPath === '/identity') return starIdentity(request, env, sess);
       if (starPath === '/media') return starMedia(request, env, sess);
       return json({ error: 'Unknown STAR route' }, 404);
+    }
+
+    // RUNNER — task marketplace (edge-native, KV-backed)
+    if (path.startsWith('/runner/')) {
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      if (await checkRate(env, 'runner', ip, 60)) return json({ error: 'Rate limited' }, 429);
+      return runnerRoute(path.slice(7), request, env);
     }
 
     console.log(JSON.stringify({ ts: new Date().toISOString(), path, method: request.method, ip: _ip, status: 404, latency_ms: Date.now() - _t0 }));
@@ -3880,4 +3887,227 @@ async function starStatus(request, env) {
     talk_kv: !!env.TALK_KV,
     ts: new Date().toISOString(),
   });
+}
+
+// ══════════════════════════════════════════════════════════════
+// RUNNER — Task marketplace engine (edge-native, KV-backed)
+// Three roles: Requester, Runner, Ops
+// Storage: TALK_KV with runner: prefix
+// GOV: SERVICES/TALK/RUNNER/CANON.md
+// ══════════════════════════════════════════════════════════════
+
+const RUNNER_TASK_PRICES = {
+  yard_sign_install: 3, yard_sign_removal: 3, lockbox_install: 3, lockbox_removal: 3,
+  showings: 5, open_house: 8, cma: 5, contracts: 15,
+  photos: 10, staging: 8, inspection: 10, appraisal: 10,
+  title: 10, closing: 25, document_drop: 3, vendor_meetup: 5, key_run: 3,
+};
+
+function runnerUid() {
+  const hex = Array.from(crypto.getRandomValues(new Uint8Array(6)))
+    .map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+  return hex;
+}
+
+async function runnerRoute(subpath, request, env) {
+  const kv = env.TALK_KV;
+  if (!kv) return json({ error: 'KV not configured' }, 500);
+
+  const method = request.method;
+  const url = new URL(request.url);
+
+  // POST /runner/auth — signup/login
+  if (subpath === 'auth' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const name = (body.name || '').trim();
+    const email = (body.email || '').trim();
+    const role = body.role || 'Requester';
+    if (!name) return json({ error: 'name is required' }, 400);
+    if (!['Requester', 'Runner', 'Ops'].includes(role)) return json({ error: 'invalid role' }, 400);
+
+    // Check existing user by email
+    if (email) {
+      const existing = await kv.get(`runner:email:${email.toLowerCase()}`);
+      if (existing) {
+        const user = JSON.parse(existing);
+        return json({ success: true, user });
+      }
+    }
+
+    // Create new user
+    const uid = 'U' + runnerUid();
+    const user = { id: uid, name, email, role, created_at: new Date().toISOString(), status: 'active' };
+    await kv.put(`runner:user:${uid}`, JSON.stringify(user));
+    if (email) await kv.put(`runner:email:${email.toLowerCase()}`, JSON.stringify(user));
+
+    // Add to role index
+    const roleKey = `runner:role:${role.toLowerCase()}`;
+    const roleList = JSON.parse(await kv.get(roleKey) || '[]');
+    roleList.push(uid);
+    await kv.put(roleKey, JSON.stringify(roleList));
+
+    return json({ success: true, user });
+  }
+
+  // GET /runner/tasks?role=X&user_id=Y
+  if (subpath === 'tasks' && method === 'GET') {
+    const role = url.searchParams.get('role') || '';
+    const userId = url.searchParams.get('user_id') || '';
+    const allTasksRaw = await kv.get('runner:tasks:all');
+    let tasks = allTasksRaw ? JSON.parse(allTasksRaw) : [];
+
+    if (role === 'Requester' && userId) {
+      tasks = tasks.filter(t => t.requester_id === userId);
+    } else if (role === 'Runner' && userId) {
+      tasks = tasks.filter(t => t.status === 'posted' || t.runner_id === userId);
+    }
+    tasks.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    return json({ tasks });
+  }
+
+  // POST /runner/tasks — create task
+  if (subpath === 'tasks' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const requesterId = body.requester_id;
+    if (!requesterId) return json({ error: 'requester_id is required' }, 400);
+
+    const taskType = body.type || 'lockbox_install';
+    const feeCoin = RUNNER_TASK_PRICES[taskType] || Math.max(1, parseInt(body.offered_fee_usd) || 50);
+    const tid = 'T' + runnerUid();
+    const task = {
+      id: tid,
+      requester_id: requesterId,
+      runner_id: null,
+      type: taskType,
+      title: body.title || taskType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      status: 'posted',
+      location: { address: (body.location || {}).address || body.address || '' },
+      scheduled_time: body.scheduled_time || '',
+      fee_coin: feeCoin,
+      offered_fee_usd: parseInt(body.offered_fee_usd) || 50,
+      notes: body.notes || '',
+      proof_url: null, proof_note: null, rating: null, tip_coin: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
+    allTasks.push(task);
+    await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+    return json({ success: true, task });
+  }
+
+  // Task actions: /runner/tasks/{id}/{action}
+  const taskMatch = subpath.match(/^tasks\/([A-Z0-9]+)\/(\w+)$/);
+  if (taskMatch) {
+    const [, taskId, action] = taskMatch;
+    const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return json({ error: 'task not found' }, 404);
+
+    if (action === 'accept' && method === 'POST') {
+      const body = await request.json().catch(() => ({}));
+      if (!body.runner_id) return json({ error: 'runner_id required' }, 400);
+      if (!['posted', 'assigned'].includes(task.status)) return json({ error: `cannot accept in status: ${task.status}` }, 400);
+      task.runner_id = body.runner_id;
+      task.status = 'accepted';
+      task.updated_at = new Date().toISOString();
+      await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+      return json({ success: true, task });
+    }
+
+    if (action === 'assign' && method === 'PATCH') {
+      const body = await request.json().catch(() => ({}));
+      if (!body.runner_id) return json({ error: 'runner_id required' }, 400);
+      if (task.status !== 'posted') return json({ error: `cannot assign in status: ${task.status}` }, 400);
+      task.runner_id = body.runner_id;
+      task.status = 'assigned';
+      task.updated_at = new Date().toISOString();
+      await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+      return json({ success: true, task });
+    }
+
+    if (action === 'proof' && method === 'POST') {
+      const body = await request.json().catch(() => ({}));
+      if (!['accepted', 'in_progress'].includes(task.status)) return json({ error: `cannot upload proof in status: ${task.status}` }, 400);
+      task.status = 'in_progress';
+      task.proof_note = body.note || 'Task completed as requested';
+      task.updated_at = new Date().toISOString();
+      await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+      return json({ success: true, task });
+    }
+
+    if (action === 'complete' && method === 'POST') {
+      if (!['in_progress', 'accepted'].includes(task.status)) return json({ error: `cannot complete in status: ${task.status}` }, 400);
+      task.status = 'completed';
+      task.completed_at = new Date().toISOString();
+      task.updated_at = new Date().toISOString();
+      await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+      return json({ success: true, task });
+    }
+
+    if (action === 'rate' && method === 'POST') {
+      const body = await request.json().catch(() => ({}));
+      if (task.status !== 'completed') return json({ error: `cannot rate in status: ${task.status}` }, 400);
+      task.rating = Math.max(1, Math.min(5, parseInt(body.rating) || 5));
+      task.tip_coin = Math.max(0, parseInt(body.tip_usd || body.tip_coin) || 0);
+      task.status = 'rated';
+      task.updated_at = new Date().toISOString();
+      await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+      return json({ success: true, task });
+    }
+
+    if (action === 'cancel' && method === 'POST') {
+      if (['completed', 'rated'].includes(task.status)) return json({ error: `cannot cancel in status: ${task.status}` }, 400);
+      task.status = 'cancelled';
+      task.updated_at = new Date().toISOString();
+      await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+      return json({ success: true, task });
+    }
+
+    return json({ error: 'unknown action' }, 404);
+  }
+
+  // GET /runner/list — all runners
+  if (subpath === 'list' && method === 'GET') {
+    const runnerIds = JSON.parse(await kv.get('runner:role:runner') || '[]');
+    const runners = [];
+    for (const uid of runnerIds) {
+      const raw = await kv.get(`runner:user:${uid}`);
+      if (raw) runners.push(JSON.parse(raw));
+    }
+    return json({ runners });
+  }
+
+  // GET /runner/profile?user_id=X
+  if (subpath === 'profile' && method === 'GET') {
+    const userId = url.searchParams.get('user_id') || '';
+    const raw = await kv.get(`runner:user:${userId}`);
+    if (!raw) return json({ error: 'user not found' }, 404);
+    const user = JSON.parse(raw);
+    const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
+    const completed = allTasks.filter(t => t.runner_id === userId && ['completed', 'rated'].includes(t.status));
+    const totalEarned = completed.reduce((s, t) => s + (t.fee_coin || 0), 0);
+    const ratings = completed.filter(t => t.rating).map(t => t.rating);
+    const avgRating = ratings.length ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length * 10) / 10 : 0;
+    return json({ runner: { ...user, completed_tasks: completed.length, total_earned_coin: totalEarned, avg_rating: avgRating } });
+  }
+
+  // GET /runner/stats
+  if (subpath === 'stats' && method === 'GET') {
+    const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
+    const reqIds = JSON.parse(await kv.get('runner:role:requester') || '[]');
+    const runIds = JSON.parse(await kv.get('runner:role:runner') || '[]');
+    const active = allTasks.filter(t => ['posted', 'assigned', 'accepted', 'in_progress'].includes(t.status));
+    const done = allTasks.filter(t => ['completed', 'rated'].includes(t.status));
+    const totalCoin = done.reduce((s, t) => s + (t.fee_coin || 0), 0);
+    return json({
+      total_tasks: allTasks.length, active_tasks: active.length,
+      completed_tasks: done.length, total_coin: totalCoin,
+      total_users: reqIds.length + runIds.length,
+      total_runners: runIds.length, total_requesters: reqIds.length,
+    });
+  }
+
+  return json({ error: 'unknown runner route' }, 404);
 }

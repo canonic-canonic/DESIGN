@@ -56,7 +56,7 @@ const RUNNER = {
   // ── API ───────────────────────────────────────────────────
   async api(path, opts) {
     opts = opts || {};
-    var url = this.API + '/api/v1/runner' + path;
+    var url = this.API + '/runner' + path;
     var res = await fetch(url, {
       method: opts.method || 'GET',
       headers: opts.body ? { 'Content-Type': 'application/json' } : {},

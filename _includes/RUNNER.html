@@ -2,6 +2,25 @@
 <div class="runner" id="runnerRoot"></div>
 <div class="runner-toast" id="runnerToast"></div>
 
+<script>
+// Hide CANONIC nav — commercial surface shows only intersection sign
+(function() {
+  var nav = document.querySelector('.nav-unified, .site-nav, nav');
+  if (nav) nav.style.display = 'none';
+  var bc = document.querySelector('.breadcrumb, .breadcrumbs');
+  if (bc) bc.style.display = 'none';
+  var footer = document.querySelector('#footer, footer');
+  if (footer) footer.style.display = 'none';
+  // Hide the GOV/WEB view toggle and hero
+  var viewGov = document.querySelector('.view-gov');
+  if (viewGov) viewGov.style.display = 'none';
+  var hero = document.getElementById('hero');
+  if (hero) hero.style.display = 'none';
+  var cta = document.getElementById('cta');
+  if (cta) cta.style.display = 'none';
+})();
+</script>
+
 <style>
 /* RUNNER — Task Marketplace | CANONIC DESIGN */
 .runner {
