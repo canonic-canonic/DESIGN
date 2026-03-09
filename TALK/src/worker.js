@@ -1450,7 +1450,7 @@ export default {
     if (path.startsWith('/runner/')) {
       const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
       if (await checkRate(env, 'runner', ip, 60)) return json({ error: 'Rate limited' }, 429);
-      return runnerRoute(path.slice(7), request, env);
+      return runnerRoute(path.slice(8), request, env);
     }
 
     console.log(JSON.stringify({ ts: new Date().toISOString(), path, method: request.method, ip: _ip, status: 404, latency_ms: Date.now() - _t0 }));
