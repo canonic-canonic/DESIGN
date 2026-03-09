@@ -138,9 +138,13 @@ article.post, .post-content,
   z-index: 10;
 }
 .runner-header-left { display: flex; align-items: center; gap: 0.75rem; }
+.runner-header-right { display: flex; align-items: center; gap: 0.5rem; }
 .runner-header-icon { font-size: 1.5rem; }
 .runner-header h2 { margin: 0; font-size: 1.125rem; }
 .runner-header-name { margin: 0; font-size: 0.75rem; color: var(--muted); }
+.runner-coin-badge { background: rgba(249,115,22,0.15); color: #f97316; padding: 0.25rem 0.75rem; border-radius: 999px; font-weight: 700; font-size: 0.8rem; white-space: nowrap; }
+.runner-btn-accent { background: #f97316; color: #fff; border: none; }
+.runner-btn-accent:hover { background: #ea580c; }
 
 /* Nav */
 .runner-nav {
@@ -253,6 +257,19 @@ article.post, .post-content,
 }
 .runner-toast.show { transform: translateY(0); opacity: 1; }
 
+/* Buy COIN Modal */
+.runner-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.runner-modal { background: var(--card); border-radius: 1rem; padding: 1.5rem; max-width: 28rem; width: 100%; border: 1px solid var(--border); }
+.runner-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.runner-modal-header h3 { margin: 0; font-size: 1.125rem; }
+.runner-pack-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); gap: 0.75rem; }
+.runner-pack { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; padding: 1rem 0.75rem; background: var(--bg); border: 2px solid var(--border); border-radius: 0.75rem; cursor: pointer; transition: border-color 0.15s, transform 0.15s; }
+.runner-pack:hover { border-color: #f97316; transform: translateY(-2px); }
+.runner-pack-badge { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #f97316; background: rgba(249,115,22,0.1); padding: 0.125rem 0.5rem; border-radius: 999px; }
+.runner-pack-amount { font-size: 1.75rem; font-weight: 800; color: var(--text); line-height: 1; }
+.runner-pack-label { font-size: 0.7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.runner-pack-price { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+
 /* Responsive */
 @media (max-width: 640px) {
   .runner-content { padding: 1rem; }
@@ -260,5 +277,6 @@ article.post, .post-content,
   .runner-stat { min-width: 4.5rem; padding: 0.75rem; }
   .runner-stat-value { font-size: 1.25rem; }
   .runner-form { padding: 1.5rem; }
+  .runner-header-right { flex-wrap: wrap; justify-content: flex-end; }
 }
 </style>

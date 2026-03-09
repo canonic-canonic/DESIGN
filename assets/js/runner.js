@@ -14,6 +14,7 @@
  */
 window.RUNNER = {
   user: null,
+  balance: 0,
   tasks: [],
   runners: [],
   stats: null,
@@ -50,7 +51,16 @@ window.RUNNER = {
       } catch (e) { localStorage.removeItem(this.USER_KEY); }
     }
     this.render();
-    if (this.user) this.loadData();
+    if (this.user) {
+      this.loadBalance();
+      this.loadData();
+    }
+    // Handle Stripe checkout return
+    if (window.location.search.indexOf('checkout=success') !== -1) {
+      this.toast('COIN Purchased!', 'Your balance has been updated.');
+      this.loadBalance();
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   },
 
   // ── API ───────────────────────────────────────────────────
@@ -73,6 +83,7 @@ window.RUNNER = {
     });
     if (data.success) {
       this.user = data.user;
+      this.balance = data.balance || 0;
       localStorage.setItem(this.USER_KEY, JSON.stringify(data.user));
       this.view = 'home';
       this.render();
@@ -123,6 +134,66 @@ window.RUNNER = {
     this.runnerProfile = data.runner || null;
   },
 
+  async loadBalance() {
+    if (!this.user) return;
+    var data = await this.api('/balance?user_id=' + this.user.id);
+    this.balance = data.balance || 0;
+    var el = document.getElementById('runnerBalance');
+    if (el) el.textContent = this.balance + ' COIN';
+  },
+
+  async buyCoin(amount) {
+    amount = amount || 50;
+    var data = await this.api('/checkout', {
+      method: 'POST',
+      body: { user_id: this.user.id, amount_coin: amount },
+    });
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      this.toast('Error', data.error || 'Could not start checkout');
+    }
+  },
+
+  COIN_PACKS: [
+    { coin: 25, price: 25, label: '25 COIN', badge: 'Starter' },
+    { coin: 50, price: 50, label: '50 COIN', badge: 'Popular' },
+    { coin: 100, price: 95, label: '100 COIN', badge: 'Save 5%' },
+    { coin: 250, price: 225, label: '250 COIN', badge: 'Save 10%' },
+    { coin: 500, price: 425, label: '500 COIN', badge: 'Best Value' },
+  ],
+
+  showBuyModal() {
+    var self = this;
+    var overlay = document.createElement('div');
+    overlay.className = 'runner-modal-overlay';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    var html = '<div class="runner-modal">' +
+      '<div class="runner-modal-header"><h3>Buy COIN</h3><button class="runner-btn runner-btn-ghost runner-btn-sm" onclick="this.closest(\'.runner-modal-overlay\').remove()">Close</button></div>' +
+      '<p class="runner-muted" style="margin:0 0 1rem;font-size:0.85rem">COIN powers every task on RUNNER. Pick a pack:</p>' +
+      '<div class="runner-pack-grid">';
+    for (var i = 0; i < this.COIN_PACKS.length; i++) {
+      var p = this.COIN_PACKS[i];
+      html += '<button class="runner-pack" data-coin="' + p.coin + '">' +
+        '<span class="runner-pack-badge">' + this.esc(p.badge) + '</span>' +
+        '<span class="runner-pack-amount">' + p.coin + '</span>' +
+        '<span class="runner-pack-label">COIN</span>' +
+        '<span class="runner-pack-price">$' + p.price + '</span>' +
+      '</button>';
+    }
+    html += '</div></div>';
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+    var packs = overlay.querySelectorAll('.runner-pack');
+    for (var j = 0; j < packs.length; j++) {
+      packs[j].addEventListener('click', function() {
+        var coin = parseInt(this.getAttribute('data-coin'));
+        overlay.remove();
+        self.buyCoin(coin);
+      });
+    }
+  },
+
   // ── Actions ───────────────────────────────────────────────
   async createTask(form) {
     var data = await this.api('/tasks', {
@@ -138,10 +209,13 @@ window.RUNNER = {
       },
     });
     if (data.success) {
+      this.balance = data.balance != null ? data.balance : this.balance;
       this.view = 'home';
       await this.loadTasks();
       this.render();
       this.toast('Task Posted!', 'Your task is now live for runners.');
+    } else if (data.error === 'Insufficient COIN') {
+      this.toast('Not Enough COIN', 'You need ' + data.required + ' COIN. Balance: ' + data.balance);
     }
     return data;
   },
@@ -293,7 +367,11 @@ window.RUNNER = {
         '<span class="runner-header-icon">\uD83D\uDCE6</span>' +
         '<div><h2>' + this.esc(title) + '</h2><p class="runner-header-name">' + this.esc(this.user.name) + '</p></div>' +
       '</div>' +
-      '<button class="runner-btn runner-btn-ghost" onclick="RUNNER.logout()">Sign Out</button>' +
+      '<div class="runner-header-right">' +
+        '<span class="runner-coin-badge" id="runnerBalance">' + this.balance + ' COIN</span>' +
+        '<button class="runner-btn runner-btn-accent runner-btn-sm" onclick="RUNNER.showBuyModal()">Buy COIN</button>' +
+        '<button class="runner-btn runner-btn-ghost" onclick="RUNNER.logout()">Sign Out</button>' +
+      '</div>' +
     '</div>';
   },
 
