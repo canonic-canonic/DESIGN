@@ -2,27 +2,17 @@
 <div class="runner" id="runnerRoot"></div>
 <div class="runner-toast" id="runnerToast"></div>
 
-<script>
-// Hide CANONIC chrome — commercial surface shows only ∩ sign
-(function() {
-  // Main header: <header class="nav" id="nav">
-  var header = document.querySelector('header.nav, header#nav, .nav-unified, .site-nav');
-  if (header) header.style.display = 'none';
-  // Breadcrumbs
-  var bc = document.querySelector('.nav-breadcrumbs, .breadcrumb, .breadcrumbs, .nav-sub');
-  if (bc) bc.style.display = 'none';
-  // Footer
-  var footer = document.querySelector('#footer, footer');
-  if (footer) footer.style.display = 'none';
-  // GOV/WEB view toggle and hero
-  var viewGov = document.querySelector('.view-gov');
-  if (viewGov) viewGov.style.display = 'none';
-  var hero = document.getElementById('hero');
-  if (hero) hero.style.display = 'none';
-  var cta = document.getElementById('cta');
-  if (cta) cta.style.display = 'none';
-})();
-</script>
+<style>
+/* Hide ALL CANONIC chrome — RUNNER is a standalone commercial surface */
+header.nav, header#nav, .nav-unified, .site-nav,
+.nav-breadcrumbs, .breadcrumb, .breadcrumbs, .nav-sub,
+#footer, footer,
+.view-gov, .view-web, .view-tex,
+article.post, .post-content,
+#hero, #cta, .hero, .cta {
+  display: none !important;
+}
+</style>
 
 <style>
 /* RUNNER — Task Marketplace | CANONIC DESIGN */
