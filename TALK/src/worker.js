@@ -3903,6 +3903,16 @@ const RUNNER_TASK_PRICES = {
   title: 10, closing: 25, document_drop: 3, vendor_meetup: 5, key_run: 3,
 };
 
+// Task types requiring vendor credential verification (FL licensing)
+const RUNNER_KYC_REQUIRED = {
+  photos: 'business_license',
+  staging: 'business_license',
+  inspection: 'FL_468',        // FL Home Inspector License
+  appraisal: 'FL_FREAB_USPAP', // FL FREAB + USPAP certified
+  title: 'FL_626',             // FL Title Agent License
+  closing: 'FL_626_NMLS',      // FL 626 + NMLS
+};
+
 function runnerUid() {
   const hex = Array.from(crypto.getRandomValues(new Uint8Array(6)))
     .map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
@@ -4009,6 +4019,14 @@ async function runnerRoute(subpath, request, env) {
     const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
     allTasks.push(task);
     await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+
+    // LEDGER: task posted
+    await appendToLedger(env, 'RUNNER', 'RUNNER', {
+      event: 'TASK_POSTED', task_id: tid, task_type: taskType,
+      requester_id: requesterId, fee_coin: feeCoin,
+      address: task.location.address,
+    });
+
     return json({ success: true, task, balance: bal - feeCoin });
   }
 
@@ -4024,10 +4042,35 @@ async function runnerRoute(subpath, request, env) {
       const body = await request.json().catch(() => ({}));
       if (!body.runner_id) return json({ error: 'runner_id required' }, 400);
       if (!['posted', 'assigned'].includes(task.status)) return json({ error: `cannot accept in status: ${task.status}` }, 400);
+
+      // Credential verification gate — vendor tasks require KYC
+      const kycReq = RUNNER_KYC_REQUIRED[task.type];
+      if (kycReq) {
+        const vendorRaw = await kv.get(`runner:user:${body.runner_id}`);
+        const vendor = vendorRaw ? JSON.parse(vendorRaw) : {};
+        const creds = vendor.credentials || {};
+        if (!creds[kycReq] || creds[kycReq].status !== 'verified') {
+          return json({
+            error: 'Credential verification required',
+            task_type: task.type,
+            required_credential: kycReq,
+            vendor_id: body.runner_id,
+          }, 403);
+        }
+      }
+
       task.runner_id = body.runner_id;
       task.status = 'accepted';
       task.updated_at = new Date().toISOString();
       await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+
+      // LEDGER: vendor claimed task
+      await appendToLedger(env, 'RUNNER', 'RUNNER', {
+        event: 'VENDOR_CLAIMED', task_id: taskId, task_type: task.type,
+        runner_id: body.runner_id, requester_id: task.requester_id,
+        fee_coin: task.fee_coin,
+      });
+
       return json({ success: true, task });
     }
 
@@ -4043,13 +4086,50 @@ async function runnerRoute(subpath, request, env) {
     }
 
     if (action === 'proof' && method === 'POST') {
-      const body = await request.json().catch(() => ({}));
       if (!['accepted', 'in_progress'].includes(task.status)) return json({ error: `cannot upload proof in status: ${task.status}` }, 400);
+
+      let body, fileHash = null, fileKey = null;
+      const ct = request.headers.get('content-type') || '';
+
+      if (ct.includes('multipart/form-data')) {
+        // File upload via multipart
+        const formData = await request.formData();
+        const file = formData.get('file');
+        const note = formData.get('note') || 'Task completed as requested';
+        if (file && file.size > 0) {
+          const buf = await file.arrayBuffer();
+          const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+          fileHash = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+          fileKey = `runner:evidence:${taskId}:${fileHash.slice(0, 12)}`;
+          // Store file in KV (max 25MB per value)
+          await kv.put(fileKey, buf, { metadata: {
+            task_id: taskId, filename: file.name || 'evidence',
+            content_type: file.type || 'application/octet-stream',
+            hash: fileHash, uploaded_at: new Date().toISOString(),
+          }});
+        }
+        body = { note };
+      } else {
+        body = await request.json().catch(() => ({}));
+        // Support pre-computed hash (e.g., from mobile client)
+        fileHash = body.proof_hash || null;
+      }
+
       task.status = 'in_progress';
       task.proof_note = body.note || 'Task completed as requested';
+      task.proof_hash = fileHash;
+      task.proof_key = fileKey;
       task.updated_at = new Date().toISOString();
       await kv.put('runner:tasks:all', JSON.stringify(allTasks));
-      return json({ success: true, task });
+
+      // LEDGER: evidence uploaded — hash is immutable proof
+      await appendToLedger(env, 'RUNNER', 'RUNNER', {
+        event: 'EVIDENCE_UPLOADED', task_id: taskId, task_type: task.type,
+        runner_id: task.runner_id, proof_hash: fileHash,
+        proof_note: task.proof_note,
+      });
+
+      return json({ success: true, task, proof_hash: fileHash });
     }
 
     if (action === 'complete' && method === 'POST') {
@@ -4057,7 +4137,22 @@ async function runnerRoute(subpath, request, env) {
       task.status = 'completed';
       task.completed_at = new Date().toISOString();
       task.updated_at = new Date().toISOString();
+
+      // COIN credit to vendor on completion
+      if (task.runner_id && task.fee_coin) {
+        const vendorBal = parseInt(await kv.get(`runner:balance:${task.runner_id}`) || '0', 10);
+        await kv.put(`runner:balance:${task.runner_id}`, String(vendorBal + task.fee_coin));
+      }
+
       await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+
+      // LEDGER: task completed + COIN credited
+      await appendToLedger(env, 'RUNNER', 'RUNNER', {
+        event: 'TASK_COMPLETED', task_id: taskId, task_type: task.type,
+        runner_id: task.runner_id, requester_id: task.requester_id,
+        fee_coin: task.fee_coin, coin_credited_to: task.runner_id,
+      });
+
       return json({ success: true, task });
     }
 
@@ -4068,15 +4163,47 @@ async function runnerRoute(subpath, request, env) {
       task.tip_coin = Math.max(0, parseInt(body.tip_usd || body.tip_coin) || 0);
       task.status = 'rated';
       task.updated_at = new Date().toISOString();
+
+      // Tip COIN to vendor if provided
+      if (task.tip_coin > 0 && task.runner_id) {
+        const tipBal = parseInt(await kv.get(`runner:balance:${task.runner_id}`) || '0', 10);
+        await kv.put(`runner:balance:${task.runner_id}`, String(tipBal + task.tip_coin));
+      }
+
       await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+
+      // LEDGER: deal closed (rated)
+      await appendToLedger(env, 'RUNNER', 'RUNNER', {
+        event: 'DEAL_CLOSED', task_id: taskId, task_type: task.type,
+        runner_id: task.runner_id, requester_id: task.requester_id,
+        rating: task.rating, tip_coin: task.tip_coin,
+        fee_coin: task.fee_coin,
+      });
+
       return json({ success: true, task });
     }
 
     if (action === 'cancel' && method === 'POST') {
       if (['completed', 'rated'].includes(task.status)) return json({ error: `cannot cancel in status: ${task.status}` }, 400);
+      const prevStatus = task.status;
       task.status = 'cancelled';
       task.updated_at = new Date().toISOString();
+
+      // Refund COIN to requester on cancel
+      if (task.fee_coin && task.requester_id) {
+        const refBal = parseInt(await kv.get(`runner:balance:${task.requester_id}`) || '0', 10);
+        await kv.put(`runner:balance:${task.requester_id}`, String(refBal + task.fee_coin));
+      }
+
       await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+
+      // LEDGER: task cancelled + COIN refunded
+      await appendToLedger(env, 'RUNNER', 'RUNNER', {
+        event: 'TASK_CANCELLED', task_id: taskId, task_type: task.type,
+        requester_id: task.requester_id, fee_coin: task.fee_coin,
+        prev_status: prevStatus,
+      });
+
       return json({ success: true, task });
     }
 
@@ -4180,6 +4307,37 @@ async function runnerRoute(subpath, request, env) {
     const newBal = bal + amount;
     await kv.put(`runner:balance:${userId}`, String(newBal));
     return json({ ok: true, balance: newBal, credited: amount });
+  }
+
+  // GET /runner/evidence/{task_id} — retrieve evidence file
+  const evidenceMatch = subpath.match(/^evidence\/([A-Z0-9]+)$/);
+  if (evidenceMatch && method === 'GET') {
+    const eid = evidenceMatch[1];
+    const keys = await kv.list({ prefix: `runner:evidence:${eid}:` });
+    if (!keys.keys.length) return json({ error: 'no evidence found' }, 404);
+    const key = keys.keys[0];
+    const { value, metadata } = await kv.getWithMetadata(key.name, { type: 'arrayBuffer' });
+    if (!value) return json({ error: 'evidence data missing' }, 404);
+    return new Response(value, {
+      headers: {
+        'Content-Type': (metadata && metadata.content_type) || 'application/octet-stream',
+        'X-Evidence-Hash': (metadata && metadata.hash) || '',
+        'X-Task-Id': eid,
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    });
+  }
+
+  // GET /runner/ledger — read RUNNER event ledger
+  if (subpath === 'ledger' && method === 'GET') {
+    const key = `ledger:RUNNER:RUNNER`;
+    const raw = await kv.get(key);
+    const ledger = raw ? JSON.parse(raw) : [];
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 200);
+    const since = url.searchParams.get('since') || '';
+    let entries = since ? ledger.filter(e => e.ts > since) : ledger;
+    entries = entries.slice(-limit);
+    return json({ entries, total: ledger.length });
   }
 
   return json({ error: 'unknown runner route' }, 404);
