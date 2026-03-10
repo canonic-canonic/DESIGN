@@ -154,6 +154,12 @@ body > header:not(.nav),
     flex-shrink: 0;
 }
 
+[data-layout="custom"] > .view-gov {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
 [data-layout="custom"] > .view-web {
     flex: 1;
     min-height: 0;
