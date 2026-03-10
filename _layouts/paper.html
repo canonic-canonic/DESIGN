@@ -129,14 +129,20 @@
     </div>
 
     {% if page.gate == "contribute" %}
+    {% assign _ct = page.contribute_text | default: "Have a story, a quote we missed, a correction, a moment? Every contribution is governed and attributed." %}
+    {% assign _ch = page.contribute_heading | default: "Contribute" %}
+    {% assign _p1 = page.contribute_field_section | default: "Section or quote this relates to (optional)" %}
+    {% assign _p2 = page.contribute_field_body | default: "Your story, quote, or correction..." %}
+    {% assign _p3 = page.contribute_field_source | default: "Source (paper title, year, personal memory...)" %}
+    {% assign _btn = page.contribute_button | default: "SUBMIT CONTRIBUTION" %}
     <div class="contribute-section" id="Contribute">
-      <h2>Contribute</h2>
-      <p class="contribute-sub">Have a story, a quote we missed, a correction, a moment? Every contribution is governed and attributed.</p>
+      <h2>{{ _ch }}</h2>
+      <p class="contribute-sub">{{ _ct }}</p>
       <form class="gate-form" id="contribForm">
-        <input type="text" id="c-chapter" placeholder="Section or quote this relates to (optional)">
-        <textarea id="c-story" placeholder="Your story, quote, or correction..." required></textarea>
-        <input type="text" id="c-source" placeholder="Source (paper title, year, personal memory...)">
-        <button type="submit" class="btn">SUBMIT CONTRIBUTION</button>
+        <input type="text" id="c-chapter" placeholder="{{ _p1 }}">
+        <textarea id="c-story" placeholder="{{ _p2 }}" required></textarea>
+        <input type="text" id="c-source" placeholder="{{ _p3 }}">
+        <button type="submit" class="btn">{{ _btn }}</button>
       </form>
       <div class="contrib-success" id="contribSuccess">
         Your contribution has been recorded with provenance. Thank you.
