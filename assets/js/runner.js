@@ -3,11 +3,11 @@
  * CANONIC native. Same pattern as SHOP + TALK.
  *
  * Three roles: Requester (post tasks), Runner (complete tasks), Ops (manage).
- * Backend: api.canonic.org/api/v1/runner/*
+ * Backend: api.canonic.org/runner/*
  *
  * Usage:
  *   {% include RUNNER.html %}
- *   <script src="/assets/js/runner.js"></script>
+ *   <script src="/assets/js/runner.js?v=2"></script>
  *   <script>RUNNER.init();</script>
  *
  * RUNNER | CANONIC | 2026

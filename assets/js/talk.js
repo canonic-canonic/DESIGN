@@ -259,6 +259,56 @@ const TALK = {
             .forEach(function (inp) { if (inp) inp.placeholder = placeholder; });
 
         document.documentElement.setAttribute('data-talk', 'governed');
+
+        // Quick actions: CANON.json array → tappable chips above chat input
+        if (Array.isArray(canon.quickActions) && canon.quickActions.length) {
+            this.renderQuickActions(canon.quickActions);
+        }
+    },
+
+    // ── Quick Actions — prefill buttons driven by CANON.json ─────────
+    renderQuickActions(actions) {
+        var inputArea = document.querySelector('.input-area');
+        if (!inputArea) return;
+
+        // Don't duplicate
+        if (document.getElementById('talkQuickActions')) return;
+
+        var container = document.createElement('div');
+        container.id = 'talkQuickActions';
+        container.style.cssText = 'display:flex;gap:0.5rem;padding:0.5rem 1rem;overflow-x:auto;flex-shrink:0;flex-wrap:wrap;';
+
+        for (var i = 0; i < actions.length; i++) {
+            var qa = actions[i];
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'talk-qa';
+            btn.textContent = (qa.icon || '') + ' ' + qa.label;
+            btn.setAttribute('data-msg', qa.message || '');
+            btn.addEventListener('click', (function(msg) {
+                return function() {
+                    var input = document.getElementById('talkChatInput');
+                    if (!input) return;
+                    input.value = msg;
+                    input.focus();
+                    // Auto-send if message is complete (no trailing space)
+                    if (msg && msg.charAt(msg.length - 1) !== ' ') {
+                        if (TALK.governed && TALK.send) TALK.send();
+                    }
+                };
+            })(qa.message || ''));
+            container.appendChild(btn);
+        }
+
+        inputArea.parentNode.insertBefore(container, inputArea);
+
+        // Inject quick-action styles if not already present
+        if (!document.getElementById('talkQAStyles')) {
+            var style = document.createElement('style');
+            style.id = 'talkQAStyles';
+            style.textContent = '.talk-qa{display:inline-flex;align-items:center;gap:.25rem;padding:.375rem .75rem;border:1px solid var(--border,#e5e5e5);border-radius:999px;background:var(--glass,rgba(255,255,255,.8));color:var(--fg,#374151);font-size:.8125rem;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}.talk-qa:hover{border-color:var(--accent,#f97316);color:var(--accent,#f97316);background:rgba(var(--accent-rgb,249,115,22),.08);transform:translateY(-1px)}.talk-qa:active{transform:translateY(0) scale(.97)}';
+            document.head.appendChild(style);
+        }
     },
 
     // ── Overlay Control ─────────────────────────────────────────────
