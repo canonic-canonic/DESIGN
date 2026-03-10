@@ -1345,6 +1345,21 @@ export default {
       return authConfig(env);
     }
 
+    // OAuth callback bounce — GitHub redirects here, we forward code to originating page
+    if (path === '/api/v1/auth/github/callback' && request.method === 'GET') {
+      const url = new URL(request.url);
+      const code = url.searchParams.get('code');
+      const state = url.searchParams.get('state');
+      if (!code || !state) return json({ error: 'Missing code or state' }, 400);
+      try {
+        const returnUrl = new URL(state);
+        returnUrl.searchParams.set('code', code);
+        return new Response(null, { status: 302, headers: { 'Location': returnUrl.toString() } });
+      } catch (_) {
+        return json({ error: 'Invalid state URL' }, 400);
+      }
+    }
+
     if (path === '/auth/github' && request.method === 'POST') {
       const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
       if (await checkRate(env, 'auth', ip, 20)) return json({ error: 'Rate limited' }, 429);

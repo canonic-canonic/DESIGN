@@ -558,7 +558,7 @@ const TALK = {
         // Handle Stripe checkout return
         var params = new URLSearchParams(window.location.search);
         if (params.get('checkout') === 'success') {
-            this.add('COIN purchase confirmed! Your balance will update shortly.', 'assistant');
+            this.add('Credits purchase confirmed! Your balance will update shortly.', 'assistant');
             history.replaceState({}, '', window.location.pathname);
         }
 
@@ -594,28 +594,81 @@ const TALK = {
     },
 
     renderCoinBadge(badge, balance) {
-        badge.textContent = balance + ' COIN';
+        badge.textContent = balance + ' Credits';
         badge.style.display = '';
         badge.style.cursor = 'pointer';
-        badge.title = 'Click to buy COIN';
+        badge.title = 'Click to buy Credits';
         this.coinBalance = balance;
         this.userId = localStorage.getItem('runner_user_id');
         badge.onclick = function() { TALK.buyCoin(); };
     },
 
-    async buyCoin() {
+    // Governed credit packs — COIN/CANON.md § Credit Packs
+    CREDIT_PACKS: [
+        { coin: 25, price: 25, label: '25 Credits', badge: 'Starter' },
+        { coin: 50, price: 50, label: '50 Credits', badge: 'Popular' },
+        { coin: 100, price: 95, label: '100 Credits', badge: 'Save 5%' },
+        { coin: 250, price: 225, label: '250 Credits', badge: 'Save 10%' },
+        { coin: 500, price: 425, label: '500 Credits', badge: 'Best Value' }
+    ],
+
+    _ensurePackStyles() {
+        if (document.getElementById('talkPackStyles')) return;
+        var s = document.createElement('style');
+        s.id = 'talkPackStyles';
+        s.textContent =
+            '.talk-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;}' +
+            '.talk-modal{background:var(--card,#fff);border-radius:1rem;padding:1.5rem;max-width:28rem;width:100%;border:1px solid var(--border,#e5e7eb);}' +
+            '.talk-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}' +
+            '.talk-modal-header h3{margin:0;font-size:1.125rem;}' +
+            '.talk-modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--fg,#374151);padding:0 0.25rem;}' +
+            '.talk-pack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(8rem,1fr));gap:0.75rem;}' +
+            '.talk-pack{display:flex;flex-direction:column;align-items:center;gap:0.25rem;padding:1rem 0.75rem;background:var(--bg,#f9fafb);border:2px solid var(--border,#e5e7eb);border-radius:0.75rem;cursor:pointer;transition:border-color 0.15s,transform 0.15s;}' +
+            '.talk-pack:hover{border-color:#f97316;transform:translateY(-2px);}' +
+            '.talk-pack-badge{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#f97316;background:rgba(249,115,22,0.1);padding:0.125rem 0.5rem;border-radius:999px;}' +
+            '.talk-pack-amount{font-size:1.75rem;font-weight:800;color:var(--text,#111);line-height:1;}' +
+            '.talk-pack-label{font-size:0.7rem;font-weight:600;color:var(--fg-secondary,#6b7280);text-transform:uppercase;letter-spacing:0.1em;}' +
+            '.talk-pack-price{font-size:0.9rem;font-weight:700;color:var(--text,#111);}';
+        document.head.appendChild(s);
+    },
+
+    buyCoin() {
         var userId = this.userId || localStorage.getItem('runner_user_id');
-        if (!userId) { this.add('Sign in first to buy COIN.', 'error'); return; }
+        if (!userId) { this.add('Sign in first to buy Credits.', 'error'); return; }
 
-        // Prompt for amount
-        var amount = prompt('How many COIN? (10–10,000)\n\n1 COIN = $1.00', '50');
-        if (!amount) return;
-        var coins = parseInt(amount, 10);
-        if (!coins || coins < 10 || coins > 10000) {
-            this.add('COIN amount must be 10–10,000.', 'error');
-            return;
+        this._ensurePackStyles();
+        var self = this;
+        var overlay = document.createElement('div');
+        overlay.className = 'talk-modal-overlay';
+        overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+        var html = '<div class="talk-modal">' +
+            '<div class="talk-modal-header"><h3>Buy Credits</h3><button class="talk-modal-close" onclick="this.closest(\'.talk-modal-overlay\').remove()">&times;</button></div>' +
+            '<p style="margin:0 0 1rem;font-size:0.85rem;color:var(--fg-secondary,#6b7280);">Credits power every task. Pick a pack:</p>' +
+            '<div class="talk-pack-grid">';
+        for (var i = 0; i < this.CREDIT_PACKS.length; i++) {
+            var p = this.CREDIT_PACKS[i];
+            html += '<button class="talk-pack" data-coin="' + p.coin + '">' +
+                '<span class="talk-pack-badge">' + p.badge + '</span>' +
+                '<span class="talk-pack-amount">' + p.coin + '</span>' +
+                '<span class="talk-pack-label">CREDITS</span>' +
+                '<span class="talk-pack-price">$' + p.price + '</span>' +
+                '</button>';
         }
+        html += '</div></div>';
+        overlay.innerHTML = html;
+        document.body.appendChild(overlay);
+        var packs = overlay.querySelectorAll('.talk-pack');
+        for (var j = 0; j < packs.length; j++) {
+            packs[j].addEventListener('click', function() {
+                var coin = parseInt(this.getAttribute('data-coin'));
+                overlay.remove();
+                self._checkout(coin);
+            });
+        }
+    },
 
+    async _checkout(coins) {
+        var userId = this.userId || localStorage.getItem('runner_user_id');
         try {
             var res = await fetch('https://api.canonic.org/runner/checkout', {
                 method: 'POST',
