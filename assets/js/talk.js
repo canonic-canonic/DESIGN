@@ -555,6 +555,13 @@ const TALK = {
         var badge = document.getElementById('runnerCoinBadge');
         if (!badge) return; // Only RUNNER pages have this element
 
+        // Handle Stripe checkout return
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('checkout') === 'success') {
+            this.add('COIN purchase confirmed! Your balance will update shortly.', 'assistant');
+            history.replaceState({}, '', window.location.pathname);
+        }
+
         var API = 'https://api.canonic.org';
         var userId = localStorage.getItem('runner_user_id');
 
@@ -589,8 +596,41 @@ const TALK = {
     renderCoinBadge(badge, balance) {
         badge.textContent = balance + ' COIN';
         badge.style.display = '';
+        badge.style.cursor = 'pointer';
+        badge.title = 'Click to buy COIN';
         this.coinBalance = balance;
         this.userId = localStorage.getItem('runner_user_id');
+        badge.onclick = function() { TALK.buyCoin(); };
+    },
+
+    async buyCoin() {
+        var userId = this.userId || localStorage.getItem('runner_user_id');
+        if (!userId) { this.add('Sign in first to buy COIN.', 'error'); return; }
+
+        // Prompt for amount
+        var amount = prompt('How many COIN? (10–10,000)\n\n1 COIN = $1.00', '50');
+        if (!amount) return;
+        var coins = parseInt(amount, 10);
+        if (!coins || coins < 10 || coins > 10000) {
+            this.add('COIN amount must be 10–10,000.', 'error');
+            return;
+        }
+
+        try {
+            var res = await fetch('https://api.canonic.org/runner/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, amount_coin: coins })
+            });
+            var data = await res.json();
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                this.add('Checkout error: ' + (data.error || 'unknown'), 'error');
+            }
+        } catch(e) {
+            this.add('Checkout failed. Try again.', 'error');
+        }
     },
 
     // ── Send Message ────────────────────────────────────────────────
