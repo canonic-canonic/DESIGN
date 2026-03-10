@@ -4487,5 +4487,48 @@ async function runnerRoute(subpath, request, env) {
     return json({ success: true, stage: dealStage, tasks: created, balance: bal, deal_id });
   }
 
+  // GET /runner/board?address=X — property task board (all tasks for an address)
+  if (subpath === 'board' && method === 'GET') {
+    const address = (url.searchParams.get('address') || '').trim().toLowerCase();
+    if (!address) return json({ error: 'address required' }, 400);
+    const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
+    const matched = allTasks.filter(t =>
+      t.location && t.location.address && t.location.address.toLowerCase().includes(address)
+    );
+    // Group by status
+    const board = { posted: [], accepted: [], in_progress: [], completed: [], rated: [], cancelled: [] };
+    for (const t of matched) {
+      if (board[t.status]) board[t.status].push(t);
+    }
+    const totalCoin = matched.reduce((s, t) => s + (t.fee_coin || 0), 0);
+    const completedCoin = matched.filter(t => ['completed', 'rated'].includes(t.status))
+      .reduce((s, t) => s + (t.fee_coin || 0), 0);
+    return json({
+      address: url.searchParams.get('address'),
+      total_tasks: matched.length,
+      total_coin: totalCoin,
+      completed_coin: completedCoin,
+      board,
+    });
+  }
+
+  // GET /runner/listings?user_id=X — all unique property addresses for a user
+  if (subpath === 'listings' && method === 'GET') {
+    const userId = url.searchParams.get('user_id') || '';
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
+    const userTasks = allTasks.filter(t => t.requester_id === userId);
+    const addrMap = {};
+    for (const t of userTasks) {
+      const addr = (t.location && t.location.address) || 'Unknown';
+      if (!addrMap[addr]) addrMap[addr] = { address: addr, tasks: 0, coin: 0, active: 0, completed: 0 };
+      addrMap[addr].tasks++;
+      addrMap[addr].coin += t.fee_coin || 0;
+      if (['completed', 'rated'].includes(t.status)) addrMap[addr].completed++;
+      else if (!['cancelled'].includes(t.status)) addrMap[addr].active++;
+    }
+    return json({ listings: Object.values(addrMap) });
+  }
+
   return json({ error: 'unknown runner route' }, 404);
 }
