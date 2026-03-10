@@ -548,7 +548,7 @@ const TALK = {
 
     // Send a task action through chat
     sendAction(text) {
-        var input = document.getElementById('talkInput');
+        var input = document.getElementById('talkChatInput') || document.getElementById('talkInput');
         if (input) {
             input.value = text;
             this.send();
