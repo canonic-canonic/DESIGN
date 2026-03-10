@@ -4340,5 +4340,72 @@ async function runnerRoute(subpath, request, env) {
     return json({ entries, total: ledger.length });
   }
 
+  // POST /runner/referral — NONA → RUNNER auto-stage tasks for a deal
+  // Called when a NONA buyer inquiry creates or advances a deal
+  if (subpath === 'referral' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const { requester_id, address, stage, deal_id, source } = body;
+    if (!requester_id || !address) return json({ error: 'requester_id and address required' }, 400);
+
+    // Stage-to-tasks mapping: each NONA stage auto-stages relevant RUNNER tasks
+    const STAGE_TASKS = {
+      inquiry:   ['cma'],
+      match:     ['yard_sign_install', 'lockbox_install'],
+      show:      ['showings', 'photos'],
+      offer:     ['contracts', 'inspection', 'appraisal'],
+      negotiate: ['title'],
+      close:     ['closing'],
+    };
+
+    const dealStage = (stage || 'inquiry').toLowerCase();
+    const taskTypes = STAGE_TASKS[dealStage] || STAGE_TASKS.inquiry;
+
+    // Check balance upfront
+    const totalCoin = taskTypes.reduce((s, t) => s + (RUNNER_TASK_PRICES[t] || 5), 0);
+    let bal = parseInt(await kv.get(`runner:balance:${requester_id}`) || '0', 10);
+    if (bal < totalCoin) {
+      return json({ error: 'Insufficient COIN for referral batch', balance: bal, required: totalCoin }, 402);
+    }
+
+    const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
+    const created = [];
+
+    for (const taskType of taskTypes) {
+      const feeCoin = RUNNER_TASK_PRICES[taskType] || 5;
+      const tid = 'T' + runnerUid();
+      const task = {
+        id: tid, requester_id, runner_id: null, type: taskType,
+        title: taskType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        status: 'posted',
+        location: { address },
+        scheduled_time: '', fee_coin: feeCoin, offered_fee_usd: 50,
+        notes: `Auto-staged from ${source || 'NONA'} ${dealStage} (deal: ${deal_id || 'n/a'})`,
+        proof_url: null, proof_note: null, rating: null, tip_coin: 0,
+        created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+      };
+      bal -= feeCoin;
+      allTasks.push(task);
+      created.push(task);
+
+      await appendToLedger(env, 'RUNNER', 'RUNNER', {
+        event: 'TASK_POSTED', task_id: tid, task_type: taskType,
+        requester_id, fee_coin: feeCoin, address,
+        referral_source: source || 'NONA', referral_stage: dealStage, deal_id: deal_id || null,
+      });
+    }
+
+    await kv.put(`runner:balance:${requester_id}`, String(bal));
+    await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+
+    // LEDGER: referral batch event
+    await appendToLedger(env, 'RUNNER', 'RUNNER', {
+      event: 'REFERRAL_STAGED', source: source || 'NONA', stage: dealStage,
+      deal_id: deal_id || null, requester_id, address,
+      tasks_created: created.length, total_coin: totalCoin,
+    });
+
+    return json({ success: true, stage: dealStage, tasks: created, balance: bal, deal_id });
+  }
+
   return json({ error: 'unknown runner route' }, 404);
 }
