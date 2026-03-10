@@ -79,6 +79,7 @@ const TALK = {
         this.loadCanon().then(function() {
             TALK.loadIntel();
             TALK.initPlugins();
+            TALK.loadCoinBadge();
         });
     },
 
@@ -547,6 +548,49 @@ const TALK = {
                     '<span style="color:var(--fg-secondary,#6b7280);font-family:\'SF Mono\',Monaco,monospace;white-space:nowrap;">' + e.date + '</span>' +
                     '<span style="color:var(--fg,#374151);">' + e.text + '</span></div>';
             }).join('');
+    },
+
+    // ── COIN Badge — live balance in header ─────────────────────────
+    async loadCoinBadge() {
+        var badge = document.getElementById('runnerCoinBadge');
+        if (!badge) return; // Only RUNNER pages have this element
+
+        var API = 'https://api.canonic.org';
+        var userId = localStorage.getItem('runner_user_id');
+
+        // Auto-register anonymous user if none exists
+        if (!userId) {
+            try {
+                var res = await fetch(API + '/runner/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: 'RUNNER User', role: 'Requester' })
+                });
+                if (res.ok) {
+                    var data = await res.json();
+                    userId = data.user && data.user.id;
+                    if (userId) localStorage.setItem('runner_user_id', userId);
+                    this.renderCoinBadge(badge, data.balance || 0);
+                }
+            } catch(e) { /* silent */ }
+            return;
+        }
+
+        // Fetch balance for existing user
+        try {
+            var res = await fetch(API + '/runner/balance?user_id=' + encodeURIComponent(userId));
+            if (res.ok) {
+                var data = await res.json();
+                this.renderCoinBadge(badge, data.balance || 0);
+            }
+        } catch(e) { /* silent */ }
+    },
+
+    renderCoinBadge(badge, balance) {
+        badge.textContent = balance + ' COIN';
+        badge.style.display = '';
+        this.coinBalance = balance;
+        this.userId = localStorage.getItem('runner_user_id');
     },
 
     // ── Send Message ────────────────────────────────────────────────
