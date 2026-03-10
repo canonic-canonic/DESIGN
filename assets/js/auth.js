@@ -33,12 +33,11 @@ var AUTH = (function () {
 
     // ── OAuth exchange ──────────────────────────────────
     async function exchange(code) {
-        var redirect = window.location.origin + window.location.pathname;
         try {
             var res = await fetch(API + '/auth/github', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: code, redirect_uri: redirect })
+                body: JSON.stringify({ code: code })
             });
             if (!res.ok) {
                 var err = await res.json().catch(function () { return {}; });
@@ -95,8 +94,8 @@ var AUTH = (function () {
     // ── Login prompt ────────────────────────────────────
     function loginUrl() {
         return 'https://github.com/login/oauth/authorize?client_id=Ov23libAbRu20g5MLTLJ' +
-            '&redirect_uri=' + encodeURIComponent(window.location.origin + window.location.pathname) +
-            '&scope=read:user';
+            '&scope=read:user' +
+            '&state=' + encodeURIComponent(window.location.origin + window.location.pathname);
     }
 
     function showLogin(msg) {
