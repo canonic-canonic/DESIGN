@@ -16,13 +16,40 @@
 <!DOCTYPE html>
 <html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
 <head>
+  <!-- HEAD (inlined — standalone layout, no includes) -->
+  {% assign page_title = page.title | default: sd.name | default: site.title %}
+  {% assign page_desc = page.description | default: site.description %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://api.canonic.org https://www.googletagmanager.com https://www.googleadservices.com https://connect.facebook.net https://snap.licdn.com https://static.ads-twitter.com https://www.redditstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://api.canonic.org https://*.canonic.org https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://connect.facebook.net https://snap.licdn.com https://static.ads-twitter.com https://alb.reddit.com; font-src 'self' https://cdn.jsdelivr.net; worker-src 'self' blob:; frame-ancestors 'none';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
-  <title>{{ page.title | default: sd.name | default: site.title }}</title>
-  <meta name="description" content="{{ page.description | default: site.description }}">
+  <title>{{ page_title }}</title>
+  <meta name="description" content="{{ page_desc }}">
+  <link rel="canonical" href="{{ page.url | absolute_url | downcase }}">
+  <!-- OG -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ page_title }}">
+  <meta property="og:description" content="{{ page_desc }}">
+  <meta property="og:url" content="{{ page.url | absolute_url }}">
+  <meta property="og:site_name" content="{{ site.title }}">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="{{ '/assets/og.png' | absolute_url }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page_title }}">
+  <meta name="twitter:description" content="{{ page_desc }}">
+  <meta name="twitter:image" content="{{ '/assets/og.png' | absolute_url }}">
+  <!-- SEO -->
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebPage","name":"{{ page_title }}","description":"{{ page_desc }}","url":"{{ page.url | absolute_url }}","publisher":{"@type":"Organization","name":"{{ site.title }}","url":"{{ site.url }}"}}
+  </script>
   <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
   <style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
+  <!-- TRACKING -->
+  {% if site.ga4_id %}<script async src="https://www.googletagmanager.com/gtag/js?id={{ site.ga4_id }}"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','{{ site.ga4_id }}');</script>{% endif %}
+  {% if site.google_ads_id %}<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('config','{{ site.google_ads_id }}');</script>{% endif %}
 </head>
 <body class="post-page paper-page service-page">
 
