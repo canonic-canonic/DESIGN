@@ -625,7 +625,7 @@ const TALK = {
 
     renderCoinBadge(badge, balance) {
         badge.textContent = balance + ' Credits';
-        badge.style.display = '';
+        badge.classList.remove('loading');
         badge.style.cursor = 'pointer';
         badge.title = 'Click to buy Credits';
         this.coinBalance = balance;
