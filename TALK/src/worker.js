@@ -4487,6 +4487,94 @@ async function runnerRoute(subpath, request, env) {
     return json({ success: true, stage: dealStage, tasks: created, balance: bal, deal_id });
   }
 
+  // POST /runner/credentials — vendor submits license for verification
+  if (subpath === 'credentials' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    const credType = (body.type || '').trim(); // e.g., business_license, FL_468, FL_626, FL_FREAB_USPAP, FL_626_NMLS
+    const licenseNumber = (body.license_number || '').trim();
+    if (!userId || !credType || !licenseNumber) {
+      return json({ error: 'user_id, type, and license_number required' }, 400);
+    }
+
+    const raw = await kv.get(`runner:user:${userId}`);
+    if (!raw) return json({ error: 'user not found' }, 404);
+    const user = JSON.parse(raw);
+
+    const creds = user.credentials || {};
+    creds[credType] = {
+      license_number: licenseNumber,
+      issuing_authority: body.issuing_authority || '',
+      expiry: body.expiry || '',
+      status: 'pending',
+      submitted_at: new Date().toISOString(),
+    };
+    user.credentials = creds;
+    await kv.put(`runner:user:${userId}`, JSON.stringify(user));
+
+    await appendToLedger(env, 'RUNNER', 'RUNNER', {
+      event: 'CREDENTIAL_SUBMITTED', user_id: userId, credential_type: credType,
+      license_number: licenseNumber,
+    });
+
+    return json({ success: true, user_id: userId, credential: creds[credType] });
+  }
+
+  // POST /runner/credentials/verify — ops verifies a vendor credential
+  if (subpath === 'credentials/verify' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    const credType = (body.type || '').trim();
+    const verdict = body.verified === true ? 'verified' : 'rejected';
+    if (!userId || !credType) return json({ error: 'user_id and type required' }, 400);
+
+    const raw = await kv.get(`runner:user:${userId}`);
+    if (!raw) return json({ error: 'user not found' }, 404);
+    const user = JSON.parse(raw);
+
+    const creds = user.credentials || {};
+    if (!creds[credType]) return json({ error: 'credential not found' }, 404);
+    creds[credType].status = verdict;
+    creds[credType].verified_at = new Date().toISOString();
+    creds[credType].verified_by = body.verified_by || 'ops';
+    user.credentials = creds;
+    await kv.put(`runner:user:${userId}`, JSON.stringify(user));
+
+    await appendToLedger(env, 'RUNNER', 'RUNNER', {
+      event: 'CREDENTIAL_VERIFIED', user_id: userId, credential_type: credType,
+      verdict, verified_by: body.verified_by || 'ops',
+    });
+
+    // Notify vendor of verification result
+    if (user.email && env.RESEND_API_KEY) {
+      const statusText = verdict === 'verified' ? 'approved' : 'rejected';
+      fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_API_KEY}` },
+        body: JSON.stringify({
+          from: env.EMAIL_FROM || 'founder@canonic.org',
+          to: [user.email],
+          subject: `RUNNER: Your ${credType} credential has been ${statusText}`,
+          html: `<p>Your <strong>${credType}</strong> credential (${creds[credType].license_number}) has been <strong>${statusText}</strong> on RUNNER.</p>
+${verdict === 'verified' ? '<p>You can now claim tasks that require this credential.</p>' : '<p>Please resubmit with a valid license number.</p>'}
+<p><a href="https://gorunner.pro" style="background:#f97316;color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Go to RUNNER</a></p>`,
+        }),
+      }).catch(() => {});
+    }
+
+    return json({ success: true, user_id: userId, credential: creds[credType] });
+  }
+
+  // GET /runner/credentials?user_id=X — list vendor credentials
+  if (subpath === 'credentials' && method === 'GET') {
+    const userId = url.searchParams.get('user_id') || '';
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    const raw = await kv.get(`runner:user:${userId}`);
+    if (!raw) return json({ error: 'user not found' }, 404);
+    const user = JSON.parse(raw);
+    return json({ user_id: userId, credentials: user.credentials || {} });
+  }
+
   // GET /runner/board?address=X — property task board (all tasks for an address)
   if (subpath === 'board' && method === 'GET') {
     const address = (url.searchParams.get('address') || '').trim().toLowerCase();
