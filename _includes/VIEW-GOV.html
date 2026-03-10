@@ -1,5 +1,5 @@
-<!-- VIEW-GOV | Composable governance contract view | DESIGN.md 255 Map -->
-<!-- Renders CANON data from site.data[scope].canon when available, falls back to {{ content }} -->
+<!-- VIEW-GOV | Full service contract view | DESIGN.md 255 Map -->
+<!-- Renders full governance tree from site.data[scope].canon -->
 {% assign _scope_key = page.scope | default: site.scope | downcase %}
 {% assign _sd = site.data[_scope_key] %}
 {% assign _canon = _sd.canon %}
@@ -9,19 +9,84 @@
   <header class="post-header">
     <div class="hero-badge">{{ _badge }}</div>
     <h1 class="gradient-text">{{ page.title | default: site.title }}</h1>
-    <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">CONTRACT &middot; VIEW: GOV</p>
+    <p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.1em;margin-top:var(--space-sm);">SERVICE CONTRACT &middot; VIEW: GOV</p>
   </header>
   <div class="paper-body prose">
     {% if _canon %}
+
+    <!-- ═══ CANON — Law ═══ -->
     {% if _canon.inherits %}<p class="muted" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.05em;">inherits: {{ _canon.inherits }}</p>{% endif %}
     <h2>Axiom</h2>
     <p><strong>{{ _canon.axiom }}</strong></p>
     <h2>Constraints</h2>
     <pre style="white-space:pre-wrap;font-size:var(--font-sm);">{{ _canon.constraints }}</pre>
+    {% if _canon.capabilities %}<h2>Capabilities</h2>
+    <p style="font-family:var(--mono);font-size:var(--font-sm);">{{ _canon.capabilities | join: ", " }}</p>{% endif %}
     {% if _canon.privacy %}<p class="muted" style="margin-top:var(--space-md);">privacy: {{ _canon.privacy }}</p>{% endif %}
+    {% if _canon.coverage %}<p style="font-family:var(--mono);font-size:var(--font-sm);margin-top:var(--space-sm);">COVERAGE: {{ _canon.coverage }}</p>{% endif %}
+
+    <!-- ═══ SPEC — Purpose & Content ═══ -->
+    {% if _canon.spec %}
+    <hr style="margin:var(--space-xl) 0;border-color:var(--border);">
+    <h2 style="font-family:var(--mono);letter-spacing:0.1em;font-size:var(--font-xs);color:var(--accent);">SPEC</h2>
+    {% for sec in _canon.spec %}
+    <h3>{{ sec.title }}</h3>
+    {{ sec.body | markdownify }}
+    {% endfor %}
+    {% endif %}
+
+    <!-- ═══ INTEL — Evidence ═══ -->
+    {% if _canon.intel %}
+    <hr style="margin:var(--space-xl) 0;border-color:var(--border);">
+    <h2 style="font-family:var(--mono);letter-spacing:0.1em;font-size:var(--font-xs);color:var(--accent);">INTEL</h2>
+    {% for sec in _canon.intel %}
+    <h3>{{ sec.title }}</h3>
+    {{ sec.body | markdownify }}
+    {% endfor %}
+    {% endif %}
+
+    <!-- ═══ LEARNING — Patterns ═══ -->
+    {% if _canon.learning %}
+    <hr style="margin:var(--space-xl) 0;border-color:var(--border);">
+    <h2 style="font-family:var(--mono);letter-spacing:0.1em;font-size:var(--font-xs);color:var(--accent);">LEARNING</h2>
+    {% for sec in _canon.learning %}
+    <h3>{{ sec.title }}</h3>
+    {{ sec.body | markdownify }}
+    {% endfor %}
+    {% endif %}
+
+    <!-- ═══ ROADMAP — Now / Next / Later ═══ -->
+    {% if _canon.roadmap %}
+    <hr style="margin:var(--space-xl) 0;border-color:var(--border);">
+    <h2 style="font-family:var(--mono);letter-spacing:0.1em;font-size:var(--font-xs);color:var(--accent);">ROADMAP</h2>
+    {% if _canon.roadmap.now %}<h3>Now</h3><ul>{% for item in _canon.roadmap.now %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+    {% if _canon.roadmap.next %}<h3>Next</h3><ul>{% for item in _canon.roadmap.next %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+    {% if _canon.roadmap.later %}<h3>Later</h3><ul>{% for item in _canon.roadmap.later %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+    {% endif %}
+
+    <!-- ═══ VOCAB — Language ═══ -->
+    {% if _canon.vocab %}
+    <hr style="margin:var(--space-xl) 0;border-color:var(--border);">
+    <h2 style="font-family:var(--mono);letter-spacing:0.1em;font-size:var(--font-xs);color:var(--accent);">VOCAB</h2>
+    <table><thead><tr><th>Term</th><th>Definition</th></tr></thead><tbody>
+    {% for v in _canon.vocab %}<tr><td style="font-family:var(--mono);font-size:var(--font-sm);white-space:nowrap;">{{ v.term }}</td><td>{{ v.definition }}</td></tr>{% endfor %}
+    </tbody></table>
+    {% endif %}
+
+    <!-- ═══ CHAIN — Inherited Contracts ═══ -->
+    {% if _canon.chain %}
+    <hr style="margin:var(--space-xl) 0;border-color:var(--border);">
+    <h2 style="font-family:var(--mono);letter-spacing:0.1em;font-size:var(--font-xs);color:var(--accent);">INHERITANCE CHAIN</h2>
+    {% for parent in _canon.chain %}
+    <h3>{{ parent.scope }}</h3>
+    {% if parent.axiom %}<p><strong>{{ parent.axiom }}</strong></p>{% endif %}
+    {% if parent.constraints %}<pre style="white-space:pre-wrap;font-size:var(--font-sm);">{{ parent.constraints }}</pre>{% endif %}
+    {% endfor %}
+    {% endif %}
+
     {% else %}
     {{ content }}
     {% endif %}
   </div>
-  <div class="paper-colophon">CANONIC &cap; FOUNDATION</div>
+  <div class="paper-colophon">{{ _badge }} &middot; SERVICE CONTRACT &middot; CANONIC &cap;</div>
 </article>

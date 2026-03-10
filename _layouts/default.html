@@ -20,11 +20,6 @@
   {% assign current_view = page.view | default: "web" %}
   {% if page.galaxy %}
   {% include GALAXY.html %}
-  {% elsif current_view == "html" %}
-
-  <!-- ═══ VIEW: HTML — Raw passthrough, no GOV/WEB wrapper ═══ -->
-  {{ content }}
-
   {% else %}
 
   {% include VIEW-GOV.html %}
@@ -121,7 +116,7 @@
   {% if cta %}
   <section id="cta">{% include CTA.html cta=cta %}</section>
   {% endif %}
-  </div><!-- /view-html -->
+  </div><!-- /view-web -->
 
   <footer id="footer">{% include FOOTER.html footer=footer_data %}</footer>
 

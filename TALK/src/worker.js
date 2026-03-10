@@ -1026,7 +1026,7 @@ async function deepHealth(env) {
       const controls = canon.controls || {};
       const render = {
         surface_type: canon.surface_type || 'unknown',
-        view: controls.view || 'html',
+        view: controls.view || 'web',
         talk: controls.talk || 'side',
         gate: controls.gate || undefined,
         downloads: [],
@@ -3930,15 +3930,20 @@ async function runnerRoute(subpath, request, env) {
       const existing = await kv.get(`runner:email:${email.toLowerCase()}`);
       if (existing) {
         const user = JSON.parse(existing);
-        return json({ success: true, user });
+        const bal = parseInt(await kv.get(`runner:balance:${user.id}`) || '0', 10);
+        return json({ success: true, user, balance: bal });
       }
     }
 
     // Create new user
     const uid = 'U' + runnerUid();
+    const startupCoin = intEnv(env, 'RUNNER_STARTUP_COIN', 50);
     const user = { id: uid, name, email, role, created_at: new Date().toISOString(), status: 'active' };
     await kv.put(`runner:user:${uid}`, JSON.stringify(user));
     if (email) await kv.put(`runner:email:${email.toLowerCase()}`, JSON.stringify(user));
+
+    // Grant startup COIN
+    await kv.put(`runner:balance:${uid}`, String(startupCoin));
 
     // Add to role index
     const roleKey = `runner:role:${role.toLowerCase()}`;
@@ -3946,7 +3951,7 @@ async function runnerRoute(subpath, request, env) {
     roleList.push(uid);
     await kv.put(roleKey, JSON.stringify(roleList));
 
-    return json({ success: true, user });
+    return json({ success: true, user, balance: startupCoin });
   }
 
   // GET /runner/tasks?role=X&user_id=Y
@@ -3973,6 +3978,13 @@ async function runnerRoute(subpath, request, env) {
 
     const taskType = body.type || 'lockbox_install';
     const feeCoin = RUNNER_TASK_PRICES[taskType] || Math.max(1, parseInt(body.offered_fee_usd) || 50);
+
+    // Check requester balance
+    const bal = parseInt(await kv.get(`runner:balance:${requesterId}`) || '0', 10);
+    if (bal < feeCoin) {
+      return json({ error: 'Insufficient COIN', balance: bal, required: feeCoin }, 402);
+    }
+
     const tid = 'T' + runnerUid();
     const task = {
       id: tid,
@@ -3991,10 +4003,13 @@ async function runnerRoute(subpath, request, env) {
       updated_at: new Date().toISOString(),
     };
 
+    // Deduct COIN from requester
+    await kv.put(`runner:balance:${requesterId}`, String(bal - feeCoin));
+
     const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
     allTasks.push(task);
     await kv.put('runner:tasks:all', JSON.stringify(allTasks));
-    return json({ success: true, task });
+    return json({ success: true, task, balance: bal - feeCoin });
   }
 
   // Task actions: /runner/tasks/{id}/{action}
@@ -4107,6 +4122,64 @@ async function runnerRoute(subpath, request, env) {
       total_users: reqIds.length + runIds.length,
       total_runners: runIds.length, total_requesters: reqIds.length,
     });
+  }
+
+  // GET /runner/balance?user_id=X
+  if (subpath === 'balance' && method === 'GET') {
+    const userId = url.searchParams.get('user_id') || '';
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    const bal = parseInt(await kv.get(`runner:balance:${userId}`) || '0', 10);
+    return json({ balance: bal, user_id: userId });
+  }
+
+  // POST /runner/checkout — create Stripe Checkout session to buy COIN
+  if (subpath === 'checkout' && method === 'POST') {
+    if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe not configured' }, 500);
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    const amountCoin = parseInt(body.amount_coin, 10);
+    if (!Number.isFinite(amountCoin) || amountCoin < 10 || amountCoin > 10000) {
+      return json({ error: 'amount_coin must be 10–10000' }, 400);
+    }
+    const coinToCents = Math.max(1, intEnv(env, 'RUNNER_COIN_USD_CENTS', 100));
+    const unitAmount = amountCoin * coinToCents;
+    const successUrl = (body.success_url || 'https://gorunner.pro/?checkout=success').trim();
+    const cancelUrl = (body.cancel_url || 'https://gorunner.pro/?checkout=cancel').trim();
+
+    const fields = {
+      mode: 'payment',
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      'line_items[0][quantity]': '1',
+      'line_items[0][price_data][currency]': 'usd',
+      'line_items[0][price_data][unit_amount]': String(unitAmount),
+      'line_items[0][price_data][product_data][name]': `RUNNER — ${amountCoin} COIN`,
+      'metadata[service]': 'RUNNER',
+      'metadata[user_id]': userId,
+      'metadata[amount_coin]': String(amountCoin),
+      'payment_intent_data[metadata][service]': 'RUNNER',
+      'payment_intent_data[metadata][user_id]': userId,
+      'payment_intent_data[metadata][amount_coin]': String(amountCoin),
+    };
+    const created = await stripeApiRequest(env, 'POST', '/v1/checkout/sessions', fields);
+    if (!created.ok) return json({ error: created.error || 'Stripe checkout failed' }, created.status || 502);
+    const session = created.data || {};
+    return json({ ok: true, session_id: session.id, url: session.url, amount_coin: amountCoin });
+  }
+
+  // POST /runner/credit — credit COIN to user (called by Stripe webhook or ops)
+  if (subpath === 'credit' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    const amount = parseInt(body.amount_coin, 10);
+    if (!userId || !Number.isFinite(amount) || amount < 1) {
+      return json({ error: 'user_id and amount_coin required' }, 400);
+    }
+    const bal = parseInt(await kv.get(`runner:balance:${userId}`) || '0', 10);
+    const newBal = bal + amount;
+    await kv.put(`runner:balance:${userId}`, String(newBal));
+    return json({ ok: true, balance: newBal, credited: amount });
   }
 
   return json({ error: 'unknown runner route' }, 404);
