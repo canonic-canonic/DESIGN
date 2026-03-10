@@ -502,6 +502,8 @@ const TALK = {
             await new Promise(function(r) { setTimeout(r, delay); });
         }
         element.classList.remove('typing');
+        // RUNNER: inject action buttons after typing completes
+        if (this.scope === 'RUNNER') this.injectTaskActions(element);
     },
 
     // ── Add Message ─────────────────────────────────────────────────
@@ -515,6 +517,8 @@ const TALK = {
         var textDiv = document.createElement('div');
         if (role === 'assistant' && content && content.indexOf('Thinking') === -1) {
             textDiv.innerHTML = this.md(content);
+            // RUNNER: inject action buttons for task IDs
+            if (this.scope === 'RUNNER') this.injectTaskActions(textDiv);
         } else {
             textDiv.textContent = content;
         }
@@ -523,6 +527,32 @@ const TALK = {
         el.appendChild(div);
         el.scrollTop = el.scrollHeight;
         return div;
+    },
+
+    // RUNNER: convert task IDs in assistant messages into clickable action buttons
+    injectTaskActions(el) {
+        // Find all text nodes containing task IDs like [TB6D2C9719CF3] or TB6D2C9719CF3
+        var html = el.innerHTML;
+        // Add claim/complete buttons after task ID references
+        html = html.replace(/\[?(T[A-F0-9]{12,})\]?/g, function(match, taskId) {
+            return match +
+                ' <button class="runner-action" onclick="TALK.sendAction(\'claim ' + taskId + '\')" ' +
+                'style="font-size:11px;padding:2px 8px;margin:0 2px;border:1px solid #f97316;color:#f97316;background:transparent;border-radius:4px;cursor:pointer;font-weight:600;"' +
+                '>Claim</button>' +
+                '<button class="runner-action" onclick="TALK.sendAction(\'complete ' + taskId + '\')" ' +
+                'style="font-size:11px;padding:2px 8px;margin:0 2px;border:1px solid #22c55e;color:#22c55e;background:transparent;border-radius:4px;cursor:pointer;font-weight:600;"' +
+                '>Done</button>';
+        });
+        el.innerHTML = html;
+    },
+
+    // Send a task action through chat
+    sendAction(text) {
+        var input = document.getElementById('talkInput');
+        if (input) {
+            input.value = text;
+            this.send();
+        }
     },
 
     // ── INTEL Ledger ────────────────────────────────────────────────
@@ -811,9 +841,14 @@ const TALK = {
             // LEDGER: persist conversation turn server-side (GOV: TALK/CANON.md)
             // Fire-and-forget — ledger failure must not break chat
             try {
+                var ledgerHeaders = { 'Content-Type': 'application/json' };
+                try {
+                    var ledgerToken = (typeof AUTH !== 'undefined' && AUTH.sessionToken) ? AUTH.sessionToken() : null;
+                    if (ledgerToken) ledgerHeaders['Authorization'] = 'Bearer ' + ledgerToken;
+                } catch (_) {}
                 fetch('https://api.canonic.org/talk/ledger', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: ledgerHeaders,
                     body: JSON.stringify({
                         scope: this.scope || 'UNGOVERNED',
                         user_message: text,
