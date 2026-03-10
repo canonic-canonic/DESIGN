@@ -3913,6 +3913,76 @@ const RUNNER_KYC_REQUIRED = {
   closing: 'FL_626_NMLS',      // FL 626 + NMLS
 };
 
+// ── RUNNER Notifications — email vendors on task post, agent on claim ──
+
+async function runnerNotifyVendors(env, kv, task) {
+  const runnerIds = JSON.parse(await kv.get('runner:role:runner') || '[]');
+  const kycReq = RUNNER_KYC_REQUIRED[task.type];
+  for (const uid of runnerIds) {
+    const raw = await kv.get(`runner:user:${uid}`);
+    if (!raw) continue;
+    const vendor = JSON.parse(raw);
+    if (!vendor.email) continue;
+    // Skip vendors without required credentials for KYC tasks
+    if (kycReq) {
+      const creds = vendor.credentials || {};
+      if (!creds[kycReq] || creds[kycReq].status !== 'verified') continue;
+    }
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_API_KEY}` },
+      body: JSON.stringify({
+        from: env.EMAIL_FROM || 'founder@canonic.org',
+        to: [vendor.email],
+        bcc: [env.EMAIL_FROM || 'founder@canonic.org'],
+        subject: `RUNNER: New ${task.title} task — ${task.fee_coin} COIN`,
+        html: `<p>A new task has been posted on <strong>RUNNER</strong>.</p>
+<table style="border-collapse:collapse;font-family:sans-serif;">
+<tr><td style="padding:4px 12px;font-weight:600;">Task</td><td style="padding:4px 12px;">${task.title}</td></tr>
+<tr><td style="padding:4px 12px;font-weight:600;">Location</td><td style="padding:4px 12px;">${task.location.address || 'TBD'}</td></tr>
+<tr><td style="padding:4px 12px;font-weight:600;">Fee</td><td style="padding:4px 12px;">${task.fee_coin} COIN</td></tr>
+<tr><td style="padding:4px 12px;font-weight:600;">ID</td><td style="padding:4px 12px;font-family:monospace;">${task.id}</td></tr>
+</table>
+<p style="margin-top:16px;"><a href="https://gorunner.pro" style="background:#f97316;color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Claim on RUNNER</a></p>
+<p style="font-size:11px;color:#888;margin-top:16px;">CANONIC · Every task ledgered.</p>`,
+      }),
+    });
+  }
+}
+
+async function runnerNotifyAgent(env, kv, task) {
+  if (!task.requester_id) return;
+  const raw = await kv.get(`runner:user:${task.requester_id}`);
+  if (!raw) return;
+  const agent = JSON.parse(raw);
+  if (!agent.email) return;
+  // Look up vendor info
+  let vendorName = 'A vendor';
+  if (task.runner_id) {
+    const vRaw = await kv.get(`runner:user:${task.runner_id}`);
+    if (vRaw) vendorName = JSON.parse(vRaw).name || vendorName;
+  }
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_API_KEY}` },
+    body: JSON.stringify({
+      from: env.EMAIL_FROM || 'founder@canonic.org',
+      to: [agent.email],
+      bcc: [env.EMAIL_FROM || 'founder@canonic.org'],
+      subject: `RUNNER: ${vendorName} claimed your ${task.title} task`,
+      html: `<p><strong>${vendorName}</strong> has claimed your task on <strong>RUNNER</strong>.</p>
+<table style="border-collapse:collapse;font-family:sans-serif;">
+<tr><td style="padding:4px 12px;font-weight:600;">Task</td><td style="padding:4px 12px;">${task.title}</td></tr>
+<tr><td style="padding:4px 12px;font-weight:600;">Location</td><td style="padding:4px 12px;">${task.location.address || 'TBD'}</td></tr>
+<tr><td style="padding:4px 12px;font-weight:600;">Vendor</td><td style="padding:4px 12px;">${vendorName}</td></tr>
+<tr><td style="padding:4px 12px;font-weight:600;">Fee</td><td style="padding:4px 12px;">${task.fee_coin} COIN</td></tr>
+</table>
+<p style="margin-top:16px;"><a href="https://gorunner.pro" style="background:#f97316;color:#fff;padding:8px 20px;border-radius:6px;text-decoration:none;font-weight:600;">View on RUNNER</a></p>
+<p style="font-size:11px;color:#888;margin-top:16px;">CANONIC · Every task ledgered.</p>`,
+    }),
+  });
+}
+
 function runnerUid() {
   const hex = Array.from(crypto.getRandomValues(new Uint8Array(6)))
     .map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
@@ -4027,6 +4097,11 @@ async function runnerRoute(subpath, request, env) {
       address: task.location.address,
     });
 
+    // NOTIFY: email all vendors (runners) about new task — fire-and-forget
+    if (env.RESEND_API_KEY) {
+      runnerNotifyVendors(env, kv, task).catch(e => console.error('[RUNNER:NOTIFY]', e.message || e));
+    }
+
     return json({ success: true, task, balance: bal - feeCoin });
   }
 
@@ -4070,6 +4145,11 @@ async function runnerRoute(subpath, request, env) {
         runner_id: body.runner_id, requester_id: task.requester_id,
         fee_coin: task.fee_coin,
       });
+
+      // NOTIFY: email requester (agent) about vendor claim — fire-and-forget
+      if (env.RESEND_API_KEY) {
+        runnerNotifyAgent(env, kv, task).catch(e => console.error('[RUNNER:NOTIFY]', e.message || e));
+      }
 
       return json({ success: true, task });
     }
