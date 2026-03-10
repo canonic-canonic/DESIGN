@@ -9,7 +9,7 @@
 </head>
 <body data-layout="custom">
 
-  {% include NAV-UNIFIED.html %}
+  {% unless page.nav == false %}{% include NAV-UNIFIED.html %}{% endunless %}
 
   {% include VIEW-GOV.html %}
 
