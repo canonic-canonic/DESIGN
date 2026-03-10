@@ -673,7 +673,12 @@ const TALK = {
             var res = await fetch('https://api.canonic.org/runner/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId, amount_coin: coins })
+                body: JSON.stringify({
+                    user_id: userId,
+                    amount_coin: coins,
+                    success_url: window.location.origin + window.location.pathname + '?checkout=success',
+                    cancel_url: window.location.origin + window.location.pathname + '?checkout=cancel'
+                })
             });
             var data = await res.json();
             if (data.url) {
