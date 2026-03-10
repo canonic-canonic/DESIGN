@@ -1,6 +1,6 @@
 // AUTH | DESIGN.md 255 Map | Authentication gate styles
 
-body.auth-gated > *:not(#authGate):not(script):not(style) { display: none !important; }
+body.auth-gated > *:not(#authGate):not(.view-web):not(script):not(style) { display: none !important; }
 
 .auth-gate {
   display: none;
