@@ -936,19 +936,20 @@ main.deck-main {
 }
 
 /* ── Light theme — deck stays dark ────────────────────────────────── */
-.deck-mode[data-theme="light"] {
+/* data-theme lives on <html>, .deck-mode on <body> — ancestor selector */
+[data-theme="light"] .deck-mode {
     background: #000;
     color: #fff;
 }
 
-.deck-mode[data-theme="light"] .slide-heading { color: #fff; }
-.deck-mode[data-theme="light"] .slide-story { color: rgba(255, 255, 255, 0.6); }
-.deck-mode[data-theme="light"] .slide-widget table td { color: #fff; border-bottom-color: rgba(255, 255, 255, 0.04); }
-.deck-mode[data-theme="light"] .slide-widget table th { color: rgba(255, 255, 255, 0.5); }
-.deck-mode[data-theme="light"] .slide-card { background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.06); }
-.deck-mode[data-theme="light"] .slide-card strong { color: #fff; }
-.deck-mode[data-theme="light"] .slide-card p { color: rgba(255, 255, 255, 0.6); }
-.deck-mode[data-theme="light"] .tl-node { border-left-color: rgba(var(--accent-rgb), 0.3); }
+[data-theme="light"] .deck-mode .slide-heading { color: #fff; }
+[data-theme="light"] .deck-mode .slide-story { color: rgba(255, 255, 255, 0.6); }
+[data-theme="light"] .deck-mode .slide-widget table td { color: #fff; border-bottom-color: rgba(255, 255, 255, 0.04); }
+[data-theme="light"] .deck-mode .slide-widget table th { color: rgba(255, 255, 255, 0.5); }
+[data-theme="light"] .deck-mode .slide-card { background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.06); }
+[data-theme="light"] .deck-mode .slide-card strong { color: #fff; }
+[data-theme="light"] .deck-mode .slide-card p { color: rgba(255, 255, 255, 0.6); }
+[data-theme="light"] .deck-mode .tl-node { border-left-color: rgba(var(--accent-rgb), 0.3); }
 
 /* ── Contract view override for deck-mode ──────────────────────── */
 /* GOV view shows governance contract prose — needs scrollable light background */
