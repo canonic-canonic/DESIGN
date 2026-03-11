@@ -9,7 +9,7 @@
 {% if include.deck %}<script src="{{ '/assets/js/deck.js' | relative_url }}"></script>{% endif %}
 {% if page.auth %}
 {% include AUTH.html %}
-<script src="{{ '/assets/js/auth.js?v=2' | relative_url }}"></script>
+<script src="{{ '/assets/js/auth.js?v=3' | relative_url }}"></script>
 {% endif %}
 {% if page.wallet or page.shop %}
 <script src="{{ '/assets/js/wallet.js' | relative_url }}"></script>
@@ -23,7 +23,7 @@
 {% endif %}
 {% if page.talk %}
 {% unless include.minimal and page.talk == true %}{% include TALK.html %}{% endunless %}
-<script src="{{ '/assets/js/talk.js?v=3' | relative_url }}"></script>
+<script src="{{ '/assets/js/talk.js?v=4' | relative_url }}"></script>
 {% endif %}
 {% if page.star %}
 {% include STAR.html %}
