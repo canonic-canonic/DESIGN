@@ -28,6 +28,8 @@ export async function handle(subpath, request, env) {
   const url = new URL(request.url);
 
   // POST /runner/auth
+  // GOV: COIN/CANON.md — balance reads from VAULT, not KV counter.
+  // Build step 09-econ publishes vault:email:{email} → principal and vault:wallet:{principal} → wallet.json to KV.
   if (subpath === 'auth' && method === 'POST') {
     const body = await request.json().catch(() => ({}));
     const name = (body.name || '').trim();
@@ -35,14 +37,57 @@ export async function handle(subpath, request, env) {
     const role = body.role || 'Requester';
     if (!name) return json({ error: 'name is required' }, 400);
     if (!ROLES.includes(role)) return json({ error: 'invalid role' }, 400);
+
+    // Try VAULT principal resolution: email → principal, or github → principal
+    const github = (body.github || '').trim().toLowerCase();
+    const principalLookup = email
+      ? await kv.get(`vault:email:${email.toLowerCase()}`)
+      : (github ? await kv.get(`vault:github:${github}`) : null);
+
+    if (principalLookup) {
+      const principal = principalLookup;
+      const lookupKey = email ? email.toLowerCase() : github;
+      // Known VAULT principal — read governed balance
+      const existing = email ? await kv.get(`runner:email:${lookupKey}`) : await kv.get(`runner:github:${lookupKey}`);
+      let user;
+      if (existing) {
+        user = JSON.parse(existing);
+      } else {
+        const id = 'U' + uid();
+        user = { id, name, email, github, role, principal, created_at: new Date().toISOString(), status: 'active' };
+        await kv.put(`runner:user:${id}`, JSON.stringify(user));
+        if (email) await kv.put(`runner:email:${email.toLowerCase()}`, JSON.stringify(user));
+        if (github) await kv.put(`runner:github:${github}`, JSON.stringify(user));
+        await kv.put(`runner:principal:${id}`, principal);
+        const roleKey = `runner:role:${role.toLowerCase()}`;
+        const roleList = JSON.parse(await kv.get(roleKey) || '[]');
+        roleList.push(id);
+        await kv.put(roleKey, JSON.stringify(roleList));
+      }
+      if (user.id && !user.principal) {
+        user.principal = principal;
+        await kv.put(`runner:user:${user.id}`, JSON.stringify(user));
+        await kv.put(`runner:principal:${user.id}`, principal);
+      }
+      const walletRaw = await kv.get(`vault:wallet:${principal}`);
+      let bal = 0;
+      if (walletRaw) {
+        try { bal = JSON.parse(walletRaw).balance || 0; } catch {}
+      }
+      return json({ success: true, user, balance: bal, principal, source: 'vault' });
+    }
+
     if (email) {
+      // Existing KV user (no VAULT principal yet)
       const existing = await kv.get(`runner:email:${email.toLowerCase()}`);
       if (existing) {
         const user = JSON.parse(existing);
         const bal = parseInt(await kv.get(`runner:balance:${user.id}`) || '0', 10);
-        return json({ success: true, user, balance: bal });
+        return json({ success: true, user, balance: bal, source: 'kv' });
       }
     }
+
+    // New anonymous user — KV-only until VAULT principal is bound
     const id = 'U' + uid();
     const startupCoin = intEnv(env, 'RUNNER_STARTUP_COIN', 50);
     const user = { id, name, email, role, created_at: new Date().toISOString(), status: 'active' };
@@ -53,7 +98,7 @@ export async function handle(subpath, request, env) {
     const roleList = JSON.parse(await kv.get(roleKey) || '[]');
     roleList.push(id);
     await kv.put(roleKey, JSON.stringify(roleList));
-    return json({ success: true, user, balance: startupCoin });
+    return json({ success: true, user, balance: startupCoin, source: 'kv' });
   }
 
   // GET /runner/tasks

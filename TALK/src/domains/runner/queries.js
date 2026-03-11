@@ -41,7 +41,22 @@ export async function stats(kv) {
 export async function balance(url, kv) {
   const userId = url.searchParams.get('user_id') || '';
   if (!userId) return json({ error: 'user_id required' }, 400);
-  return json({ balance: parseInt(await kv.get(`runner:balance:${userId}`) || '0', 10), user_id: userId });
+
+  // GOV: COIN/CANON.md — balance reads from VAULT wallet, not KV counter.
+  // Resolve user → principal → wallet. Fall back to KV if no binding yet.
+  const principal = await kv.get(`runner:principal:${userId}`);
+  if (principal) {
+    const walletRaw = await kv.get(`vault:wallet:${principal}`);
+    if (walletRaw) {
+      try {
+        const wallet = JSON.parse(walletRaw);
+        return json({ balance: wallet.balance || 0, user_id: userId, principal, source: 'vault' });
+      } catch {}
+    }
+  }
+
+  // Fallback: KV counter (ungoverned — will be removed when all users have VAULT bindings)
+  return json({ balance: parseInt(await kv.get(`runner:balance:${userId}`) || '0', 10), user_id: userId, source: 'kv' });
 }
 
 export async function evidence(taskId, kv) {

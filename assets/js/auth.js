@@ -19,6 +19,8 @@ var AUTH = (function () {
     var API = 'https://api.canonic.org';
     var KEY = 'canonic_session_token';
     var _user = null;
+    var _readyResolve = null;
+    var _readyPromise = new Promise(function (r) { _readyResolve = r; });
 
     // ── Storage ─────────────────────────────────────────
     function getToken() {
@@ -135,11 +137,15 @@ var AUTH = (function () {
             if (authMode === 'required') {
                 canon = { privacy: 'PRIVATE', readers: [] };
             } else {
+                _readyResolve(null);
                 return;
             }
         }
 
-        if (authMode !== 'required' && (!canon.privacy || canon.privacy !== 'PRIVATE')) return;
+        if (authMode !== 'required' && (!canon.privacy || canon.privacy !== 'PRIVATE')) {
+            _readyResolve(null);
+            return;
+        }
 
         // Page is PRIVATE — gate immediately
         document.body.classList.add('auth-gated');
@@ -156,13 +162,16 @@ var AUTH = (function () {
             var result = await exchange(code);
             if (result && result.error) {
                 showLogin(result.error);
+                _readyResolve(null);
                 return;
             }
             if (result && result.user && authorized(result, canon.readers)) {
                 reveal(result);
+                _readyResolve(result);
                 return;
             }
             showLogin(result && result.user ? 'Access denied for ' + result.user + '.' : 'Authentication failed.');
+            _readyResolve(null);
             return;
         }
 
@@ -170,16 +179,19 @@ var AUTH = (function () {
         var session = await validate();
         if (session && authorized(session, canon.readers)) {
             reveal(session);
+            _readyResolve(session);
             return;
         }
         if (session) clearToken();
         showLogin();
+        _readyResolve(null);
     }
 
     // ── Public API ──────────────────────────────────────
     return {
         init: init,
         user: function () { return _user; },
-        sessionToken: function () { return getToken(); }
+        sessionToken: function () { return getToken(); },
+        ready: function () { return _readyPromise; }
     };
 })();

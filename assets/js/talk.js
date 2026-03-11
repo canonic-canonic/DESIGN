@@ -593,9 +593,36 @@ const TALK = {
         }
 
         var API = 'https://api.canonic.org';
-        var userId = localStorage.getItem('runner_user_id');
 
-        // Auto-register anonymous user if none exists
+        // Wait for AUTH to complete (resolves race between AUTH.init and TALK.init).
+        // GOV: COIN/CANON.md — resolve github → VAULT principal → governed balance.
+        if (typeof AUTH !== 'undefined' && AUTH.ready) {
+            await AUTH.ready();
+        }
+        var authUser = (typeof AUTH !== 'undefined' && AUTH.user) ? AUTH.user() : null;
+
+        // If AUTH has a GitHub identity, always register/resolve via VAULT principal.
+        // This ensures governed balance even if localStorage has a stale anonymous userId.
+        if (authUser && authUser.user) {
+            try {
+                var res = await fetch(API + '/runner/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: authUser.name || authUser.user, github: authUser.user, role: 'Requester' })
+                });
+                if (res.ok) {
+                    var data = await res.json();
+                    var uid = data.user && data.user.id;
+                    if (uid) localStorage.setItem('runner_user_id', uid);
+                    if (data.principal) localStorage.setItem('runner_principal', data.principal);
+                    this.renderCoinBadge(badge, data.balance || 0);
+                    return;
+                }
+            } catch(e) { /* fall through */ }
+        }
+
+        // No AUTH — use existing localStorage userId or create anonymous user.
+        var userId = localStorage.getItem('runner_user_id');
         if (!userId) {
             try {
                 var res = await fetch(API + '/runner/auth', {
@@ -613,7 +640,7 @@ const TALK = {
             return;
         }
 
-        // Fetch balance for existing user
+        // Existing anonymous user — fetch KV balance
         try {
             var res = await fetch(API + '/runner/balance?user_id=' + encodeURIComponent(userId));
             if (res.ok) {
@@ -627,9 +654,9 @@ const TALK = {
         badge.textContent = balance + ' Credits';
         badge.classList.remove('loading');
         badge.style.cursor = 'pointer';
-        badge.title = 'Click to buy Credits';
         this.coinBalance = balance;
         this.userId = localStorage.getItem('runner_user_id');
+        badge.title = 'Click to buy Credits';
         badge.onclick = function() { TALK.buyCoin(); };
     },
 
