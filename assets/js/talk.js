@@ -596,8 +596,15 @@ const TALK = {
 
         // Wait for AUTH to complete (resolves race between AUTH.init and TALK.init).
         // GOV: COIN/CANON.md — resolve github → VAULT principal → governed balance.
-        if (typeof AUTH !== 'undefined' && AUTH.ready) {
-            await AUTH.ready();
+        if (typeof AUTH !== 'undefined') {
+            if (AUTH.ready) {
+                await AUTH.ready();
+            } else if (AUTH.user && !AUTH.user()) {
+                // Fallback: AUTH.ready() not available (old auth.js) — poll for completion.
+                for (var _i = 0; _i < 20 && !AUTH.user(); _i++) {
+                    await new Promise(function(r) { setTimeout(r, 250); });
+                }
+            }
         }
         var authUser = (typeof AUTH !== 'undefined' && AUTH.user) ? AUTH.user() : null;
 
