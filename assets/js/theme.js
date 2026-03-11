@@ -5,15 +5,26 @@
 (function () {
   var KEY = 'canonic-theme';
   var root = document.documentElement;
+  function setTheme(t) {
+    root.setAttribute('data-theme', t);
+    if (document.body) document.body.setAttribute('data-theme', t);
+  }
   var saved = localStorage.getItem(KEY);
-  if (saved) root.setAttribute('data-theme', saved);
+  if (saved) setTheme(saved);
+  /* Body may not exist yet at parse time — mirror once DOM ready */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      var t = root.getAttribute('data-theme');
+      if (t && document.body) document.body.setAttribute('data-theme', t);
+    });
+  }
 
   var btn = document.getElementById('theme-btn');
   if (!btn) return;
   btn.addEventListener('click', function () {
     var current = root.getAttribute('data-theme') || 'dark';
     var next = current === 'dark' ? 'light' : 'dark';
-    root.setAttribute('data-theme', next);
+    setTheme(next);
     localStorage.setItem(KEY, next);
   });
 })();
