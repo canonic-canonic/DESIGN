@@ -1,6 +1,6 @@
 /**
  * STAR — Personal Portal Handlers.
- * GOV: SERVICES/STAR/STAR.md
+ * GOV: STAR/CANON.md
  */
 
 import { json } from '../kernel/http.js';

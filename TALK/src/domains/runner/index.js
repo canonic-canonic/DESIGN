@@ -1,0 +1,162 @@
+/**
+ * RUNNER — Task marketplace engine (edge-native, KV-backed).
+ * Three roles: Requester, Runner, Ops.
+ * GOV: SERVICES/TALK/RUNNER/CANON.md
+ */
+
+import { json } from '../../kernel/http.js';
+import { intEnv } from '../../kernel/env.js';
+import { stripeApiRequest } from '../shop.js';
+import { createTask, listTasks, handleTaskAction } from './tasks.js';
+import { handleReferral } from './referral.js';
+import { handleCredentialSubmit, handleCredentialVerify } from './credentials.js';
+import { handleCalendar } from './calendar.js';
+import { listRunners, profile, stats, balance, evidence, ledger, board, listings } from './queries.js';
+import { TASK_PRICES, KYC_REQUIRED, ROLES } from './constants.generated.js';
+
+export { TASK_PRICES, KYC_REQUIRED };
+
+export function uid() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(6)))
+    .map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
+export async function handle(subpath, request, env) {
+  const kv = env.TALK_KV;
+  if (!kv) return json({ error: 'KV not configured' }, 500);
+  const method = request.method;
+  const url = new URL(request.url);
+
+  // POST /runner/auth
+  if (subpath === 'auth' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const name = (body.name || '').trim();
+    const email = (body.email || '').trim();
+    const role = body.role || 'Requester';
+    if (!name) return json({ error: 'name is required' }, 400);
+    if (!ROLES.includes(role)) return json({ error: 'invalid role' }, 400);
+    if (email) {
+      const existing = await kv.get(`runner:email:${email.toLowerCase()}`);
+      if (existing) {
+        const user = JSON.parse(existing);
+        const bal = parseInt(await kv.get(`runner:balance:${user.id}`) || '0', 10);
+        return json({ success: true, user, balance: bal });
+      }
+    }
+    const id = 'U' + uid();
+    const startupCoin = intEnv(env, 'RUNNER_STARTUP_COIN', 50);
+    const user = { id, name, email, role, created_at: new Date().toISOString(), status: 'active' };
+    await kv.put(`runner:user:${id}`, JSON.stringify(user));
+    if (email) await kv.put(`runner:email:${email.toLowerCase()}`, JSON.stringify(user));
+    await kv.put(`runner:balance:${id}`, String(startupCoin));
+    const roleKey = `runner:role:${role.toLowerCase()}`;
+    const roleList = JSON.parse(await kv.get(roleKey) || '[]');
+    roleList.push(id);
+    await kv.put(roleKey, JSON.stringify(roleList));
+    return json({ success: true, user, balance: startupCoin });
+  }
+
+  // GET /runner/tasks
+  if (subpath === 'tasks' && method === 'GET') return listTasks(url, kv);
+  // POST /runner/tasks
+  if (subpath === 'tasks' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    return createTask(body, env, kv);
+  }
+
+  // Task actions: /runner/tasks/{id}/{action}
+  const taskMatch = subpath.match(/^tasks\/([A-Z0-9]+)\/(\w+)$/);
+  if (taskMatch) return handleTaskAction(taskMatch[1], taskMatch[2], request, env, kv);
+
+  // GET /runner/list
+  if (subpath === 'list' && method === 'GET') return listRunners(kv);
+  // GET /runner/profile
+  if (subpath === 'profile' && method === 'GET') return profile(url, kv);
+  // GET /runner/stats
+  if (subpath === 'stats' && method === 'GET') return stats(kv);
+  // GET /runner/balance
+  if (subpath === 'balance' && method === 'GET') return balance(url, kv);
+
+  // POST /runner/checkout
+  if (subpath === 'checkout' && method === 'POST') {
+    if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe not configured' }, 500);
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    const amountCoin = parseInt(body.amount_coin, 10);
+    if (!Number.isFinite(amountCoin) || amountCoin < 10 || amountCoin > 10000) return json({ error: 'amount_coin must be 10–10000' }, 400);
+    const coinToCents = Math.max(1, intEnv(env, 'RUNNER_COIN_USD_CENTS', 100));
+    const fields = {
+      mode: 'payment', success_url: (body.success_url || 'https://gorunner.pro/?checkout=success').trim(),
+      cancel_url: (body.cancel_url || 'https://gorunner.pro/?checkout=cancel').trim(),
+      'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': 'usd',
+      'line_items[0][price_data][unit_amount]': String(amountCoin * coinToCents),
+      'line_items[0][price_data][product_data][name]': `RUNNER — ${amountCoin} COIN`,
+      'metadata[service]': 'RUNNER', 'metadata[user_id]': userId, 'metadata[amount_coin]': String(amountCoin),
+      'payment_intent_data[metadata][service]': 'RUNNER', 'payment_intent_data[metadata][user_id]': userId,
+      'payment_intent_data[metadata][amount_coin]': String(amountCoin),
+    };
+    const created = await stripeApiRequest(env, 'POST', '/v1/checkout/sessions', fields);
+    if (!created.ok) return json({ error: created.error || 'Stripe checkout failed' }, created.status || 502);
+    return json({ ok: true, session_id: (created.data || {}).id, url: (created.data || {}).url, amount_coin: amountCoin });
+  }
+
+  // POST /runner/credit
+  if (subpath === 'credit' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    const amount = parseInt(body.amount_coin, 10);
+    if (!userId || !Number.isFinite(amount) || amount < 1) return json({ error: 'user_id and amount_coin required' }, 400);
+    const bal = parseInt(await kv.get(`runner:balance:${userId}`) || '0', 10);
+    const newBal = bal + amount;
+    await kv.put(`runner:balance:${userId}`, String(newBal));
+    return json({ ok: true, balance: newBal, credited: amount });
+  }
+
+  // GET /runner/evidence/{task_id}
+  const evidenceMatch = subpath.match(/^evidence\/([A-Z0-9]+)$/);
+  if (evidenceMatch && method === 'GET') return evidence(evidenceMatch[1], kv);
+
+  // GET /runner/ledger
+  if (subpath === 'ledger' && method === 'GET') return ledger(url, kv);
+
+  // POST /runner/referral
+  if (subpath === 'referral' && method === 'POST') return handleReferral(request, env, kv);
+
+  // Credentials
+  if (subpath === 'credentials' && method === 'POST') return handleCredentialSubmit(request, kv, env);
+  if (subpath === 'credentials/verify' && method === 'POST') return handleCredentialVerify(request, kv, env);
+  if (subpath === 'credentials' && method === 'GET') {
+    const userId = url.searchParams.get('user_id') || '';
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    const raw = await kv.get(`runner:user:${userId}`);
+    if (!raw) return json({ error: 'user not found' }, 404);
+    return json({ user_id: userId, credentials: JSON.parse(raw).credentials || {} });
+  }
+
+  // Availability
+  if (subpath === 'availability' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    if (!Array.isArray(body.slots)) return json({ error: 'slots array required' }, 400);
+    await kv.put(`runner:availability:${userId}`, JSON.stringify({ user_id: userId, slots: body.slots, updated_at: new Date().toISOString(), timezone: body.timezone || 'America/New_York' }));
+    return json({ success: true, user_id: userId, slots: body.slots });
+  }
+  if (subpath === 'availability' && method === 'GET') {
+    const userId = url.searchParams.get('user_id') || '';
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    const raw = await kv.get(`runner:availability:${userId}`);
+    return json(raw ? JSON.parse(raw) : { user_id: userId, slots: [] });
+  }
+
+  // Calendar
+  if (subpath === 'calendar' && method === 'GET') return handleCalendar(url, kv);
+
+  // Board
+  if (subpath === 'board' && method === 'GET') return board(url, kv);
+  // Listings
+  if (subpath === 'listings' && method === 'GET') return listings(url, kv);
+
+  return json({ error: 'unknown runner route' }, 404);
+}

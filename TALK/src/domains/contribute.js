@@ -4,9 +4,11 @@
  */
 
 import { json } from '../kernel/http.js';
-import { sha256 } from '../kernel/crypto.js';
 import { sanitize } from '../kernel/crypto.js';
 import { checkRate } from '../kernel/rate.js';
+import { appendToLedger } from '../kernel/ledger.js';
+import { kvGet } from '../kernel/kv.js';
+import { sendEmail } from '../kernel/email.js';
 
 export async function contribute(request, env) {
   if (!env.TALK_KV) return json({ error: 'TALK_KV not configured' }, 500);
@@ -22,37 +24,17 @@ export async function contribute(request, env) {
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
   if (await checkRate(env, 'contribute', ip, 10)) return json({ error: 'Rate limited' }, 429);
 
-  const ts = new Date().toISOString();
-  const key = `contributions:${scope}`;
-  let ledger = [];
-  try {
-    const raw = await env.TALK_KV.get(key);
-    if (raw) ledger = JSON.parse(raw);
-  } catch (e) { console.error('[TALK_KV]', e.message || e); }
-
-  const prev = ledger.length ? ledger[ledger.length - 1].id : '000000000000';
-  const id = await sha256(`${ts}:${scope}:${story}:${prev}`);
-
-  const entry = {
-    id, prev, ts, type: 'CONTRIBUTE', scope,
+  const result = await appendToLedger(env, 'CONTRIBUTE', scope, {
     contributor: contributor || 'Anonymous', email: email || null,
     affiliation: affiliation || null, chapter: chapter || null,
     story, source: source || null, coin_event: 'MINT:CONTRIBUTE',
-  };
-
-  ledger.push(entry);
-  if (ledger.length > 1000) {
-    const epoch = Math.floor(Date.now() / 1000);
-    await env.TALK_KV.put(`${key}:archive:${epoch}`, JSON.stringify(ledger.slice(0, ledger.length - 1000)));
-    ledger = ledger.slice(-1000);
-  }
-  await env.TALK_KV.put(key, JSON.stringify(ledger));
+  }, { key: `contributions:${scope}` });
 
   // Confirmation email (non-blocking)
   if (email && env.RESEND_API_KEY) {
     try {
       const name = contributor || 'Friend';
-      const receiptShort = id.slice(0, 8);
+      const receiptShort = result.id.slice(0, 8);
       const storyPreview = story.length > 200 ? story.slice(0, 200) + '...' : story;
       const emailHtml = `
 <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#e5e5e5;padding:40px;border:1px solid #222;">
@@ -66,7 +48,7 @@ export async function contribute(request, env) {
     <div><span style="color:#888;">Receipt:</span> <span style="color:#d4a855;">${receiptShort}</span></div>
     <div><span style="color:#888;">Event:</span> MINT:CONTRIBUTE</div>
     <div><span style="color:#888;">Scope:</span> ${scope}</div>
-    <div><span style="color:#888;">Time:</span> ${ts}</div>
+    <div><span style="color:#888;">Time:</span> ${result.ts}</div>
     ${chapter ? '<div><span style="color:#888;">Chapter:</span> ' + chapter + '</div>' : ''}
     ${source ? '<div><span style="color:#888;">Source:</span> ' + source + '</div>' : ''}
   </div>
@@ -80,18 +62,14 @@ export async function contribute(request, env) {
     <a href="https://canonic.org" style="color:#d4a855;text-decoration:none;">CANONIC</a>
   </div>
 </div>`;
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_API_KEY}` },
-        body: JSON.stringify({
-          from: 'CANONIC <canonic@canonic.org>', to: [email],
-          subject: `COIN MINTED — Your ${scope} contribution (${receiptShort})`, html: emailHtml,
-        }),
+      await sendEmail(env, {
+        from: 'CANONIC <canonic@canonic.org>', to: email,
+        subject: `COIN MINTED — Your ${scope} contribution (${receiptShort})`, html: emailHtml,
       });
     } catch (e) { console.error('[TALK]', e.message || e); }
   }
 
-  return json({ ok: true, id, scope, ts, coin_event: 'MINT:CONTRIBUTE', entries: ledger.length });
+  return json({ ok: true, id: result.id, scope, ts: result.ts, coin_event: 'MINT:CONTRIBUTE', entries: result.entries });
 }
 
 export async function contributeRead(request, env) {
@@ -101,13 +79,7 @@ export async function contributeRead(request, env) {
   const scope = url.searchParams.get('scope');
   if (!scope) return json({ error: 'Missing scope param' }, 400);
 
-  const key = `contributions:${scope}`;
-  let ledger = [];
-  try {
-    const raw = await env.TALK_KV.get(key);
-    if (raw) ledger = JSON.parse(raw);
-  } catch (e) { console.error('[TALK_KV]', e.message || e); }
-
+  const ledger = await kvGet(env.TALK_KV, `contributions:${scope}`, []);
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 200);
   const offset = parseInt(url.searchParams.get('offset') || '0', 10);
   const slice = ledger.slice(-(offset + limit), offset ? -offset : undefined);

@@ -13,20 +13,20 @@
 import { json } from './kernel/http.js';
 import { corsOrigin, CORS_DEFAULTS, setReqOrigin } from './kernel/cors.js';
 import { checkRate } from './kernel/rate.js';
-import { extractSessionToken } from './kernel/util.js';
 
 // ── Domain imports ──
-import { envForLane, oaiModels, oaiChatCompletions, oaiResponses, oaiBakeoff } from './domains/gateway.js';
+import { envForLane, oaiModels, oaiChatCompletions, oaiResponses } from './domains/gateway/index.js';
+import { oaiBakeoff } from './domains/gateway/bakeoff.js';
 import { chat } from './domains/chat.js';
 import { deepHealth } from './domains/health.js';
-import { authConfig, authGitHub, authSession, authLogout, authGrants, galaxyAuth } from './domains/auth.js';
+import { authConfig, authGitHub, authSession, authLogout, authGrants, galaxyAuth, requireSession } from './domains/auth.js';
 import { handle as emailSend } from './domains/email.js';
 import { shopCheckout, shopStripeWebhook, shopWallet } from './domains/shop.js';
 import { ledgerWrite, ledgerRead, send as talkSend, inbox as talkInbox, ack as talkAck } from './domains/talk.js';
 import { contribute, contributeRead } from './domains/contribute.js';
 import { handle as omicsProxy } from './domains/omics.js';
 import * as star from './domains/star.js';
-import { handle as runnerRoute } from './domains/runner.js';
+import { handle as runnerRoute } from './domains/runner/index.js';
 import { digestWrite, digestRead, witnessWrite, witnessRead, verify as federationVerify } from './domains/federation.js';
 
 // ── Helpers ──
@@ -147,12 +147,8 @@ export default {
       if (starPath === '/status') return star.status(request, env);
       if (starPath === '/gov') return star.gov(request, env);
       // Authenticated star routes
-      const token = extractSessionToken(request);
-      if (!token) return json({ error: 'Missing session token' }, 401);
-      const sessRaw = await env.TALK_KV.get(`session:${token}`);
-      if (!sessRaw) return json({ error: 'Invalid or expired session' }, 401);
-      const sess = JSON.parse(sessRaw);
-      if (new Date(sess.expires) < new Date()) return json({ error: 'Session expired' }, 401);
+      const { error, session: sess } = await requireSession(request, env);
+      if (error) return error;
       if (starPath === '/timeline') return star.timeline(request, env, sess);
       if (starPath === '/services') return star.services(request, env, sess);
       if (starPath === '/intel') return star.intel(request, env, sess);

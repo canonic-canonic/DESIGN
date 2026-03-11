@@ -1,6 +1,6 @@
 /**
  * PROVIDERS — LLM provider configs, preflight, health checks.
- * GOV: TALK/TALK.md § Preflight
+ * GOV: TALK/CANON.md § Preflight
  */
 
 import { fetchWithTimeout } from '../kernel/http.js';

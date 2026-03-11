@@ -6,9 +6,9 @@
 
 import { sha256 } from './crypto.js';
 
-export async function appendToLedger(env, type, scope, fields) {
+export async function appendToLedger(env, type, scope, fields, { key: overrideKey } = {}) {
   if (!env.TALK_KV) return null;
-  const key = `ledger:${type}:${scope}`;
+  const key = overrideKey || `ledger:${type}:${scope}`;
   let ledger = [];
   try {
     const raw = await env.TALK_KV.get(key);

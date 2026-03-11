@@ -5,21 +5,12 @@
  */
 
 import { json } from '../kernel/http.js';
-import { extractSessionToken } from '../kernel/util.js';
-
-async function requireAuth(request, env) {
-  const token = extractSessionToken(request);
-  if (!token) return { error: json({ error: 'unauthorized' }, 401) };
-  const sessRaw = await env.TALK_KV.get(`session:${token}`);
-  if (!sessRaw) return { error: json({ error: 'unauthorized' }, 401) };
-  const sess = JSON.parse(sessRaw);
-  if (new Date(sess.expires) < new Date()) return { error: json({ error: 'session expired' }, 401) };
-  return { session: sess };
-}
+import { kvGet, kvPut } from '../kernel/kv.js';
+import { requireSession } from './auth.js';
 
 export async function digestWrite(request, env) {
   if (!env.TALK_KV) return json({ error: 'TALK_KV not configured' }, 500);
-  const auth = await requireAuth(request, env);
+  const auth = await requireSession(request, env);
   if (auth.error) return auth.error;
 
   const body = await request.json();
@@ -31,7 +22,7 @@ export async function digestWrite(request, env) {
     coin_total: body.coin_total, balances: body.balances || {},
     ts: body.ts || new Date().toISOString(), signer: body.signer, signature: body.signature,
   };
-  await env.TALK_KV.put(`digest:${body.org}`, JSON.stringify(digest));
+  await kvPut(env.TALK_KV, `digest:${body.org}`, digest);
   return json({ ok: true, org: body.org, type: 'DIGEST' });
 }
 
@@ -40,29 +31,29 @@ export async function digestRead(request, env) {
   const url = new URL(request.url);
   const org = url.searchParams.get('org');
   if (!org) return json({ error: 'Missing org param' }, 400);
-  const raw = await env.TALK_KV.get(`digest:${org}`);
-  if (!raw) return json({ error: 'No digest found', org }, 404);
-  return json(JSON.parse(raw));
+  const digest = await kvGet(env.TALK_KV, `digest:${org}`);
+  if (!digest) return json({ error: 'No digest found', org }, 404);
+  return json(digest);
 }
 
 export async function witnessWrite(request, env) {
   if (!env.TALK_KV) return json({ error: 'TALK_KV not configured' }, 500);
-  const auth = await requireAuth(request, env);
+  const auth = await requireSession(request, env);
   if (auth.error) return auth.error;
 
   const body = await request.json();
   if (!body.org || !body.witness_org || !body.witness_user || !body.digest_hash || !body.signature)
     return json({ error: 'Missing required fields: org, witness_org, witness_user, digest_hash, signature' }, 400);
 
-  const digestRaw = await env.TALK_KV.get(`digest:${body.org}`);
-  if (!digestRaw) return json({ error: 'No digest found for org — publish digest first' }, 404);
+  const digest = await kvGet(env.TALK_KV, `digest:${body.org}`);
+  if (!digest) return json({ error: 'No digest found for org — publish digest first' }, 404);
 
   const witness = {
     type: 'WITNESS', digest_hash: body.digest_hash, org: body.org,
     witness_org: body.witness_org, witness_user: body.witness_user,
     ts: body.ts || new Date().toISOString(), signature: body.signature,
   };
-  await env.TALK_KV.put(`witness:${body.org}:${body.witness_org}`, JSON.stringify(witness));
+  await kvPut(env.TALK_KV, `witness:${body.org}:${body.witness_org}`, witness);
   return json({ ok: true, org: body.org, witness_org: body.witness_org, type: 'WITNESS' });
 }
 
@@ -75,8 +66,8 @@ export async function witnessRead(request, env) {
   const list = await env.TALK_KV.list({ prefix: `witness:${org}:` });
   const witnesses = [];
   for (const key of list.keys) {
-    const raw = await env.TALK_KV.get(key.name);
-    if (raw) { try { witnesses.push(JSON.parse(raw)); } catch (_) {} }
+    const w = await kvGet(env.TALK_KV, key.name);
+    if (w) witnesses.push(w);
   }
   return json({ org, witnesses, count: witnesses.length });
 }
@@ -87,15 +78,14 @@ export async function verify(request, env) {
   const org = url.searchParams.get('org');
   if (!org) return json({ error: 'Missing org param' }, 400);
 
-  const digestRaw = await env.TALK_KV.get(`digest:${org}`);
-  if (!digestRaw) return json({ error: 'No digest found', org }, 404);
-  const digest = JSON.parse(digestRaw);
+  const digest = await kvGet(env.TALK_KV, `digest:${org}`);
+  if (!digest) return json({ error: 'No digest found', org }, 404);
 
   const list = await env.TALK_KV.list({ prefix: `witness:${org}:` });
   const witnesses = [];
   for (const key of list.keys) {
-    const raw = await env.TALK_KV.get(key.name);
-    if (raw) { try { witnesses.push(JSON.parse(raw)); } catch (_) {} }
+    const w = await kvGet(env.TALK_KV, key.name);
+    if (w) witnesses.push(w);
   }
 
   const matching = witnesses.filter(w => w.digest_hash && w.org === org);
