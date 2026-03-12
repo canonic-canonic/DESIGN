@@ -146,7 +146,7 @@ export async function handle(subpath, request, env) {
       cancel_url: (body.cancel_url || 'https://gorunner.pro/?checkout=cancel').trim(),
       'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': 'usd',
       'line_items[0][price_data][unit_amount]': String(amountCoin * coinToCents),
-      'line_items[0][price_data][product_data][name]': `RUNNER — ${amountCoin} COIN`,
+      'line_items[0][price_data][product_data][name]': `GoRunner — ∩${amountCoin} Credits`,
       'metadata[service]': 'RUNNER', 'metadata[user_id]': userId, 'metadata[amount_coin]': String(amountCoin),
       'payment_intent_data[metadata][service]': 'RUNNER', 'payment_intent_data[metadata][user_id]': userId,
       'payment_intent_data[metadata][amount_coin]': String(amountCoin),
