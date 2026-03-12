@@ -54,5 +54,14 @@ var CONTROLS = (function() {
         if (deckTimer) deckTimer.style.display = (target === 'web') ? '' : 'none';
     }
 
+    // On load: detect default view and apply contract-view if GOV is active
+    document.addEventListener('DOMContentLoaded', function() {
+        var govView = document.querySelector('.view-gov');
+        var webView = document.querySelector('.view-web');
+        if (govView && webView && webView.style.display === 'none') {
+            viewTo('gov');
+        }
+    });
+
     return { talk: talk, viewTo: viewTo };
 })();
