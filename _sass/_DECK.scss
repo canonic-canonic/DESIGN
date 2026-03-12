@@ -953,13 +953,15 @@ main.deck-main {
 
 /* ── Contract view override for deck-mode ──────────────────────── */
 /* GOV view shows governance contract prose — needs scrollable light background */
+/* !important overrides .deck-mode { overflow: hidden } on same element (body) */
 .deck-mode .view-gov {
     background: var(--bg);
     min-height: 100vh;
     padding-top: var(--nav-h);
     overflow-y: auto;
 }
-.deck-mode.contract-view {
-    overflow: auto;
+body.deck-mode.contract-view {
+    overflow: auto !important;
+    height: auto;
     background: var(--bg);
 }
