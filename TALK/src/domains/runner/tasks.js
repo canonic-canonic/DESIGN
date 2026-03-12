@@ -14,7 +14,17 @@ export async function createTask(body, env, kv) {
   if (!body.requester_id) return json({ error: 'requester_id is required' }, 400);
   const taskType = body.type || 'lockbox_install';
   const feeCoin = TASK_PRICES[taskType] || Math.max(1, parseInt(body.offered_fee_usd) || 50);
-  const bal = parseInt(await kv.get(`runner:balance:${body.requester_id}`) || '0', 10);
+
+  // GOV: COIN/CANON.md — resolve balance from VAULT wallet first, fall back to KV counter
+  const principal = await kv.get(`runner:principal:${body.requester_id}`);
+  let bal = 0, useVault = false, wallet = null;
+  if (principal) {
+    const walletRaw = await kv.get(`vault:wallet:${principal}`);
+    if (walletRaw) {
+      try { wallet = JSON.parse(walletRaw); bal = wallet.balance || 0; useVault = true; } catch {}
+    }
+  }
+  if (!useVault) bal = parseInt(await kv.get(`runner:balance:${body.requester_id}`) || '0', 10);
   if (bal < feeCoin) return json({ error: 'Insufficient COIN', balance: bal, required: feeCoin }, 402);
 
   const tid = 'T' + uid();
@@ -27,7 +37,12 @@ export async function createTask(body, env, kv) {
     proof_url: null, proof_note: null, rating: null, tip_coin: 0,
     created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
   };
-  await kv.put(`runner:balance:${body.requester_id}`, String(bal - feeCoin));
+  if (useVault) {
+    wallet.balance = bal - feeCoin;
+    await kv.put(`vault:wallet:${principal}`, JSON.stringify(wallet));
+  } else {
+    await kv.put(`runner:balance:${body.requester_id}`, String(bal - feeCoin));
+  }
   const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
   allTasks.push(task);
   await kv.put('runner:tasks:all', JSON.stringify(allTasks));

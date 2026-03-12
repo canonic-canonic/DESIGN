@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --canonic-green: #00ff88;
+    --canonic-purple: #7c3aed;
+    --canonic-blue: #60a5fa;
+    --runner-orange: #f97316;
+  }
+
+  body {
+    @apply bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased;
+  }
+}
+
+@layer utilities {
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .glass {
+    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl;
+  }
+}

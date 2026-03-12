@@ -110,6 +110,15 @@ export async function handle(subpath, request, env) {
     return createTask(body, env, kv);
   }
 
+  // GET /runner/tasks/{id} — single task lookup
+  const singleTaskMatch = subpath.match(/^tasks\/([A-Z0-9]+)$/);
+  if (singleTaskMatch && method === 'GET') {
+    const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
+    const task = allTasks.find(t => t.id === singleTaskMatch[1]);
+    if (!task) return json({ error: 'task not found' }, 404);
+    return json({ task });
+  }
+
   // Task actions: /runner/tasks/{id}/{action}
   const taskMatch = subpath.match(/^tasks\/([A-Z0-9]+)\/(\w+)$/);
   if (taskMatch) return handleTaskAction(taskMatch[1], taskMatch[2], request, env, kv);
