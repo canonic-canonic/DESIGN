@@ -24,7 +24,9 @@ export async function deepHealth(env) {
     try {
       const resp = await fetch(`${base}/surfaces.json`, { headers: { 'User-Agent': 'canonic-health/1.0' } });
       if (resp.ok) {
-        for (const s of await resp.json()) {
+        const raw = await resp.json();
+        const list = Array.isArray(raw) ? raw : (raw.surfaces || []);
+        for (const s of list) {
           const url = base + s.path;
           if (seen.has(url)) continue; seen.add(url);
           const entry = { scope: s.scope, fleet, urls: [url] };
