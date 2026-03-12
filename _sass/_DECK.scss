@@ -67,6 +67,10 @@ main.deck-main {
     left: 0;
     box-sizing: border-box;
 }
+/* Mobile: allow vertical scroll when slide content overflows viewport */
+@media (max-width: 768px) {
+    .slide { overflow-y: auto; }
+}
 
 .slide.active {
     display: flex;
