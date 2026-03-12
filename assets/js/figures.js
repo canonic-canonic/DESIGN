@@ -7,7 +7,7 @@
 (function () {
   'use strict';
   var A = 'rgba(var(--accent-rgb,59,130,246),';
-  function isLight() { return document.documentElement.dataset.theme === 'light'; }
+  function isLight() { return document.documentElement.dataset.theme === 'light' && !document.body.classList.contains('deck-mode'); }
   function fg(a) { return isLight() ? 'rgba(0,0,0,' + a + ')' : 'rgba(255,255,255,' + a + ')'; }
 
   var FIGURES = {
