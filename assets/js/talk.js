@@ -79,7 +79,6 @@ const TALK = {
         this.loadCanon().then(function() {
             TALK.loadIntel();
             TALK.initPlugins();
-            TALK.loadCoinBadge();
         });
     },
 
@@ -90,7 +89,8 @@ const TALK = {
     PLUGIN_MAP: {
         mcode:  '/plugins/mcode.js',
         trials: '/plugins/trials.js',
-        omics:  '/plugins/omics.js'
+        omics:  '/plugins/omics.js',
+        runner: '/plugins/runner.js'
     },
 
     loadScript(src) {
@@ -502,8 +502,6 @@ const TALK = {
             await new Promise(function(r) { setTimeout(r, delay); });
         }
         element.classList.remove('typing');
-        // RUNNER: inject action buttons after typing completes
-        if (this.scope === 'RUNNER') this.injectTaskActions(element);
     },
 
     // ── Add Message ─────────────────────────────────────────────────
@@ -517,8 +515,6 @@ const TALK = {
         var textDiv = document.createElement('div');
         if (role === 'assistant' && content && content.indexOf('Thinking') === -1) {
             textDiv.innerHTML = this.md(content);
-            // RUNNER: inject action buttons for task IDs
-            if (this.scope === 'RUNNER') this.injectTaskActions(textDiv);
         } else {
             textDiv.textContent = content;
         }
@@ -529,30 +525,17 @@ const TALK = {
         return div;
     },
 
-    // RUNNER: convert task IDs in assistant messages into clickable action buttons
-    injectTaskActions(el) {
-        // Find all text nodes containing task IDs like [TB6D2C9719CF3] or TB6D2C9719CF3
-        var html = el.innerHTML;
-        // Add claim/complete buttons after task ID references
-        html = html.replace(/\[?(T[A-F0-9]{12,})\]?/g, function(match, taskId) {
-            return match +
-                ' <button class="runner-action" onclick="TALK.sendAction(\'claim ' + taskId + '\')" ' +
-                'style="font-size:11px;padding:2px 8px;margin:0 2px;border:1px solid #f97316;color:#f97316;background:transparent;border-radius:4px;cursor:pointer;font-weight:600;"' +
-                '>Claim</button>' +
-                '<button class="runner-action" onclick="TALK.sendAction(\'complete ' + taskId + '\')" ' +
-                'style="font-size:11px;padding:2px 8px;margin:0 2px;border:1px solid #22c55e;color:#22c55e;background:transparent;border-radius:4px;cursor:pointer;font-weight:600;"' +
-                '>Done</button>';
-        });
-        el.innerHTML = html;
-    },
-
-    // Send a task action through chat
-    sendAction(text) {
-        var input = document.getElementById('talkChatInput') || document.getElementById('talkInput');
-        if (input) {
-            input.value = text;
-            this.send();
-        }
+    // ── Widget Injection — generic, used by plugins ────────────────────
+    injectWidget(html) {
+        var el = document.getElementById('talkMessages');
+        if (!el) return;
+        var div = document.createElement('div');
+        div.className = 'message assistant widget';
+        var inner = document.createElement('div');
+        inner.innerHTML = html;
+        div.appendChild(inner);
+        el.appendChild(div);
+        el.scrollTop = el.scrollHeight;
     },
 
     // ── INTEL Ledger ────────────────────────────────────────────────
@@ -578,181 +561,6 @@ const TALK = {
                     '<span style="color:var(--fg-secondary,#6b7280);font-family:\'SF Mono\',Monaco,monospace;white-space:nowrap;">' + e.date + '</span>' +
                     '<span style="color:var(--fg,#374151);">' + e.text + '</span></div>';
             }).join('');
-    },
-
-    // ── COIN Badge — live balance in header ─────────────────────────
-    async loadCoinBadge() {
-        var badge = document.getElementById('runnerCoinBadge');
-        if (!badge) return; // Only RUNNER pages have this element
-
-        // Handle Stripe checkout return
-        var params = new URLSearchParams(window.location.search);
-        if (params.get('checkout') === 'success') {
-            this.add('Credits purchase confirmed! Your balance will update shortly.', 'assistant');
-            history.replaceState({}, '', window.location.pathname);
-        }
-
-        var API = 'https://api.canonic.org';
-
-        // Wait for AUTH to complete (resolves race between AUTH.init and TALK.init).
-        // GOV: COIN/CANON.md — resolve github → VAULT principal → governed balance.
-        if (typeof AUTH !== 'undefined') {
-            if (AUTH.ready) {
-                await AUTH.ready();
-            } else if (AUTH.user && !AUTH.user()) {
-                // Fallback: AUTH.ready() not available (old auth.js) — poll for completion.
-                for (var _i = 0; _i < 20 && !AUTH.user(); _i++) {
-                    await new Promise(function(r) { setTimeout(r, 250); });
-                }
-            }
-        }
-        var authUser = (typeof AUTH !== 'undefined' && AUTH.user) ? AUTH.user() : null;
-
-        // If AUTH has a GitHub identity, always register/resolve via VAULT principal.
-        // This ensures governed balance even if localStorage has a stale anonymous userId.
-        if (authUser && authUser.user) {
-            try {
-                var res = await fetch(API + '/runner/auth', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: authUser.name || authUser.user, github: authUser.user, role: 'Requester' })
-                });
-                if (res.ok) {
-                    var data = await res.json();
-                    var uid = data.user && data.user.id;
-                    if (uid) localStorage.setItem('runner_user_id', uid);
-                    if (data.principal) localStorage.setItem('runner_principal', data.principal);
-                    this.renderCoinBadge(badge, data.balance || 0);
-                    return;
-                }
-            } catch(e) { /* fall through */ }
-        }
-
-        // No AUTH — use existing localStorage userId or create anonymous user.
-        var userId = localStorage.getItem('runner_user_id');
-        if (!userId) {
-            try {
-                var res = await fetch(API + '/runner/auth', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: 'RUNNER User', role: 'Requester' })
-                });
-                if (res.ok) {
-                    var data = await res.json();
-                    userId = data.user && data.user.id;
-                    if (userId) localStorage.setItem('runner_user_id', userId);
-                    this.renderCoinBadge(badge, data.balance || 0);
-                }
-            } catch(e) { /* silent */ }
-            return;
-        }
-
-        // Existing anonymous user — fetch KV balance
-        try {
-            var res = await fetch(API + '/runner/balance?user_id=' + encodeURIComponent(userId));
-            if (res.ok) {
-                var data = await res.json();
-                this.renderCoinBadge(badge, data.balance || 0);
-            }
-        } catch(e) { /* silent */ }
-    },
-
-    renderCoinBadge(badge, balance) {
-        badge.textContent = balance + ' Credits';
-        badge.classList.remove('loading');
-        badge.style.cursor = 'pointer';
-        this.coinBalance = balance;
-        this.userId = localStorage.getItem('runner_user_id');
-        badge.title = 'Click to buy Credits';
-        badge.onclick = function() { TALK.buyCoin(); };
-    },
-
-    // Governed credit packs — COIN/CANON.md § Credit Packs
-    CREDIT_PACKS: [
-        { coin: 25, price: 25, label: '25 Credits', badge: 'Starter' },
-        { coin: 50, price: 50, label: '50 Credits', badge: 'Popular' },
-        { coin: 100, price: 95, label: '100 Credits', badge: 'Save 5%' },
-        { coin: 250, price: 225, label: '250 Credits', badge: 'Save 10%' },
-        { coin: 500, price: 425, label: '500 Credits', badge: 'Best Value' }
-    ],
-
-    _ensurePackStyles() {
-        if (document.getElementById('talkPackStyles')) return;
-        var s = document.createElement('style');
-        s.id = 'talkPackStyles';
-        s.textContent =
-            '.talk-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;}' +
-            '.talk-modal{background:var(--card,#fff);border-radius:1rem;padding:1.5rem;max-width:28rem;width:100%;border:1px solid var(--border,#e5e7eb);}' +
-            '.talk-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}' +
-            '.talk-modal-header h3{margin:0;font-size:1.125rem;}' +
-            '.talk-modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--fg,#374151);padding:0 0.25rem;}' +
-            '.talk-pack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(8rem,1fr));gap:0.75rem;}' +
-            '.talk-pack{display:flex;flex-direction:column;align-items:center;gap:0.25rem;padding:1rem 0.75rem;background:var(--bg,#f9fafb);border:2px solid var(--border,#e5e7eb);border-radius:0.75rem;cursor:pointer;transition:border-color 0.15s,transform 0.15s;}' +
-            '.talk-pack:hover{border-color:#f97316;transform:translateY(-2px);}' +
-            '.talk-pack-badge{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#f97316;background:rgba(249,115,22,0.1);padding:0.125rem 0.5rem;border-radius:999px;}' +
-            '.talk-pack-amount{font-size:1.75rem;font-weight:800;color:var(--text,#111);line-height:1;}' +
-            '.talk-pack-label{font-size:0.7rem;font-weight:600;color:var(--fg-secondary,#6b7280);text-transform:uppercase;letter-spacing:0.1em;}' +
-            '.talk-pack-price{font-size:0.9rem;font-weight:700;color:var(--text,#111);}';
-        document.head.appendChild(s);
-    },
-
-    buyCoin() {
-        var userId = this.userId || localStorage.getItem('runner_user_id');
-        if (!userId) { this.add('Sign in first to buy Credits.', 'error'); return; }
-
-        this._ensurePackStyles();
-        var self = this;
-        var overlay = document.createElement('div');
-        overlay.className = 'talk-modal-overlay';
-        overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
-        var html = '<div class="talk-modal">' +
-            '<div class="talk-modal-header"><h3>Buy Credits</h3><button class="talk-modal-close" onclick="this.closest(\'.talk-modal-overlay\').remove()">&times;</button></div>' +
-            '<p style="margin:0 0 1rem;font-size:0.85rem;color:var(--fg-secondary,#6b7280);">Credits power every task. Pick a pack:</p>' +
-            '<div class="talk-pack-grid">';
-        for (var i = 0; i < this.CREDIT_PACKS.length; i++) {
-            var p = this.CREDIT_PACKS[i];
-            html += '<button class="talk-pack" data-coin="' + p.coin + '">' +
-                '<span class="talk-pack-badge">' + p.badge + '</span>' +
-                '<span class="talk-pack-amount">' + p.coin + '</span>' +
-                '<span class="talk-pack-label">CREDITS</span>' +
-                '<span class="talk-pack-price">$' + p.price + '</span>' +
-                '</button>';
-        }
-        html += '</div></div>';
-        overlay.innerHTML = html;
-        document.body.appendChild(overlay);
-        var packs = overlay.querySelectorAll('.talk-pack');
-        for (var j = 0; j < packs.length; j++) {
-            packs[j].addEventListener('click', function() {
-                var coin = parseInt(this.getAttribute('data-coin'));
-                overlay.remove();
-                self._checkout(coin);
-            });
-        }
-    },
-
-    async _checkout(coins) {
-        var userId = this.userId || localStorage.getItem('runner_user_id');
-        try {
-            var res = await fetch('https://api.canonic.org/runner/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: userId,
-                    amount_coin: coins,
-                    success_url: window.location.origin + window.location.pathname + '?checkout=success',
-                    cancel_url: window.location.origin + window.location.pathname + '?checkout=cancel'
-                })
-            });
-            var data = await res.json();
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                this.add('Checkout error: ' + (data.error || 'unknown'), 'error');
-            }
-        } catch(e) {
-            this.add('Checkout failed. Try again.', 'error');
-        }
     },
 
     // ── Send Message ────────────────────────────────────────────────

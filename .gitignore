@@ -4,3 +4,4 @@ TALK/.secrets
 
 # OS
 .DS_Store
+TALK/.wrangler/

@@ -6,6 +6,7 @@
 
 import { json } from '../../kernel/http.js';
 import { intEnv } from '../../kernel/env.js';
+import { appendToLedger } from '../../kernel/ledger.js';
 import { stripeApiRequest } from '../shop.js';
 import { createTask, listTasks, handleTaskAction } from './tasks.js';
 import { handleReferral } from './referral.js';
@@ -202,6 +203,85 @@ export async function handle(subpath, request, env) {
   if (subpath === 'board' && method === 'GET') return board(url, kv);
   // Listings
   if (subpath === 'listings' && method === 'GET') return listings(url, kv);
+
+  // ── Phase 8: Onboarding ─────────────────────────────────────────
+  if (subpath === 'onboard/profile' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const name = (body.name || '').trim();
+    if (!name) return json({ error: 'name is required' }, 400);
+    const id = 'U' + uid();
+    const user = {
+      id, name, phone: (body.phone || '').trim(), vehicle: body.vehicle || '',
+      service_area: (body.service_area || '').trim(), role: 'Runner',
+      status: 'onboarding', created_at: new Date().toISOString()
+    };
+    await kv.put(`runner:user:${id}`, JSON.stringify(user));
+    const roleList = JSON.parse(await kv.get('runner:role:runner') || '[]');
+    roleList.push(id);
+    await kv.put('runner:role:runner', JSON.stringify(roleList));
+    await appendToLedger(env, 'RUNNER', 'RUNNER', { event: 'ONBOARD_PROFILE', user_id: id, name });
+    return json({ success: true, user_id: id });
+  }
+
+  if (subpath === 'onboard/verify' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    const raw = await kv.get(`runner:user:${userId}`);
+    if (!raw) return json({ error: 'user not found' }, 404);
+    const user = JSON.parse(raw);
+    user.kyc_status = body.status || 'pending';
+    user.kyc_type = body.verification_type || 'id_document';
+    user.updated_at = new Date().toISOString();
+    await kv.put(`runner:user:${userId}`, JSON.stringify(user));
+    await appendToLedger(env, 'RUNNER', 'RUNNER', { event: 'ONBOARD_VERIFY', user_id: userId, kyc_status: user.kyc_status });
+    return json({ success: true, user_id: userId, kyc_status: user.kyc_status });
+  }
+
+  if (subpath === 'onboard/complete' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    const raw = await kv.get(`runner:user:${userId}`);
+    if (!raw) return json({ error: 'user not found' }, 404);
+    const user = JSON.parse(raw);
+    user.status = 'active';
+    user.agreements = body.agreements || {};
+    user.onboarded_at = new Date().toISOString();
+    user.updated_at = new Date().toISOString();
+    await kv.put(`runner:user:${userId}`, JSON.stringify(user));
+    // Bootstrap wallet with signup bonus
+    const startupCoin = intEnv(env, 'RUNNER_STARTUP_COIN', 50);
+    await kv.put(`runner:balance:${userId}`, String(startupCoin));
+    await appendToLedger(env, 'RUNNER', 'RUNNER', { event: 'ONBOARD_COMPLETE', user_id: userId, startup_coin: startupCoin });
+    return json({ success: true, user_id: userId, balance: startupCoin });
+  }
+
+  // ── Phase 9: Location Tracking ──────────────────────────────────
+  if (subpath === 'location' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    const lat = parseFloat(body.lat);
+    const lng = parseFloat(body.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return json({ error: 'valid lat/lng required' }, 400);
+    await kv.put(`runner:location:${userId}`, JSON.stringify({ lat, lng, ts: new Date().toISOString() }), { expirationTtl: 300 });
+    return json({ success: true });
+  }
+
+  if (subpath === 'location' && method === 'GET') {
+    const taskId = url.searchParams.get('task_id') || '';
+    if (!taskId) return json({ error: 'task_id required' }, 400);
+    const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task || !task.runner_id) return json({ error: 'task or runner not found' }, 404);
+    const locRaw = await kv.get(`runner:location:${task.runner_id}`);
+    if (!locRaw) return json({ lat: null, lng: null, message: 'No recent location' });
+    const loc = JSON.parse(locRaw);
+    // Straight-line distance estimate (Haversine simplified)
+    let distance_mi = null, eta_min = null;
+    return json({ ...loc, distance_mi, eta_min, task_id: taskId, runner_id: task.runner_id });
+  }
 
   return json({ error: 'unknown runner route' }, 404);
 }

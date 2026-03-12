@@ -3,12 +3,11 @@
  * GOV: TALK/CANON.md
  */
 
-import { CORS_DEFAULTS, _reqOrigin, addCors } from './cors.js';
+import { addCors } from './cors.js';
 
 export function json(data, status = 200) {
-  const headers = { 'Content-Type': 'application/json', ...CORS_DEFAULTS };
-  if (_reqOrigin) headers['Access-Control-Allow-Origin'] = _reqOrigin;
-  return new Response(JSON.stringify(data), { status, headers });
+  const h = addCors({ 'Content-Type': 'application/json' });
+  return new Response(JSON.stringify(data), { status, headers: h });
 }
 
 export function oaiError(status, message, type = 'invalid_request_error', code = null) {

@@ -28,9 +28,11 @@ var AUTH = (function () {
     }
     function setToken(t) {
         try { localStorage.setItem(KEY, t); } catch (_) {}
+        try { document.cookie = KEY + '=' + encodeURIComponent(t) + ';path=/;max-age=604800;SameSite=Lax;Secure'; } catch (_) {}
     }
     function clearToken() {
         try { localStorage.removeItem(KEY); } catch (_) {}
+        try { document.cookie = KEY + '=;path=/;max-age=0'; } catch (_) {}
     }
 
     // ── OAuth exchange ──────────────────────────────────
