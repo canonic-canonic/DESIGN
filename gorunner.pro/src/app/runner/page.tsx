@@ -1,30 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useCanon } from "@/hooks/useCanon";
 import { useTasks } from "@/hooks/useTasks";
-import { TaskCard } from "@/components/TaskCard";
-import { CoinBalance, CoinBadge } from "@/components/CoinBadge";
 import { useBalance } from "@/hooks/useBalance";
-import { taskAction } from "@/lib/api";
-import { toast } from "sonner";
-
-type Tab = "available" | "active" | "earnings";
+import { useChat } from "@/hooks/useChat";
+import { CoinBalance } from "@/components/CoinBadge";
+import { ChatInput } from "@/components/chat/ChatInput";
+import { ChatMessageRenderer } from "@/components/chat/ChatMessageRenderer";
 
 export default function RunnerDashboard() {
   const router = useRouter();
   const { identity, user } = useAuth();
   const { canon } = useCanon();
-  const [tab, setTab] = useState<Tab>("available");
-
-  // All tasks — runner sees available + their assigned
-  const { tasks: allTasks, refresh } = useTasks(identity?.userId, "Runner");
+  const { tasks: allTasks } = useTasks(identity?.userId, "Runner");
   const { tasks: availableTasks } = useTasks(undefined, "available");
   const { balance: balanceValue } = useBalance(identity?.userId);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const available = availableTasks.filter((t) => t.status === "posted");
+  const { messages, sendMessage, sending } = useChat({
+    userContext: {
+      userId: identity?.userId,
+      role: identity?.role,
+      principal: identity?.principal,
+    },
+  });
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages]);
+
   const active = allTasks.filter(
     (t) =>
       t.assigned_runner_id === identity?.userId &&
@@ -35,36 +45,28 @@ export default function RunnerDashboard() {
       t.assigned_runner_id === identity?.userId &&
       ["completed", "rated"].includes(t.status)
   );
-
   const totalEarned = completed.reduce((sum, t) => {
     const tt = canon?.task_types?.find((x) => x.key === t.type);
     return sum + (tt?.coin || 0);
   }, 0);
 
-  async function handleAccept(taskId: string) {
-    if (!identity) return;
-    try {
-      await taskAction(taskId, "accept", {
-        runner_id: identity.userId,
-      });
-      toast.success("Task accepted!");
-      refresh();
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to accept"
-      );
-    }
-  }
+  // Runner-specific quick messages
+  const runnerQuickActions = [
+    { key: "_tasks", label: "My Tasks", message: "show my tasks" },
+    { key: "_available", label: "Available", message: "show tasks" },
+    { key: "_earnings", label: "Earnings", message: "show earnings" },
+    { key: "_leaderboard", label: "Leaderboard", message: "show leaderboard" },
+  ];
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <div className="bg-gradient-runner px-4 pt-12 pb-6 text-white">
+    <div className="flex flex-col h-screen">
+      {/* Compact header */}
+      <div className="bg-gradient-runner px-4 pt-10 pb-4 text-white flex-shrink-0">
         <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm text-white/70">Runner</p>
-              <h1 className="text-xl font-bold">
+              <p className="text-xs text-white/70">Runner</p>
+              <h1 className="text-lg font-bold">
                 {user?.name || user?.user || "Runner"}
               </h1>
             </div>
@@ -73,140 +75,62 @@ export default function RunnerDashboard() {
               className="bg-white/10 text-amber-300"
             />
           </div>
-
-          {/* Balance + Earnings */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-lg bg-white/10 p-4 text-center">
-              <div className="text-3xl font-bold">{balanceValue ?? 0}</div>
-              <div className="text-sm text-white/70">∩ Credit Balance</div>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-lg bg-white/10 p-2 text-center">
+              <div className="text-sm font-bold">{availableTasks.filter(t => t.status === "posted").length}</div>
+              <div className="text-[9px] text-white/60">Available</div>
             </div>
-            <div className="rounded-lg bg-white/10 p-4 text-center">
-              <div className="text-3xl font-bold">{totalEarned}</div>
-              <div className="text-sm text-white/70">Credits Earned</div>
+            <div className="rounded-lg bg-white/10 p-2 text-center">
+              <div className="text-sm font-bold">{active.length}</div>
+              <div className="text-[9px] text-white/60">Active</div>
+            </div>
+            <div className="rounded-lg bg-white/10 p-2 text-center">
+              <div className="text-sm font-bold">∩{totalEarned}</div>
+              <div className="text-[9px] text-white/60">Earned</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="max-w-lg mx-auto px-4 pt-4">
-        <div className="flex gap-1 rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
-          {(["available", "active", "earnings"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex-1 rounded-md py-2 text-sm font-medium transition-colors ${
-                tab === t
-                  ? "bg-white dark:bg-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {t === "available"
-                ? `Available (${available.length})`
-                : t === "active"
-                  ? `Active (${active.length})`
-                  : "Earnings"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="max-w-lg mx-auto px-4 py-4 space-y-3">
-        {tab === "available" &&
-          available.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              canon={canon}
-              actions={
-                <button
-                  onClick={() => handleAccept(task.id)}
-                  className="w-full rounded-lg bg-runner-orange text-white font-semibold py-2 text-sm hover:opacity-90"
-                >
-                  Accept Task
-                </button>
-              }
-            />
-          ))}
-
-        {tab === "active" &&
-          active.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              canon={canon}
-              onClick={() =>
-                router.push(`/runner/active?task=${task.id}`)
-              }
-              actions={
-                <span className="text-xs text-purple-500 font-medium">
-                  Tap to continue →
-                </span>
-              }
-            />
-          ))}
-
-        {tab === "earnings" && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-3 text-center">
-                <div className="text-2xl font-bold">{totalEarned}</div>
-                <div className="text-xs text-gray-500">Credits Earned</div>
-              </div>
-              <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-3 text-center">
-                <div className="text-2xl font-bold">
-                  {completed.length}
-                </div>
-                <div className="text-xs text-gray-500">Tasks Done</div>
-              </div>
-            </div>
-            {completed.map((task) => {
-              const tt = canon?.task_types?.find(
-                (x) => x.key === task.type
-              );
-              return (
-                <div
-                  key={task.id}
-                  className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-800 p-3"
-                >
-                  <div>
-                    <div className="text-sm font-medium">
-                      {tt?.label || task.type}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {task.completed_at
-                        ? new Date(task.completed_at).toLocaleDateString()
-                        : ""}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <CoinBadge
-                      coin={tt?.coin || 0}
-                      usd={task.offered_fee_usd}
-                      size="sm"
-                    />
-                    {task.rating && (
-                      <div className="text-xs text-amber-500 mt-0.5">
-                        {"★".repeat(task.rating)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+      {/* Chat messages */}
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-4 py-2 space-y-3 max-w-lg mx-auto w-full"
+      >
+        {messages.length === 0 && (
+          <div className="text-center py-8 space-y-2">
+            <p className="text-sm text-gray-400">
+              Chat with your assistant or tap a quick action
+            </p>
+            <p className="text-xs text-gray-300">
+              Try &quot;show my tasks&quot; or &quot;show leaderboard&quot;
+            </p>
           </div>
         )}
+        {messages.map((msg, i) => (
+          <ChatMessageRenderer key={i} message={msg} canon={canon} />
+        ))}
+        {sending && (
+          <div className="flex justify-start">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl px-3 py-2">
+              <div className="flex gap-1">
+                <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce" />
+                <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:0.1s]" />
+                <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce [animation-delay:0.2s]" />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
-        {tab === "available" && available.length === 0 && (
-          <p className="text-center text-sm text-gray-400 py-8">
-            No available tasks right now
-          </p>
-        )}
-        {tab === "active" && active.length === 0 && (
-          <p className="text-center text-sm text-gray-400 py-8">
-            No active tasks
-          </p>
-        )}
+      {/* Chat input with runner pills */}
+      <div className="flex-shrink-0 max-w-lg mx-auto w-full safe-area-pb pb-16">
+        <ChatInput
+          onSend={sendMessage}
+          sending={sending}
+          quickActions={runnerQuickActions}
+          placeholder="Ask about tasks, earnings, or runners..."
+        />
       </div>
     </div>
   );

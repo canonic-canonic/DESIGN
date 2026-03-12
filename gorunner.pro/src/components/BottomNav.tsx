@@ -2,23 +2,26 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, List, Wallet, Settings, BarChart3 } from "lucide-react";
+import { MessageCircle, List, Wallet, BarChart3, Trophy, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 
 const PRO_TABS = [
-  { href: "/pro", icon: Home, label: "Home" },
-  { href: "/pro/create", icon: List, label: "Post Task" },
+  { href: "/pro", icon: MessageCircle, label: "Chat" },
+  { href: "/pro/create", icon: Plus, label: "Post Task" },
+  { href: "/board", icon: Trophy, label: "Board" },
 ];
 
 const RUNNER_TABS = [
-  { href: "/runner", icon: Home, label: "Home" },
+  { href: "/runner", icon: MessageCircle, label: "Chat" },
   { href: "/runner/active", icon: List, label: "Active" },
   { href: "/runner/earnings", icon: Wallet, label: "Earnings" },
+  { href: "/board", icon: Trophy, label: "Board" },
 ];
 
 const OPS_TABS = [
   { href: "/ops", icon: BarChart3, label: "Dashboard" },
+  { href: "/board", icon: Trophy, label: "Board" },
 ];
 
 export function BottomNav() {

@@ -160,7 +160,7 @@ export default {
 
     // ── Runner ──
     if (path.startsWith('/runner/')) {
-      if (await rateGuard(env, 'runner', request, 600)) return json({ error: 'Rate limited' }, 429);
+      if (await rateGuard(env, 'runner', request, 1200)) return json({ error: 'Rate limited' }, 429);
       return runnerRoute(path.slice(8), request, env);
     }
 

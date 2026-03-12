@@ -264,3 +264,16 @@ export async function getLedger(limit?: number) {
   const qs = limit ? `?limit=${limit}` : "";
   return request<{ entries: unknown[] }>(`/runner/ledger${qs}`);
 }
+
+// ── INTEL Board ──────────────────────────────────────────────────
+export async function getBoard() {
+  return request<{ tasks: import("./types").Task[] }>("/runner/board");
+}
+
+export async function getCalendar() {
+  return request<{ events: unknown[] }>("/runner/calendar");
+}
+
+export async function getEvidence(taskId: string) {
+  return request<{ evidence: unknown[] }>(`/runner/evidence/${taskId}`);
+}
