@@ -103,7 +103,7 @@ export default function ProDashboard() {
                   key={task.id}
                   task={task}
                   canon={canon}
-                  onClick={() => router.push(`/tasks/${task.id}`)}
+                  onClick={() => router.push(`/tasks?id=${task.id}`)}
                 />
               ))}
             </div>
@@ -122,7 +122,7 @@ export default function ProDashboard() {
                   key={task.id}
                   task={task}
                   canon={canon}
-                  onClick={() => router.push(`/tasks/${task.id}`)}
+                  onClick={() => router.push(`/tasks?id=${task.id}`)}
                 />
               ))}
             </div>

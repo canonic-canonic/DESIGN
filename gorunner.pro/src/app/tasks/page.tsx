@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useCanon } from "@/hooks/useCanon";
 import { useTask } from "@/hooks/useTasks";
-import { getRunnerLocation, taskAction } from "@/lib/api";
+import { getRunnerLocation } from "@/lib/api";
 import { useBalance } from "@/hooks/useBalance";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CoinBadge } from "@/components/CoinBadge";
@@ -32,8 +32,21 @@ const TrackingMap = dynamic(() => import("@/components/TrackingMap"), {
   ),
 });
 
-export default function TaskDetail() {
-  const { id } = useParams<{ id: string }>();
+export default function TaskDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <TaskDetail />
+    </Suspense>
+  );
+}
+
+function TaskDetail() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") || "";
   const router = useRouter();
   const { identity } = useAuth();
   const { canon } = useCanon();
@@ -47,20 +60,25 @@ export default function TaskDetail() {
   const [showChat, setShowChat] = useState(false);
   const [showRating, setShowRating] = useState(false);
 
-  // Poll runner location for active tasks
   useEffect(() => {
     if (!task || !["assigned", "accepted", "in_progress"].includes(task.status))
       return;
-
     const poll = setInterval(async () => {
       try {
         const loc = await getRunnerLocation(task.id);
         if (loc.lat && loc.lng) setRunnerPos(loc);
       } catch {}
     }, 3000);
-
     return () => clearInterval(poll);
   }, [task]);
+
+  if (!id) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-gray-400">
+        No task ID provided
+      </div>
+    );
+  }
 
   if (!task) {
     return (
@@ -74,7 +92,6 @@ export default function TaskDetail() {
   const icon = TASK_ICONS[task.type] || "📋";
   const instructions = canon?.task_instructions?.[task.type];
 
-  // Distance + ETA
   const distance =
     runnerPos && task.location
       ? haversineDistance(
@@ -93,7 +110,6 @@ export default function TaskDetail() {
 
   return (
     <div className="min-h-screen pb-20">
-      {/* Header */}
       <div className="bg-gradient-pro px-4 pt-12 pb-4 text-white">
         <div className="max-w-lg mx-auto">
           <button
@@ -121,10 +137,8 @@ export default function TaskDetail() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
-        {/* Progress */}
         <TaskProgressBar status={task.status} />
 
-        {/* Map — shows when there's geocoded location data */}
         {task.location?.lat && task.location?.lng && (
           <TrackingMap
             destination={task.location}
@@ -132,7 +146,6 @@ export default function TaskDetail() {
           />
         )}
 
-        {/* Runner card + ETA */}
         {task.assigned_runner_id && (
           <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center justify-between">
@@ -160,7 +173,6 @@ export default function TaskDetail() {
           </div>
         )}
 
-        {/* Task details */}
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-4 space-y-3">
           {task.location?.address && (
             <div className="flex items-center gap-2 text-sm">
@@ -181,48 +193,36 @@ export default function TaskDetail() {
           )}
         </div>
 
-        {/* Instructions */}
         {instructions && (
           <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-4 space-y-3">
             <h3 className="font-semibold text-sm">{instructions.title}</h3>
             <p className="text-xs text-gray-500">{instructions.overview}</p>
-
             <div className="space-y-1">
-              <h4 className="text-xs font-semibold text-gray-400 uppercase">
-                Requirements
-              </h4>
-              {instructions.requirements.map((r, i) => (
+              <h4 className="text-xs font-semibold text-gray-400 uppercase">Requirements</h4>
+              {instructions.requirements.map((r: string, i: number) => (
                 <div key={i} className="flex items-center gap-2 text-xs">
                   <span className="text-green-500">✓</span> {r}
                 </div>
               ))}
             </div>
-
             <div className="space-y-2">
-              <h4 className="text-xs font-semibold text-gray-400 uppercase">
-                Steps
-              </h4>
-              {instructions.steps.map((s) => (
+              <h4 className="text-xs font-semibold text-gray-400 uppercase">Steps</h4>
+              {instructions.steps.map((s: { step: number; title: string; description: string }) => (
                 <div key={s.step} className="flex gap-3">
                   <span className="flex-shrink-0 h-6 w-6 rounded-full bg-purple-100 dark:bg-purple-900/20 text-purple-600 text-xs font-bold flex items-center justify-center">
                     {s.step}
                   </span>
                   <div>
                     <div className="text-xs font-semibold">{s.title}</div>
-                    <div className="text-xs text-gray-500">
-                      {s.description}
-                    </div>
+                    <div className="text-xs text-gray-500">{s.description}</div>
                   </div>
                 </div>
               ))}
             </div>
-
             {instructions.tips.length > 0 && (
               <div className="rounded-lg bg-blue-50 dark:bg-blue-900/10 p-3 space-y-1">
-                <h4 className="text-xs font-semibold text-blue-600">
-                  Pro Tips
-                </h4>
-                {instructions.tips.map((t, i) => (
+                <h4 className="text-xs font-semibold text-blue-600">Pro Tips</h4>
+                {instructions.tips.map((t: string, i: number) => (
                   <div key={i} className="text-xs text-blue-800 dark:text-blue-200">
                     • {t}
                   </div>
@@ -232,7 +232,6 @@ export default function TaskDetail() {
           </div>
         )}
 
-        {/* Rating prompt */}
         {canRate && (
           <button
             onClick={() => setShowRating(true)}
@@ -244,24 +243,15 @@ export default function TaskDetail() {
         )}
       </div>
 
-      {/* Chat overlay */}
       {showChat && (
-        <ChatOverlay
-          taskId={task.id}
-          onClose={() => setShowChat(false)}
-        />
+        <ChatOverlay taskId={task.id} onClose={() => setShowChat(false)} />
       )}
-
-      {/* Rating modal */}
       {showRating && (
         <RatingWidget
           taskId={task.id}
           userId={identity?.userId}
           balance={balance}
-          onDone={() => {
-            setShowRating(false);
-            refresh();
-          }}
+          onDone={() => { setShowRating(false); refresh(); }}
         />
       )}
     </div>

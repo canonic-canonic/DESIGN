@@ -41,7 +41,7 @@ export default function ShopLanding() {
             <br />
             A pro handles it.
             <br />
-            <span className="text-amber-400">You earn COIN.</span>
+            <span className="text-amber-400">You earn ∩ Credits.</span>
           </h1>
           <p className="text-gray-300 text-sm">
             {canon?.axiom ||
@@ -132,7 +132,7 @@ export default function ShopLanding() {
             <div className="flex items-center justify-between rounded-lg bg-gradient-pro p-3 text-white">
               <span className="font-bold">Total per listing</span>
               <span className="font-bold text-lg">
-                {canon?.coin_economics?.per_listing || 161} COIN
+                ∩{canon?.coin_economics?.per_listing || 161} Credits
               </span>
             </div>
           </div>
