@@ -7,10 +7,10 @@ import { useCanon } from "@/hooks/useCanon";
 import { useTasks } from "@/hooks/useTasks";
 import { useBalance } from "@/hooks/useBalance";
 import { useChat } from "@/hooks/useChat";
-import { CoinBalance } from "@/components/CoinBadge";
+import { formatCompact, formatNumber } from "@/lib/utils";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessageRenderer } from "@/components/chat/ChatMessageRenderer";
-import { Plus, CheckCircle, Clock, List } from "lucide-react";
+import { Plus, CheckCircle, Clock, ArrowUpRight } from "lucide-react";
 
 export default function ProDashboard() {
   const router = useRouter();
@@ -42,33 +42,52 @@ export default function ProDashboard() {
     ["completed", "rated"].includes(t.status)
   );
 
+  const bal = balance ?? 0;
+
   return (
     <div className="flex flex-col h-screen">
-      {/* Compact header */}
+      {/* Polished header — big bold balance */}
       <div className="bg-gradient-pro px-4 pt-10 pb-4 text-white flex-shrink-0">
         <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-start justify-between mb-3">
             <div>
-              <p className="text-xs text-white/70">Pro</p>
-              <h1 className="text-lg font-bold">
+              <p className="text-[10px] text-white/50 uppercase tracking-wider">Pro</p>
+              <h1 className="text-lg font-bold leading-tight">
                 {user?.name || user?.user || "Pro"}
               </h1>
             </div>
-            <CoinBalance
-              balance={balance ?? 0}
-              className="bg-white/10 text-amber-300"
-            />
+            {/* Hero balance — big and bold */}
+            <div
+              onClick={() => router.push("/pro/dashboard")}
+              className="text-right cursor-pointer group"
+            >
+              <div className="flex items-baseline gap-1 justify-end">
+                <span className="text-3xl font-black tracking-tight text-amber-300 group-hover:scale-105 transition-transform inline-block">
+                  {formatCompact(bal)}
+                </span>
+                <span className="text-sm text-amber-300/70">∩</span>
+              </div>
+              <p className="text-[9px] text-white/40 flex items-center gap-0.5 justify-end">
+                {formatNumber(bal)} credits
+                <ArrowUpRight className="h-2.5 w-2.5" />
+              </p>
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+
+          {/* Stat pills — interactive */}
+          <div className="flex gap-2">
             {[
-              { icon: List, value: tasks.length, label: "Total" },
-              { icon: Clock, value: activeTasks.length, label: "Active" },
-              { icon: CheckCircle, value: completedTasks.length, label: "Done" },
-            ].map(({ icon: Icon, value, label }) => (
-              <div key={label} className="rounded-lg bg-white/10 p-2 text-center">
-                <Icon className="h-3.5 w-3.5 mx-auto mb-0.5 text-white/70" />
-                <div className="text-sm font-bold">{value}</div>
-                <div className="text-[9px] text-white/60">{label}</div>
+              { value: tasks.length, label: "Total", color: "bg-white/10" },
+              { value: activeTasks.length, label: "Active", icon: Clock, color: "bg-orange-500/20" },
+              { value: completedTasks.length, label: "Done", icon: CheckCircle, color: "bg-green-500/20" },
+            ].map(({ value, label, color }) => (
+              <div
+                key={label}
+                onClick={() => router.push("/pro/dashboard")}
+                className={`flex-1 rounded-xl ${color} px-3 py-2 text-center cursor-pointer hover:bg-white/20 transition-colors`}
+              >
+                <div className="text-lg font-bold">{value}</div>
+                <div className="text-[9px] text-white/60 uppercase">{label}</div>
               </div>
             ))}
           </div>
@@ -78,8 +97,9 @@ export default function ProDashboard() {
       {/* Post task CTA */}
       <div className="max-w-lg mx-auto w-full px-4 py-2 flex-shrink-0">
         <button
+          type="button"
           onClick={() => router.push("/pro/create")}
-          className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-runner text-white font-semibold py-2.5 text-sm hover:opacity-90 transition-opacity"
+          className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-runner text-white font-semibold py-2.5 text-sm hover:opacity-90 transition-opacity active:scale-[0.98]"
         >
           <Plus className="h-4 w-4" />
           Post a Task
@@ -92,13 +112,31 @@ export default function ProDashboard() {
         className="flex-1 overflow-y-auto px-4 pb-2 space-y-3 max-w-lg mx-auto w-full"
       >
         {messages.length === 0 && (
-          <div className="text-center py-8 space-y-2">
-            <p className="text-sm text-gray-400">
-              Chat with your assistant or tap a quick action
+          <div className="text-center py-10 space-y-3">
+            <div className="text-4xl">💬</div>
+            <p className="text-sm text-gray-500 font-medium">
+              Your AI assistant for GoRunner
             </p>
-            <p className="text-xs text-gray-300">
-              Try &quot;show my tasks&quot; or &quot;show stats&quot;
-            </p>
+            <div className="space-y-1">
+              <p className="text-xs text-gray-400">Try saying:</p>
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {[
+                  "show my tasks",
+                  "show stats",
+                  "show leaderboard",
+                  "show earnings",
+                ].map((tip) => (
+                  <button
+                    key={tip}
+                    type="button"
+                    onClick={() => sendMessage(tip)}
+                    className="rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-500 hover:border-purple-300 hover:text-purple-600 transition-colors"
+                  >
+                    &quot;{tip}&quot;
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
         {messages.map((msg, i) => (

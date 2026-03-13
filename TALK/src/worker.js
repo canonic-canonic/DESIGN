@@ -28,6 +28,7 @@ import { handle as omicsProxy } from './domains/omics.js';
 import * as star from './domains/star.js';
 import { handle as runnerRoute } from './domains/runner/index.js';
 import { digestWrite, digestRead, witnessWrite, witnessRead, verify as federationVerify } from './domains/federation.js';
+import { inbound as guidepointInbound, complete as guidepointComplete, ledger as guidepointLedger } from './domains/guidepoint.js';
 
 // ── Helpers ──
 
@@ -104,7 +105,7 @@ export default {
 
     // ── Chat ──
     if (path === '/chat' && method === 'POST') {
-      if (await rateGuard(env, 'chat', request, 60)) return json({ error: 'Rate limited' }, 429);
+      if (await rateGuard(env, 'chat', request, 120)) return json({ error: 'Rate limited' }, 429);
       return chat(request, env);
     }
 
@@ -163,6 +164,17 @@ export default {
       if (await rateGuard(env, 'runner', request, 1200)) return json({ error: 'Rate limited' }, 429);
       return runnerRoute(path.slice(8), request, env);
     }
+
+    // ── Guidepoint ──
+    if (path === '/guidepoint/inbound' && method === 'POST') {
+      if (await rateGuard(env, 'guidepoint', request, 10)) return json({ error: 'Rate limited' }, 429);
+      return guidepointInbound(request, env);
+    }
+    if (path === '/guidepoint/complete' && method === 'POST') {
+      if (await rateGuard(env, 'guidepoint', request, 5)) return json({ error: 'Rate limited' }, 429);
+      return guidepointComplete(request, env);
+    }
+    if (path === '/guidepoint/ledger' && method === 'GET') return guidepointLedger(request, env);
 
     // ── Federation ──
     if (path === '/ledger/digest' && method === 'POST') return digestWrite(request, env);

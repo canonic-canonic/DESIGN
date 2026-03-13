@@ -35,3 +35,17 @@ export function formatCoin(amount: number): string {
 export function formatUsd(amount: number): string {
   return `$${amount.toFixed(0)}`;
 }
+
+// 145495 → "145.5K", 1200000 → "1.2M"
+export function formatCompact(n: number | undefined | null): string {
+  if (n == null) return "0";
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
+  return n.toString();
+}
+
+// 145495 → "145,495"
+export function formatNumber(n: number | undefined | null): string {
+  if (n == null) return "0";
+  return n.toLocaleString();
+}

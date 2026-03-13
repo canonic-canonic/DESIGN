@@ -7,9 +7,10 @@ import { useCanon } from "@/hooks/useCanon";
 import { useTasks } from "@/hooks/useTasks";
 import { useBalance } from "@/hooks/useBalance";
 import { useChat } from "@/hooks/useChat";
-import { CoinBalance } from "@/components/CoinBadge";
+import { formatCompact, formatNumber } from "@/lib/utils";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessageRenderer } from "@/components/chat/ChatMessageRenderer";
+import { ArrowUpRight } from "lucide-react";
 
 export default function RunnerDashboard() {
   const router = useRouter();
@@ -50,7 +51,8 @@ export default function RunnerDashboard() {
     return sum + (tt?.coin || 0);
   }, 0);
 
-  // Runner-specific quick messages
+  const bal = balanceValue ?? 0;
+
   const runnerQuickActions = [
     { key: "_tasks", label: "My Tasks", message: "show my tasks" },
     { key: "_available", label: "Available", message: "show tasks" },
@@ -60,33 +62,56 @@ export default function RunnerDashboard() {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Compact header */}
+      {/* Polished header — big bold balance */}
       <div className="bg-gradient-runner px-4 pt-10 pb-4 text-white flex-shrink-0">
         <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-start justify-between mb-3">
             <div>
-              <p className="text-xs text-white/70">Runner</p>
-              <h1 className="text-lg font-bold">
+              <p className="text-[10px] text-white/50 uppercase tracking-wider">Runner</p>
+              <h1 className="text-lg font-bold leading-tight">
                 {user?.name || user?.user || "Runner"}
               </h1>
             </div>
-            <CoinBalance
-              balance={balanceValue ?? 0}
-              className="bg-white/10 text-amber-300"
-            />
+            {/* Hero balance */}
+            <div
+              onClick={() => router.push("/runner/earnings")}
+              className="text-right cursor-pointer group"
+            >
+              <div className="flex items-baseline gap-1 justify-end">
+                <span className="text-3xl font-black tracking-tight text-amber-300 group-hover:scale-105 transition-transform inline-block">
+                  {formatCompact(bal)}
+                </span>
+                <span className="text-sm text-amber-300/70">∩</span>
+              </div>
+              <p className="text-[9px] text-white/40 flex items-center gap-0.5 justify-end">
+                {formatNumber(bal)} credits
+                <ArrowUpRight className="h-2.5 w-2.5" />
+              </p>
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-lg bg-white/10 p-2 text-center">
-              <div className="text-sm font-bold">{availableTasks.filter(t => t.status === "posted").length}</div>
-              <div className="text-[9px] text-white/60">Available</div>
+
+          {/* Stat pills */}
+          <div className="flex gap-2">
+            <div
+              onClick={() => sendMessage("show tasks")}
+              className="flex-1 rounded-xl bg-white/10 px-3 py-2 text-center cursor-pointer hover:bg-white/20 transition-colors"
+            >
+              <div className="text-lg font-bold">{availableTasks.filter(t => t.status === "posted").length}</div>
+              <div className="text-[9px] text-white/60 uppercase">Available</div>
             </div>
-            <div className="rounded-lg bg-white/10 p-2 text-center">
-              <div className="text-sm font-bold">{active.length}</div>
-              <div className="text-[9px] text-white/60">Active</div>
+            <div
+              onClick={() => router.push("/runner/active")}
+              className="flex-1 rounded-xl bg-orange-500/20 px-3 py-2 text-center cursor-pointer hover:bg-white/20 transition-colors"
+            >
+              <div className="text-lg font-bold">{active.length}</div>
+              <div className="text-[9px] text-white/60 uppercase">Active</div>
             </div>
-            <div className="rounded-lg bg-white/10 p-2 text-center">
-              <div className="text-sm font-bold">∩{totalEarned}</div>
-              <div className="text-[9px] text-white/60">Earned</div>
+            <div
+              onClick={() => router.push("/runner/earnings")}
+              className="flex-1 rounded-xl bg-green-500/20 px-3 py-2 text-center cursor-pointer hover:bg-white/20 transition-colors"
+            >
+              <div className="text-lg font-bold">∩{formatCompact(totalEarned)}</div>
+              <div className="text-[9px] text-white/60 uppercase">Earned</div>
             </div>
           </div>
         </div>
@@ -98,13 +123,31 @@ export default function RunnerDashboard() {
         className="flex-1 overflow-y-auto px-4 py-2 space-y-3 max-w-lg mx-auto w-full"
       >
         {messages.length === 0 && (
-          <div className="text-center py-8 space-y-2">
-            <p className="text-sm text-gray-400">
-              Chat with your assistant or tap a quick action
+          <div className="text-center py-10 space-y-3">
+            <div className="text-4xl">🏃</div>
+            <p className="text-sm text-gray-500 font-medium">
+              Your AI assistant for GoRunner
             </p>
-            <p className="text-xs text-gray-300">
-              Try &quot;show my tasks&quot; or &quot;show leaderboard&quot;
-            </p>
+            <div className="space-y-1">
+              <p className="text-xs text-gray-400">Try saying:</p>
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {[
+                  "show my tasks",
+                  "show leaderboard",
+                  "show earnings",
+                  "show stats",
+                ].map((tip) => (
+                  <button
+                    key={tip}
+                    type="button"
+                    onClick={() => sendMessage(tip)}
+                    className="rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-500 hover:border-purple-300 hover:text-purple-600 transition-colors"
+                  >
+                    &quot;{tip}&quot;
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
         {messages.map((msg, i) => (
@@ -123,7 +166,7 @@ export default function RunnerDashboard() {
         )}
       </div>
 
-      {/* Chat input with runner pills */}
+      {/* Chat input */}
       <div className="flex-shrink-0 max-w-lg mx-auto w-full safe-area-pb pb-16">
         <ChatInput
           onSend={sendMessage}
