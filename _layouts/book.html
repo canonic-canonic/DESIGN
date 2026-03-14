@@ -1,6 +1,8 @@
 <!-- LAYOUT: book | STANDALONE | DESIGN.md 255 Map -->
 <!-- Extends PAPER class. Adds: cover, PARTS/CHAPTERS in TOC, chapter nav, contribute gate. -->
 <!-- STANDALONE: No includes — Liquid stack overflow on content >44KB. -->
+<!-- TRI-VIEW: GOV (contract prose) + WEB (1-col, like blogs) + TEX (PDF.js full viewer iframe). CONTROLS.viewTo() toggles. -->
+<!-- GATE FLOW: gate:contribute → force gov view → pass gate → reveal PDF/CONTRIBUTE controls -->
 {% assign scope_key = page.scope | default: site.scope | downcase %}
 {% assign sd = site.data[scope_key] %}
 {% assign scope_up = page.scope | default: site.scope | upcase %}
@@ -10,13 +12,51 @@
 {% assign accent = page.accent | default: sd.accent | default: site.accent %}
 {% assign accent_rgb = page.accent_rgb | default: sd.accent_rgb | default: site.accent_rgb %}
 {% assign fleet = site.data.fleet %}
+{% assign deps = site.data.deps %}
 <!DOCTYPE html>
 <html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
 <head>
-  {% include HEAD.html title=page.title description=page.description %}
-  {% assign deps = site.data.deps %}
+  <!-- HEAD (inlined) -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
+  <title>{{ page.title | default: sd.name | default: site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/css/DESIGN.css' | relative_url }}">
+  <style>:root{--accent:{{ accent }};--accent-rgb:{{ accent_rgb }};}</style>
+  <!-- BOOK CONTRAST: elevated visual weight for long-form reading -->
+  <style>
+  .book-page .paper-body p,
+  .book-page .paper-body li,
+  .book-page .prose { color: #dcdce0; font-size: 1.125rem; line-height: 1.85; }
+  .book-page .paper-body p strong,
+  .book-page .prose strong { color: #fff; font-weight: 800; }
+  .book-page .paper-body h1 { color: var(--fg); font-weight: 800; }
+  .book-page .paper-body h2 { color: var(--fg); font-weight: 800; font-size: 0.875rem; border-bottom: 2px solid var(--accent); border-top: none; padding-top: 0; margin-top: 3.5rem; }
+  .book-page .paper-body h3 { color: var(--fg); font-weight: 700; font-size: 1.625rem; }
+  .book-page .paper-body h4 { color: var(--fg); font-weight: 700; }
+  .book-page .paper-body blockquote { border-left: 4px solid var(--accent); color: #fff; font-weight: 500; font-size: 1.1875rem; }
+  .book-page .paper-body hr { border-top: 2px solid var(--border); }
+  .book-page .paper-body table { font-size: 0.9375rem; }
+  .book-page .paper-body th { color: var(--fg); font-weight: 700; border-bottom: 2px solid var(--accent); }
+  .book-page .paper-body td { border-bottom: 1px solid rgba(255,255,255,0.12); }
+  .book-page .hero-badge { font-weight: 800; font-size: 0.875rem; letter-spacing: 0.15em; border-width: 2px; }
+  .book-page .gradient-text { font-weight: 800; }
+  .book-page .paper-colophon { font-weight: 700; letter-spacing: 0.2em; border-top: 2px solid var(--border); }
+  .book-page .paper-abstract { border: 2px solid var(--border); font-size: 1.0625rem; color: #dcdce0; }
+  .book-page .paper-abstract strong { color: #fff; }
+  .book-page .gate-contribute { border-width: 2px; }
+  .book-page .gate-text { color: #dcdce0; }
+  .book-page .contribute-section { border-top-width: 2px; }
+  [data-theme="light"] .book-page .paper-body p,
+  [data-theme="light"] .book-page .paper-body li,
+  [data-theme="light"] .book-page .prose { color: #1a1a2e; }
+  [data-theme="light"] .book-page .paper-body blockquote { color: #1a1a2e; }
+  [data-theme="light"] .book-page .paper-abstract { color: #1a1a2e; }
+  [data-theme="light"] .book-page .gate-text { color: #1a1a2e; }
+  </style>
   {% if page.math %}
-  <!-- KaTeX (conditional) — governed by DEPS.md -->
+  <!-- KaTeX (conditional for books) — governed by DEPS.md -->
   <link rel="stylesheet" href="{{ deps.katex.css }}" integrity="{{ deps.katex.css_integrity }}" crossorigin="anonymous">
   <script defer src="{{ deps.katex.js }}" integrity="{{ deps.katex.js_integrity }}" crossorigin="anonymous"></script>
   <script defer src="{{ deps.katex.auto_render }}" integrity="{{ deps.katex.auto_render_integrity }}" crossorigin="anonymous"
@@ -30,12 +70,6 @@
       throwOnError: false
     });"></script>
   {% endif %}
-  <style>
-    /* Collapse gap between title-only article and content article */
-    .book-page > .post:first-of-type { padding-bottom: 0; margin-bottom: 0; }
-    .book-page > .post:first-of-type .paper-title-block { margin-bottom: 0; }
-    .book-page .view-md > .post { padding-top: 0; margin-top: 0; }
-  </style>
 </head>
 <body class="post-page paper-page book-page">
 
@@ -55,75 +89,61 @@
         <span class="nav-dot"></span>
         <span class="nav-talk-label">TALK</span>
       </button>
-      {% if page.downloads %}
-      {% for dl in page.downloads %}
-      <a href="{{ dl.href | relative_url }}" class="nav-ctrl nav-dl{% if page.gate == 'contribute' %} gated-ctrl{% endif %}" download title="Download {{ dl.label }}">&#8615; {{ dl.label }}</a>
-      {% endfor %}
+      <!-- Gated controls: hidden until gate passes (governed by gate:contribute) -->
+      {% if page.pdf %}
+      <a href="{{ page.pdf | relative_url }}" class="nav-ctrl{% if page.gate == 'contribute' %} gated-ctrl{% endif %}" download title="Download PDF">&#8615; PDF</a>
       {% endif %}
-      {% if page.views and page.views.size > 1 %}
-      <div class="view-toggle{% if page.gate == 'contribute' %} gated-ctrl{% endif %}" id="viewToggle">
-        {% for v in page.views %}
-        {% unless forloop.first %}<span class="view-toggle-arrow">&rarr;</span>{% endunless %}
-        <button class="view-toggle-btn{% if page.view == v %} active{% endif %}"
-          type="button" data-target="{{ v }}" onclick="CONTROLS.viewTo('{{ v }}')"
-          {% if v == 'tex' and page.pdf == nil %}style="opacity:0.3;pointer-events:none"{% endif %}>
-          {{ v | upcase }}</button>
-        {% endfor %}
-      </div>
+      {% if page.views %}
+      <button class="nav-ctrl nav-view{% if page.gate == 'contribute' %} gated-ctrl{% endif %}" type="button"
+        data-views='{{ page.views | jsonify }}' data-current="{{ page.view | default: 'gov' }}"
+        onclick="(function(b){var vs=JSON.parse(b.dataset.views),c=b.dataset.current,i=(vs.indexOf(c)+1)%vs.length;b.dataset.current=vs[i];b.textContent=vs[i].toUpperCase();CONTROLS.viewTo(vs[i]);})(this)"
+        title="Toggle view">
+        {{ page.view | default: "gov" | upcase }}
+      </button>
       {% endif %}
       {% if page.gate == "contribute" %}
-      <a href="#Contribute" class="nav-ctrl gated-ctrl" title="Contribute" onclick="event.preventDefault();var s=document.getElementById('Contribute');if(s){s.scrollIntoView({behavior:'smooth'});}">CONTRIBUTE</a>
+      <a href="#Contribute" class="nav-ctrl gated-ctrl" data-view-only="web" title="Contribute" onclick="event.preventDefault();var s=document.getElementById('Contribute');if(s){s.scrollIntoView({behavior:'smooth'});}">CONTRIBUTE</a>
       {% endif %}
       <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">&#9790;</button>
     </div>
   </header>
 
+  <!-- ═══ BOOK HEADER: always visible above gate ═══ -->
   <article class="post paper book container">
-    <!-- Academic title block -->
-    <header class="paper-title-block">
-      <div class="paper-foundation">CANONIC Foundation</div>
-      <h1 class="paper-title">{{ page.title }}</h1>
-      {% if page.author %}<div class="paper-author">{{ page.author }}</div>{% endif %}
-      {% if page.date %}<time class="paper-date">{{ page.date | date: "%B %d, %Y" }}</time>{% endif %}
+    <header class="post-header">
+      <div class="hero-badge">{{ page.badge | default: scope_up }}</div>
+      <h1 class="gradient-text">{{ page.title }}</h1>
+      {% if page.date %}<time class="post-date">{{ page.date | date: "%B %d, %Y" }}</time>{% endif %}
+      {% if page.author %}<span class="post-author">{{ page.author }}</span>{% endif %}
     </header>
   </article>
 
-  {% include VIEW-TEX.html %}
-
-  {% include VIEW-GOV.html badge=badge_label %}
-
-  <!-- ═══ DASHBOARD SECTIONS (data-driven, from _data/{scope}.json) ═══ -->
-  {% assign sections = sd.sections %}
-  {% if sections %}
-  {% for section in sections %}
-  {% if section.dashboard %}
-  <section id="{{ section.id }}" class="container view-web" style="margin-bottom:var(--space-2xl){% if page.view == 'gov' or (page.pdf and page.view == 'tex' and page.gate != 'contribute') %};display:none{% endif %}">
-    {% if section.eyebrow %}<div class="section-eyebrow text-center" style="font-family:var(--mono);font-size:var(--font-xs);letter-spacing:0.15em;color:var(--muted);margin-bottom:var(--space-xs)">{{ section.eyebrow }}</div>{% endif %}
-    {% if section.title %}<h2 class="section-title text-center" style="margin-bottom:var(--space-lg)">{{ section.title }}</h2>{% endif %}
-    {% include DASHBOARD.html widgets=section.dashboard %}
-  </section>
-  {% endif %}
-  {% endfor %}
-  {% endif %}
-
-  <!-- ═══ WEB VIEW (forced visible when gate:contribute) ═══ -->
-  <div class="view-web"{% if page.view == "gov" or (page.pdf and page.view == "tex" and page.gate != "contribute") %} style="display:none"{% endif %}>
-  <article class="post paper book container">
-
-    {% if page.gate == "contribute" %}
-    <div class="gate-contribute" id="gate">
-      <div class="gate-inner">
-        <p class="gate-text">Tell us who you are to read, explore, and contribute. Your identity is logged with provenance. Open access. Governed record.</p>
-        <form class="gate-form" id="gateForm">
-          <input type="text" id="g-name" placeholder="Full Name" required>
-          <input type="email" id="g-email" placeholder="Email" required>
-          <input type="text" id="g-affiliation" placeholder="Affiliation" required>
-          <button type="submit" class="btn">ENTER</button>
-        </form>
-      </div>
+  {% if page.gate == "contribute" %}
+  <!-- ═══ CONTRIBUTE GATE: identity required before content ═══ -->
+  <div class="gate-contribute" id="gate">
+    <div class="gate-inner">
+      <p class="gate-text">Tell us who you are to read, explore, and contribute. Your identity is logged with provenance. Open access. Governed record.</p>
+      <form class="gate-form" id="gateForm">
+        <input type="text" id="g-name" placeholder="Full Name" required>
+        <input type="email" id="g-email" placeholder="Email" required>
+        <input type="text" id="g-affiliation" placeholder="Affiliation" required>
+        <button type="submit" class="btn">ENTER</button>
+      </form>
     </div>
-    <div class="gated-content" id="gatedContent">
-    {% endif %}
+  </div>
+  <div class="gated-content" id="gatedContent">
+  {% endif %}
+
+  {% if page.pdf %}
+  <!-- ═══ TEX VIEW: PDF.js full viewer (iframe) — governed by DEPS.md ═══ -->
+  <div class="pdf-viewer-mode" id="pdfViewer"{% if page.gate == "contribute" %} style="display:none"{% elsif page.view != "tex" %} style="display:none"{% endif %}>
+    <iframe id="pdfFrame" src="{{ '/assets/pdfjs/viewer.html' | relative_url }}?file={{ page.pdf | relative_url }}" class="pdf-iframe" title="PDF Viewer" allowfullscreen></iframe>
+  </div>
+  <style>.pdf-iframe{width:100%;height:calc(100vh - 56px);border:none;display:block;}</style>
+  {% endif %}
+
+  <!-- ═══ GOV + WEB VIEW: contract prose ═══ -->
+  <article class="post paper book container view-gov view-web"{% if page.pdf and page.gate != "contribute" and page.view == "tex" %} style="display:none"{% endif %}>
 
     {% if page.abstract %}
     <div class="paper-abstract">
@@ -151,11 +171,12 @@
         Your contribution has been recorded with provenance. Thank you.
       </div>
     </div>
-    </div><!-- /gatedContent -->
     {% endif %}
-
   </article>
-  </div><!-- /view-web -->
+
+  {% if page.gate == "contribute" %}
+  </div><!-- /gatedContent -->
+  {% endif %}
 
   <!-- FOOTER (inlined) -->
   <footer id="footer">
@@ -171,6 +192,21 @@
   <script src="{{ '/assets/js/nav.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/figures.js' | relative_url }}"></script>
   <script src="{{ '/assets/js/controls.js' | relative_url }}"></script>
+  <!-- Reactive controls: disable nav buttons that don't apply to the current view -->
+  <script>
+  (function(){
+    var origViewTo=CONTROLS.viewTo;
+    CONTROLS.viewTo=function(target){
+      origViewTo(target);
+      document.querySelectorAll('[data-view-only]').forEach(function(el){
+        var allowed=el.getAttribute('data-view-only').split(',');
+        if(allowed.indexOf(target)===-1){el.classList.add('ctrl-disabled');}
+        else{el.classList.remove('ctrl-disabled');}
+      });
+    };
+  })();
+  </script>
+  <style>.ctrl-disabled{opacity:0.35;pointer-events:none;cursor:default;}</style>
   {% if page.talk %}
   <!-- TALK (inlined) -->
   <div class="talk-overlay" id="talkOverlay" data-position="{{ page.talk | default: 'side' }}">
@@ -197,9 +233,9 @@
   <script>TALK.init();</script>
   {% endif %}
 
-  <!-- Mermaid (theme-reactive) -->
+  <!-- Mermaid (theme-reactive) — governed by DEPS.md -->
   <script type="module">
-    import mermaid from '{{ site.data.deps.mermaid.esm }}';
+    import mermaid from '{{ deps.mermaid.esm }}';
     const sources=new Map();
     document.querySelectorAll('code.language-mermaid').forEach(c=>{
       const d=document.createElement('div');
@@ -224,16 +260,22 @@
   </script>
 
   {% if page.gate == "contribute" %}
-  <!-- Contribute gate script (inlined from post.html) -->
+  <!-- Contribute gate script — governs unlock flow -->
   <script>
   (function(){
     var KEY='canonic-gate-'+{{ page.scope | jsonify }};
     var stored=localStorage.getItem(KEY);
     function unlock(){
-      var gate=document.getElementById('gate');var content=document.getElementById('gatedContent');
-      if(gate)gate.classList.add('hidden');if(content)content.classList.add('unlocked');
+      var gate=document.getElementById('gate');
+      var content=document.getElementById('gatedContent');
+      if(gate)gate.classList.add('hidden');
+      if(content)content.classList.add('unlocked');
+      // Reveal gated nav controls (PDF, TEX, CONTRIBUTE)
       document.querySelectorAll('.gated-ctrl').forEach(function(el){el.style.display='';});
+      // Auto-select WEB: GOV and TEX are fixed formats — WEB is the interactive surface
+      if(typeof CONTROLS!=='undefined'&&CONTROLS.viewTo)CONTROLS.viewTo('web');
     }
+    // Hide gated controls initially
     document.querySelectorAll('.gated-ctrl').forEach(function(el){el.style.display='none';});
     if(stored){try{var d=JSON.parse(stored);if(d&&d.name){unlock();}}catch(e){}}
     document.getElementById('gateForm').addEventListener('submit',function(e){
@@ -253,13 +295,7 @@
   </script>
   {% endif %}
 
-  {% if page.pdf %}
-  <!-- PDF.js + pdf-viewer.js (conditional) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
-  <script src="{{ '/assets/js/pdf-viewer.js' | relative_url }}"></script>
-  <script>PDFVIEWER.init('{{ page.pdf | relative_url }}');</script>
-  {% endif %}
+  <!-- PDF.js now runs inside /assets/pdfjs/viewer.html iframe — no parent-page scripts needed -->
 
 </body>
 </html>

@@ -1,0 +1,107 @@
+<!-- LAYOUT: TALK | DESIGN.md 255 Map | TALK flagship surface -->
+<!-- Direct map: every frontmatter field → one HTML element. No body content needed. -->
+<!DOCTYPE html>
+<html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
+<head>
+  {% include HEAD.html %}
+</head>
+<body data-layout="talk">
+
+  {% unless page.nav == false %}{% include NAV-UNIFIED.html %}{% endunless %}
+
+  {% include VIEW-GOV.html %}
+
+  {% assign current_view = page.view | default: "web" %}
+  <div class="view-web"{% if current_view == "gov" %} style="display:none"{% endif %}>
+
+    <!-- ═══ HEADER — from frontmatter: logo, name, subtitle, tagline ═══ -->
+    <header>
+      <div class="header-left">
+        <span class="logo">{{ page.logo }}</span>
+        <div>
+          <h1>{{ page.name }}</h1>
+          {% if page.subtitle %}<div class="subtitle">{{ page.subtitle }}</div>{% endif %}
+          {% if page.tagline %}<div class="tagline">{{ page.tagline }}</div>{% endif %}
+        </div>
+      </div>
+      <div class="header-controls">
+        {% if page.phases %}
+        <select id="phase" onchange="MCODE.setPhase(this.value)">
+          {% for p in page.phases %}<option value="{{ p.value }}">{{ p.label }}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+        {% if page.locations %}
+        <select id="caribLocation" onchange="TRIALS.init('cancer', this.options[this.selectedIndex].dataset.query)">
+          {% for loc in page.locations %}<option value="{{ loc.value }}" data-query="{{ loc.query }}">{{ loc.label }}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+        <span class="learning-badge" id="learning-status">INTEL: checking...</span>
+        {% if page.magic %}<span class="magic-badge" title="8 governance dimensions, 255 bits — all passing">MAGIC 255</span>{% endif %}
+      </div>
+    </header>
+
+    <!-- ═══ HERO — optional intro panels (DEV-style) ═══ -->
+    {% if page.hero_text %}
+    <div class="dev-hero">
+      {% for line in page.hero_text %}<p>{{ line }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if page.panels %}
+    <div class="dev-panels">
+      {% for panel in page.panels %}
+      <div class="dev-panel">
+        <span class="panel-icon">{{ panel.icon }}</span>
+        <div><strong>{{ panel.title }}</strong><br>{{ panel.text }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ═══ MAIN — chat + optional sidebar ═══ -->
+    <main{% if page.sidebar %} class="with-sidebar"{% endif %}>
+      <div class="chat-column">
+        <div id="talkMessages"></div>
+        <div class="input-area">
+          <input type="text" id="talkChatInput" placeholder="{{ page.placeholder | default: 'Ask a question...' }}" autocomplete="off">
+          <button type="button" id="talkSend">Send</button>
+        </div>
+      </div>
+
+      {% if page.sidebar %}
+      <aside class="mcode-sidebar" id="mcode-sidebar">
+        <div class="mcode-header">
+          <div class="mcode-header-icon">&#129516;</div>
+          <span class="mcode-header-text">{{ page.sidebar.title }}</span>
+          <span class="mcode-header-badge" id="mcode-status">{{ page.sidebar.status | default: "Listening..." }}</span>
+          <button class="mcode-toggle" onclick="MCODE.toggleSidebar()" title="Toggle">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+        <div class="mcode-content" id="mcode-content"></div>
+        {% if page.sidebar.sections %}
+          {% for sec in page.sidebar.sections %}<div id="{{ sec }}"></div>
+          {% endfor %}
+        {% endif %}
+        <button class="mcode-export" onclick="MCODE.export()">{{ page.sidebar.export | default: "Export Your Data" }}</button>
+      </aside>
+      {% endif %}
+    </main>
+
+    <!-- ═══ DISCLAIMER ═══ -->
+    <div class="disclaimer">{{ page.disclaimer | default: "For informational purposes only." }} | <a href="/">{{ site.title | default: "Hadley Lab" }}</a></div>
+
+    <!-- ═══ PLUGINS — from frontmatter array ═══ -->
+    {% if page.plugins %}
+      {% for plugin in page.plugins %}
+    <script src="{{ '/plugins/' | append: plugin | append: '.js' | relative_url }}"></script>
+      {% endfor %}
+    {% endif %}
+
+  </div>
+
+  {% include SCRIPTS.html %}
+</body>
+</html>

@@ -78,9 +78,9 @@ export async function deepHealth(env) {
 
   const toCheck = stale.slice(0, BUDGET);
   const freshResults = []; let aborted = false;
-  for (let i = 0; i < toCheck.length; i += 3) {
+  for (let i = 0; i < toCheck.length; i += 15) {
     if (aborted) break;
-    const results = await Promise.allSettled(toCheck.slice(i, i + 3).map(async ({ url, scope }) => {
+    const results = await Promise.allSettled(toCheck.slice(i, i + 15).map(async ({ url, scope }) => {
       try {
         const resp = await fetch(url, { method: 'HEAD', headers: { 'User-Agent': 'canonic-health/1.0' }, redirect: 'follow' });
         const code = resp.status;
@@ -143,12 +143,14 @@ export async function deepHealth(env) {
   let intelCached = {};
   try { const raw = env.TALK_KV ? await env.TALK_KV.get(INTEL_CACHE_KEY) : null; if (raw) intelCached = JSON.parse(raw); } catch (e) { console.error('[TALK_KV]', e.message || e); }
 
+  const INTEL_BUDGET = requireIntEnv(env, 'HEALTH_INTEL_BUDGET', 'intel');
   const accessibleUrls = surfaces.filter(s => s.status === 'ok' || (s.cached && s.status === 'ok')).map(s => s.url);
   const intelStale = [];
   for (const url of accessibleUrls) { const entry = intelCached[url]; if (entry && (now - entry.ts) < INTEL_TTL) continue; intelStale.push(url); }
+  const intelToTest = intelStale.slice(0, INTEL_BUDGET);
 
   const intelFresh = [];
-  for (const surfaceUrl of intelStale) {
+  for (const surfaceUrl of intelToTest) {
     const canonUrl = surfaceUrl + 'CANON.json';
     const scope = surfaceUrl.replace(/\/$/, '').split('/').pop();
     try {
