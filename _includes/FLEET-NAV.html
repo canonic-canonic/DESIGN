@@ -1,0 +1,11 @@
+<!-- FLEET-NAV: Cross-fleet navigation bar. Renders from page.fleet frontmatter array. -->
+{% if page.fleet %}
+<nav class="fleet-nav" id="fleetNav" aria-label="Fleet navigation">
+  {% for svc in page.fleet %}
+  <a href="{{ svc.href }}" class="fleet-pill{% if svc.scope == page.scope %} active{% endif %}" style="--pill-accent:{{ svc.accent | default: '#6b7280' }}" title="{{ svc.name }}">
+    <span class="fleet-pill-logo">{{ svc.logo }}</span>
+    <span class="fleet-pill-name">{{ svc.name }}</span>
+  </a>
+  {% endfor %}
+</nav>
+{% endif %}

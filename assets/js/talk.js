@@ -90,7 +90,8 @@ const TALK = {
         mcode:  '/plugins/mcode.js',
         trials: '/plugins/trials.js',
         omics:  '/plugins/omics.js',
-        runner: '/plugins/runner.js'
+        runner: '/plugins/runner.js',
+        fleet:  '/plugins/fleet.js'
     },
 
     loadScript(src) {
@@ -355,7 +356,16 @@ const TALK = {
             .replace(/`([^`]+)`/g, '<code>$1</code>')
             .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.+?)\*/g, '<em>$1</em>')
-            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+            .replace(/\[([A-Z][A-Za-z0-9-]+(?::[A-Za-z0-9]+)?)\]/g, function(m, cite) {
+                var key = cite.split(':')[0];
+                var route = (typeof FLEET !== 'undefined' && FLEET.EVIDENCE_ROUTES) ? FLEET.EVIDENCE_ROUTES[key] : null;
+                if (route) {
+                    var tierClass = 'tier-' + route.tier;
+                    return '<a href="' + route.url + '" target="_blank" rel="noopener" class="evidence-badge ' + tierClass + '" title="' + route.tier.toUpperCase() + ' — ' + route.scope + '">' + cite + '</a>';
+                }
+                return '<span class="evidence-badge">' + cite + '</span>';
+            });
 
         html = html
             .replace(/---/g, '\u2014')
@@ -525,6 +535,46 @@ const TALK = {
         return div;
     },
 
+    // ── Typing Indicator ──────────────────────────────────────────────
+    addTypingIndicator() {
+        var el = document.getElementById('talkMessages');
+        if (!el) return null;
+        var div = document.createElement('div');
+        div.className = 'message assistant typing-msg';
+        div.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+        el.appendChild(div);
+        el.scrollTop = el.scrollHeight;
+        return div;
+    },
+
+    // ── Copy Button + Timestamp on messages ─────────────────────────
+    addMessageControls(msgEl) {
+        if (!msgEl || msgEl.querySelector('.msg-controls')) return;
+        var controls = document.createElement('div');
+        controls.className = 'msg-controls';
+
+        var time = document.createElement('time');
+        var now = new Date();
+        time.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        time.className = 'msg-time';
+        controls.appendChild(time);
+
+        var copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.title = 'Copy';
+        copyBtn.innerHTML = '&#128203;';
+        copyBtn.addEventListener('click', function() {
+            var text = msgEl.querySelector('div') ? msgEl.querySelector('div').textContent : msgEl.textContent;
+            navigator.clipboard.writeText(text).then(function() {
+                copyBtn.innerHTML = '&#10003;';
+                setTimeout(function() { copyBtn.innerHTML = '&#128203;'; }, 1500);
+            });
+        });
+        controls.appendChild(copyBtn);
+
+        msgEl.appendChild(controls);
+    },
+
     // ── Widget Injection — generic, used by plugins ────────────────────
     injectWidget(html) {
         var el = document.getElementById('talkMessages');
@@ -596,7 +646,7 @@ const TALK = {
         this.add(text, 'user');
         this.messages.push({ role: 'user', content: text });
 
-        var typing = this.add('Thinking...', 'assistant');
+        var typing = this.addTypingIndicator();
         var msgContainer = document.getElementById('talkMessages');
 
         try {
@@ -611,6 +661,10 @@ const TALK = {
                 if (config && config.omics) {
                     sys += '\n\nLIVE_OMICS_CONTEXT (from NCBI E-utilities + PharmGKB, governed):\n' + JSON.stringify(config.omics);
                     sys += '\n\nRules: Treat LIVE_OMICS_CONTEXT as live database results. Cite accession numbers. Declare evidence tier (GOLD/SILVER/BRONZE) for each finding. If context is empty for a queried entity, state that no results were found rather than hallucinating.';
+                }
+                if (config && config.fleet_intel) {
+                    sys += '\n\nCROSS-FLEET INTEL (from sibling services, governed):\n' + JSON.stringify(config.fleet_intel);
+                    sys += '\n\nRules: Cross-fleet INTEL comes from governed sibling services in the CANONIC fleet. Cite the source service by name. When referencing a sibling service\'s domain, suggest the user explore that service directly for deeper investigation. Use bracket citations like [NCCN], [ClinVar], [USC], [FDA] to reference authoritative sources.';
                 }
             } catch {}
 
@@ -672,12 +726,15 @@ const TALK = {
             }
 
             var msgEl = this.add('', 'assistant');
+            if (msgEl) msgEl.classList.add('message-enter');
             var textEl = msgEl ? (msgEl.querySelector('div') || msgEl.firstChild) : null;
             if (textEl) {
                 await this.typeMessage(reply, textEl, msgContainer);
+                this.addMessageControls(msgEl);
             } else {
                 this.add(reply, 'assistant');
             }
+            if (msgEl) setTimeout(function() { msgEl.classList.remove('message-enter'); }, 300);
             this.messages.push({ role: 'assistant', content: reply });
 
             // LEDGER: persist conversation turn server-side (GOV: TALK/CANON.md)

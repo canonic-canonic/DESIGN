@@ -38,9 +38,15 @@
         </select>
         {% endif %}
         <span class="learning-badge" id="learning-status">INTEL: checking...</span>
-        {% if page.magic %}<span class="magic-badge" title="8 governance dimensions, 255 bits — all passing">MAGIC 255</span>{% endif %}
+        {% if page.magic %}<a href="https://canonic.org/magic/" class="magic-badge" title="8 governance dimensions, 255 bits — all passing">MAGIC 255</a>{% endif %}
       </div>
     </header>
+
+    <!-- ═══ FLEET NAV — cross-fleet navigation bar ═══ -->
+    {% include FLEET-NAV.html %}
+
+    <!-- ═══ COMMUNITY — learning dashboard (collapsible) ═══ -->
+    <div class="community-section" id="communitySection" style="display:none"></div>
 
     <!-- ═══ HERO — optional intro panels (DEV-style) ═══ -->
     {% if page.hero_text %}
