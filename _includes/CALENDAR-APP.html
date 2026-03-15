@@ -1,0 +1,32 @@
+<!-- CALENDAR-APP | The time axis of the galaxy
+     Governed by: hadleylab-canonic/SERVICES/CALENDAR/CANON.md
+     Data source: TIMELINE INDEX (compiled by build-timeline phase 12) -->
+<div class="cal-app" id="calApp">
+  <div class="cal-toolbar">
+    <div class="cal-toolbar-left">
+      <button class="cal-btn cal-btn--icon" onclick="CAL.today()" title="Today">Today</button>
+      <button class="cal-btn cal-btn--icon" onclick="CAL.prev()" title="Previous">&lsaquo;</button>
+      <button class="cal-btn cal-btn--icon" onclick="CAL.next()" title="Next">&rsaquo;</button>
+      <span class="cal-title" id="calTitle"></span>
+    </div>
+    <div class="cal-toolbar-right">
+      <div class="cal-lanes" id="calLanes"></div>
+      <div class="cal-view-toggle">
+        <button class="cal-btn cal-view-btn" data-view="month" onclick="CAL.setView('month')">Month</button>
+        <button class="cal-btn cal-view-btn" data-view="week" onclick="CAL.setView('week')">Week</button>
+        <button class="cal-btn cal-view-btn" data-view="day" onclick="CAL.setView('day')">Day</button>
+      </div>
+    </div>
+  </div>
+  <div class="cal-grid-container">
+    <div class="cal-weekday-header" id="calWeekdayHeader"></div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+  <div class="cal-detail" id="calDetail" style="display:none">
+    <div class="cal-detail-header">
+      <span class="cal-detail-date" id="calDetailDate"></span>
+      <button class="cal-detail-close" onclick="CAL.closeDetail()">&times;</button>
+    </div>
+    <div class="cal-detail-events" id="calDetailEvents"></div>
+  </div>
+</div>

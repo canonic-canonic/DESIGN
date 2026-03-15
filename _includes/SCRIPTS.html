@@ -29,6 +29,10 @@
 {% include STAR.html %}
 <script src="{{ '/assets/js/star.js' | relative_url }}"></script>
 {% endif %}
+{% if page.calendar %}
+{% include CALENDAR-APP.html %}
+<script src="{{ '/assets/js/calendar.js' | relative_url }}"></script>
+{% endif %}
 <script src="{{ '/assets/js/controls.js' | relative_url }}"></script>
 <script>
 {% if page.auth %}AUTH.init(); {% endif %}
@@ -37,4 +41,5 @@
 {% if page.shop %}SHOP.init(); {% endif %}
 {% if page.talk %}TALK.init(); {% endif %}
 {% if page.star %}STAR.init(); {% endif %}
+{% if page.calendar %}CAL.init({ dataPath: '{{ page.calendar_data | default: "/SERVICES/TIMELINE" }}' }); {% endif %}
 </script>
