@@ -1,10 +1,10 @@
 /**
- * galaxy.js — GALAXY · INTEL + CHAT + COIN
+ * galaxy.js — GALAXY · CANONIC ∩ MAGIC
  *
  * Loads galaxy.json → vis-network.
- * Three primitives composed: INTEL (compliance), CHAT (talk), COIN (economy).
- * Launchpad: persistent search bar, icon grid, LEARNING suggestions.
- * HUD: expandable with INTEL tasks sorted by impact.
+ * Dual drawers: left (INTEL), right (DETAIL).
+ * Control panel: brand + score + tier pills (top-left).
+ * Category legend (top-right). Search bar (bottom center).
  *
  * MAGIC 255 | CANONIC | 2026-03
  */
@@ -19,8 +19,10 @@ var GALAXY = (function () {
     var edgeDS = null;
     var _collapseAll = null;
     var _authUser = null;
-    var _launchpadOpen = false;
-    var _hudExpanded = false;
+    var _leftOpen = false;
+    var _rightOpen = false;
+    var _searchOpen = false;
+    var _selectedNodeId = null;
 
     // ── AUTH (sourced from compiled galaxy.json — no hardcoding) ──
     var AUTH_API = '';
@@ -252,12 +254,10 @@ var GALAXY = (function () {
         return svg;
     }
 
-    // ── DETAIL PANEL (INTEL + COIN + CHAT composed) ─────
-    function showDetail(node) {
-        var panel = document.getElementById('detailPanel');
-        if (!panel) return;
+    // ── DETAIL (renders into tab content) ─────
+    function renderDetailHTML(node) {
         var name = node.kind === 'USER' ? titleCase(node.label.toLowerCase()) : node.label;
-        var html = '<div class="dp-header"><span class="dp-name" style="color:' + (node.color || '#f5f5f7') + '">' + name + '</span><button class="dp-close" onclick="GALAXY.closeDetail()">\u00d7</button></div>';
+        var html = '<div class="dp-header"><span class="dp-name" style="color:' + (node.color || '#f5f5f7') + '">' + name + '</span></div>';
 
         if (node.kind !== 'USER' || node.principal) {
             var nodeBits = (typeof node.bits === 'number') ? node.bits : 0;
@@ -284,11 +284,15 @@ var GALAXY = (function () {
                 html += '</div>';
             }
 
-            // Missing dimensions
+            // Missing dimensions (with fix buttons)
             if (node.missing_dims && node.missing_dims.length > 0 && node.missing_dims.length < 8) {
                 html += '<div class="dp-intel"><div class="dp-intel-label">MISSING DIMENSIONS</div><div class="dp-dims">';
-                node.missing_dims.forEach(function (d) { html += '<span class="dp-dim-missing">' + d + '</span>'; });
-                html += '</div></div>';
+                node.missing_dims.forEach(function (d) {
+                    html += '<span class="dp-dim-fix" onclick="event.stopPropagation(); GALAXY.fixDim(\'' + node.id + '\',\'' + d + '\')">' + d + ' <i class="fas fa-wrench" style="font-size:8px;margin-left:2px"></i></span>';
+                });
+                html += '</div>';
+                html += '<button type="button" class="dp-fix-all" onclick="GALAXY.fixScope(\'' + node.id + '\')"><i class="fas fa-tools"></i> FIX ALL (' + node.missing_dims.length + ' gaps)</button>';
+                html += '</div>';
             }
 
             // Next tier
@@ -391,43 +395,312 @@ var GALAXY = (function () {
             if (kids.length > 20) html += '<span class="dp-child" style="border-color:#86868b;color:#86868b">+' + (kids.length - 20) + ' more</span>';
             html += '</div></div>';
         }
-        panel.innerHTML = html;
-        panel.classList.add('open');
+        return html;
+    }
+
+    function showDetail(node) {
+        _selectedNodeId = node.id;
+        renderControlPanel();
+        openRightDrawer();
     }
 
     function closeDetail() {
-        var panel = document.getElementById('detailPanel');
-        if (panel) panel.classList.remove('open');
+        _selectedNodeId = null;
+        renderControlPanel();
+        closeRightDrawer();
     }
 
-    // ── LAUNCHPAD (persistent search bar, expands upward) ──
-    function openLaunchpad(prefill) {
-        var el = document.getElementById('launchpad');
-        if (!el) return;
-        _launchpadOpen = true;
+    function clearScope() {
+        _selectedNodeId = null;
+        renderControlPanel();
+    }
+
+    // ── DRAWER MANAGEMENT ─────────────────────────────
+    function openLeftDrawer() {
+        var el = document.getElementById('leftDrawer');
+        if (!el || !galaxy) return;
+        closeSearch();
+        el.innerHTML = '<div class="ld-header"><span class="ld-title">INTEL</span><button class="ld-close" onclick="GALAXY.closeLeft()">&times;</button></div>' + renderIntelTab();
         el.classList.add('open');
-        var input = document.getElementById('launchpadInput');
-        if (input) {
-            input.value = prefill || '';
-            input.focus();
-            handleLaunchpadInput(prefill || '');
+        _leftOpen = true;
+    }
+
+    function closeLeftDrawer() {
+        var el = document.getElementById('leftDrawer');
+        if (el) el.classList.remove('open');
+        _leftOpen = false;
+    }
+
+    function toggleLeft() {
+        if (_leftOpen) closeLeftDrawer();
+        else openLeftDrawer();
+    }
+
+    function openRightDrawer() {
+        var el = document.getElementById('rightDrawer');
+        if (!el) return;
+        closeSearch();
+        if (_selectedNodeId && nodeMap[_selectedNodeId]) {
+            el.innerHTML = renderDetailHTML(nodeMap[_selectedNodeId]);
+        } else {
+            el.innerHTML = '<div style="padding:24px;text-align:center;color:#86868b;font-size:11px;font-family:var(--mono)">Click a node to view details</div>';
+        }
+        el.classList.add('open');
+        _rightOpen = true;
+    }
+
+    function closeRightDrawer() {
+        var el = document.getElementById('rightDrawer');
+        if (el) el.classList.remove('open');
+        _rightOpen = false;
+    }
+
+    function toggleRight() {
+        if (_rightOpen) closeRightDrawer();
+        else openRightDrawer();
+    }
+
+    // ── MASTER SCORE (floating game HUD) ──────────────────
+    // Category colors from GALAXY.md spec
+    var CATEGORY_COLORS = {
+        KERNEL: '#ff0088', RUNTIME: '#00ff88', OPERATIONS: '#2997ff',
+        COMMERCE: '#ff9f0a', KNOWLEDGE: '#bf5af2', GOVERNANCE: '#ffd60a',
+        SERVICES: '#ec4899', CONTENT: '#a78bfa', ORG: '#64748b'
+    };
+
+    function renderControlPanel() {
+        var el = document.getElementById('controlPanel');
+        if (!el || !galaxy) return;
+
+        // Interactively scoped: show selected node or master
+        var scoped = _selectedNodeId ? nodeMap[_selectedNodeId] : null;
+        var bits, balance, tier, label;
+        if (scoped) {
+            bits = scoped.bits || 0;
+            balance = scoped.wallet ? scoped.wallet.balance : 0;
+            tier = tierFor(bits);
+            label = scoped.label;
+        } else {
+            var master = galaxy.master;
+            bits = master ? master.bits : 0;
+            balance = master ? master.wallet_balance : (galaxy.stats ? galaxy.stats.total_coin : 0);
+            tier = tierFor(bits);
+            label = '';
+        }
+
+        var tierClass = bits >= 255 ? ' unicorn-text' : '';
+        var html = '';
+
+        // Close scope button
+        if (scoped) {
+            html += '<button class="cp-close" onclick="GALAXY.clearScope()" title="Back to master">&times;</button>';
+        }
+
+        // Brand
+        html += '<div class="cp-brand">';
+        html += '<div class="cp-brand-title">CANONIC</div>';
+        html += '<div class="cp-brand-sub">\u2229 MAGIC</div>';
+        html += '</div>';
+
+        // Score: ring + tier + coin
+        html += '<div class="cp-score">';
+        html += '<div class="cp-ring" onclick="GALAXY.toggleLeft()" title="Open INTEL">';
+        html += ringHTML(bits, 48, true);
+        html += '<span class="cp-bits">' + bits + '</span>';
+        html += '</div>';
+        html += '<div class="cp-stats">';
+        html += '<div class="cp-tier' + tierClass + '" style="' + (tierClass ? '' : 'color:' + tier.color) + '">' + tier.badge + ' ' + tier.name + '</div>';
+        html += '<a class="cp-coin" href="https://hadleylab.org/timeline/" target="_blank" title="Open Wallet"><i class="fas fa-coins"></i> ' + formatCoin(balance) + '</a>';
+        if (label) {
+            html += '<div class="cp-scope-label">' + label + '</div>';
+        }
+        html += '</div></div>';
+
+        // Tier filter pills
+        var tierCounts = {};
+        _compiledTiers.forEach(function (t) { tierCounts[t.name] = 0; });
+        galaxy.nodes.forEach(function (n) {
+            if (n.kind !== 'USER' && typeof n.bits === 'number') {
+                var t = tierFor(n.bits);
+                if (tierCounts[t.name] !== undefined) tierCounts[t.name]++;
+                else tierCounts[t.name] = 1;
+            }
+        });
+
+        html += '<div class="cp-divider"></div>';
+        html += '<div class="cp-filters">';
+        _compiledTiers.forEach(function (t) {
+            var cnt = tierCounts[t.name] || 0;
+            if (cnt > 0) {
+                var active = _activeFilter === 'tier:' + t.name ? ' active' : '';
+                html += '<span class="filter-pill' + active + '" style="color:' + t.color + ';border-color:' + hexToRgba(t.color, 0.4) + '" onclick="GALAXY.filterTier(\'' + t.name + '\')">' + t.badge + ' ' + t.name + ' <span style="opacity:0.5;font-size:8px">' + cnt + '</span></span>';
+            }
+        });
+        html += '</div>';
+
+        el.innerHTML = html;
+    }
+
+    function renderCatLegend() {
+        var el = document.getElementById('catLegend');
+        if (!el || !galaxy) return;
+
+        var catCounts = {};
+        galaxy.nodes.forEach(function (n) {
+            if (n.category) catCounts[n.category] = (catCounts[n.category] || 0) + 1;
+        });
+
+        var html = '';
+        Object.keys(CATEGORY_COLORS).forEach(function (cat) {
+            if (!catCounts[cat]) return;
+            var active = _activeFilter === cat ? ' active' : '';
+            html += '<span class="cat-dot' + active + '" onclick="GALAXY.filterCategory(\'' + cat + '\')">';
+            html += '<span class="cat-dot-circle" style="background:' + CATEGORY_COLORS[cat] + ';color:' + CATEGORY_COLORS[cat] + '"></span>';
+            html += cat;
+            html += '</span>';
+        });
+
+        el.innerHTML = html;
+    }
+
+    // ── INTEL TAB (task list with fix buttons) ────────────
+    function renderIntelTab() {
+        var users = 0, totalBits = 0, bitCount = 0, health = 0, scopeCount = 0;
+        galaxy.nodes.forEach(function (n) {
+            if (n.kind === 'USER') { users++; return; }
+            if (typeof n.bits === 'number') {
+                totalBits += n.bits; bitCount++; scopeCount++;
+                if (n.bits >= 35) health++;
+            }
+        });
+        var avgBits = bitCount > 0 ? Math.round(totalBits / bitCount) : 0;
+        var avgTier = tierFor(avgBits);
+        var stats = galaxy.stats || {};
+        var healthPct = scopeCount > 0 ? Math.round(100 * health / scopeCount) : 0;
+
+        var tierClass = avgBits >= 255 ? ' unicorn-text' : '';
+        var html = '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)">';
+        html += ringHTML(avgBits, 48);
+        html += '<div style="flex:1;min-width:0">';
+        html += '<div class="' + tierClass + '" style="font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:0.1em;' + (tierClass ? '' : 'color:' + avgTier.color) + '">' + avgTier.name + '</div>';
+        html += '<div style="font-family:var(--mono);font-size:9px;color:var(--dim);opacity:0.5">' + galaxy.nodes.length + ' nodes \u00b7 ' + healthPct + '% fleet \u00b7 ' + users + ' people</div>';
+        html += '</div></div>';
+
+        // INTEL tasks
+        var tasks = galaxy.nodes.filter(function (n) {
+            return n.kind !== 'USER' && typeof n.bits === 'number' && n.bits < 255 && n.bits > 0 && n.next_tier;
+        }).sort(function (a, b) { return (a.next_tier_gap || 999) - (b.next_tier_gap || 999); }).slice(0, 30);
+
+        html += '<div style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:0.12em;padding:8px 16px 4px">INTEL \u00b7 ' + tasks.length + ' tasks</div>';
+        html += '<div class="intel-tasks">';
+        if (tasks.length === 0) {
+            html += '<div style="padding:12px 16px;text-align:center;color:#86868b;font-size:10px">All scopes at MAGIC 255</div>';
+        } else {
+            tasks.forEach(function (n) {
+                var tier = tierFor(n.bits);
+                var action = n.roadmap_now || (n.missing_dims && n.missing_dims.length > 0 ? 'Add ' + n.missing_dims.join(', ') : 'Increase compliance');
+                var gapLabel = n.next_tier ? '+' + n.next_tier_gap + ' \u2192 ' + n.next_tier : '';
+                html += '<div class="intel-task" data-node="' + n.id + '" onclick="event.stopPropagation(); GALAXY.fixFromIntel(\'' + n.id + '\')">';
+                html += '<span class="intel-task-bits" style="color:' + tier.color + '">' + n.bits + '</span>';
+                html += '<div class="intel-task-info"><div class="intel-task-name" style="color:' + (n.color || '#f5f5f7') + '">' + n.label + '</div>';
+                html += '<div class="intel-task-action">' + action + '</div></div>';
+                if (gapLabel) html += '<span class="intel-task-gap">' + gapLabel + '</span>';
+                html += '<button type="button" class="intel-task-fix" onclick="event.stopPropagation(); GALAXY.fixScope(\'' + n.id + '\')" title="Fix"><i class="fas fa-wrench"></i></button>';
+                html += '</div>';
+            });
+        }
+        html += '</div>';
+        return html;
+    }
+
+    // ── FIX FUNCTIONS (cross-panel coordination) ──────────
+    function pulseNode(nodeId) {
+        if (!nodeDS || !nodeDS.get(nodeId)) return;
+        var orig = nodeDS.get(nodeId);
+        var origSize = orig.icon ? orig.icon.size : 20;
+        var bigger = {};
+        for (var k in orig.icon) bigger[k] = orig.icon[k];
+        bigger.size = origSize * 1.5;
+        nodeDS.update({ id: nodeId, icon: bigger });
+        setTimeout(function () {
+            var restore = {};
+            for (var k2 in orig.icon) restore[k2] = orig.icon[k2];
+            restore.size = origSize;
+            nodeDS.update({ id: nodeId, icon: restore });
+        }, 600);
+    }
+
+    function highlightTask(nodeId) {
+        var tasks = document.querySelectorAll('.intel-task');
+        for (var i = 0; i < tasks.length; i++) {
+            tasks[i].classList.remove('active');
+        }
+        var target = document.querySelector('.intel-task[data-node="' + nodeId + '"]');
+        if (target) {
+            target.classList.add('active');
+            target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }
 
-    function closeLaunchpad() {
-        var el = document.getElementById('launchpad');
-        if (!el) return;
-        _launchpadOpen = false;
-        el.classList.remove('open');
-        var input = document.getElementById('launchpadInput');
-        if (input) input.value = '';
-        var results = document.getElementById('launchpadResults');
-        if (results) results.innerHTML = '';
+    function fixFromIntel(nodeId) {
+        var node = nodeMap[nodeId];
+        if (!node) return;
+        _selectedNodeId = nodeId;
+        renderControlPanel();
+        highlightTask(nodeId);
+        pulseNode(nodeId);
+        if (nodeDS && nodeDS.get(nodeId)) {
+            network.focus(nodeId, { scale: 1.5, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+        }
+        openRightDrawer();
     }
 
-    function handleLaunchpadInput(query) {
-        var results = document.getElementById('launchpadResults');
+    function fixScope(nodeId) {
+        var node = nodeMap[nodeId];
+        if (!node) return;
+        pulseNode(nodeId);
+        if (nodeDS && nodeDS.get(nodeId)) {
+            network.focus(nodeId, { scale: 1.5, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
+        }
+        _selectedNodeId = nodeId;
+        renderControlPanel();
+        openRightDrawer();
+        var url = launchUrl(node);
+        if (url) window.open(url, '_blank');
+    }
+
+    function fixDim(nodeId, dimName) {
+        var node = nodeMap[nodeId];
+        if (!node) return;
+        pulseNode(nodeId);
+        var url = launchUrl(node);
+        if (url) window.open(url, '_blank');
+    }
+
+    // ── SEARCH BAR ──
+    function openSearch(prefill) {
+        _searchOpen = true;
+        var input = document.getElementById('searchInput');
+        if (input) {
+            input.value = prefill || '';
+            input.focus();
+            if (prefill) handleSearchInput(prefill);
+        }
+    }
+
+    function closeSearch() {
+        _searchOpen = false;
+        var input = document.getElementById('searchInput');
+        if (input) input.value = '';
+        var results = document.getElementById('searchResults');
+        if (results) results.classList.remove('open');
+    }
+
+    function handleSearchInput(query) {
+        var results = document.getElementById('searchResultsInner');
         if (!results) return;
+        var resultsWrap = document.getElementById('searchResults');
+        if (resultsWrap) resultsWrap.classList.add('open');
 
         var q = query.toLowerCase().trim();
         if (!q) { results.innerHTML = renderLaunchpadGrid(); return; }
@@ -557,17 +830,18 @@ var GALAXY = (function () {
     }
 
     function launchpadSelect(id) {
-        closeLaunchpad();
         focusScope(id);
     }
 
     function focusScope(id) {
         var node = nodeMap[id];
         if (!node) return;
+        _selectedNodeId = id;
+        renderControlPanel();
         if (nodeDS && nodeDS.get(id)) {
             network.focus(id, { scale: 1.5, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
         }
-        showDetail(node);
+        openRightDrawer();
     }
 
     // ── BUILD GRAPH ──────────────────────────────────────
@@ -868,9 +1142,11 @@ var GALAXY = (function () {
                         network.focus(nid, { scale: 1.5, animation: { duration: 400, easingFunction: 'easeInOutQuad' } });
                     }
                 }
-                if (node) showDetail(node);
-            } else {
-                closeDetail();
+                if (node) {
+                    _selectedNodeId = nid;
+                    renderControlPanel();
+                    openRightDrawer();
+                }
             }
         });
 
@@ -881,120 +1157,9 @@ var GALAXY = (function () {
         });
     }
 
-    // ── HUD (expandable — click to show INTEL tasks) ──────
-    function renderHUD() {
-        var hud = document.getElementById('hud');
-        if (!hud) return;
-        var users = 0, totalBits = 0, bitCount = 0, health = 0, scopeCount = 0;
-        galaxy.nodes.forEach(function (n) {
-            if (n.kind === 'USER') { users++; return; }
-            if (typeof n.bits === 'number') {
-                totalBits += n.bits; bitCount++; scopeCount++;
-                if (n.bits >= 35) health++;
-            }
-        });
-        var avgBits = bitCount > 0 ? Math.round(totalBits / bitCount) : 0;
-        var avgTier = tierFor(avgBits);
-        var stats = galaxy.stats || {};
-        var healthPct = scopeCount > 0 ? Math.round(100 * health / scopeCount) : 0;
+    // (renderLeftDrawer removed — logic moved to renderIntelTab)
 
-        var tierClass = avgBits >= 255 ? ' unicorn-text' : '';
-        var html = ringHTML(avgBits, 80) +
-            '<div class="hud-label' + tierClass + '" style="' + (tierClass ? '' : 'color:' + avgTier.color + ';') + 'font-size:13px;font-weight:700;margin-top:6px;letter-spacing:0.1em">' + avgTier.name + '</div>' +
-            '<div class="hud-label" style="font-size:9px;opacity:0.4">' + galaxy.nodes.length + ' nodes</div>' +
-            '<div class="hud-divider"></div>' +
-            (stats.total_coin > 0 ? '<div class="hud-label" style="font-size:12px;color:#ffd60a;margin-top:4px;text-shadow:0 0 8px rgba(255,214,10,0.3)">' + formatCoin(stats.total_coin) + ' <span style="opacity:0.4;font-size:9px">COIN</span></div>' : '') +
-            (stats.total_sessions > 0 ? '<div class="hud-label" style="font-size:10px;color:#2997ff;margin-top:2px">' + stats.total_sessions + ' <span style="opacity:0.4;font-size:9px">sessions</span></div>' : '') +
-            '<div class="hud-label" style="font-size:9px;margin-top:4px;opacity:0.35">' + healthPct + '% fleet \u00b7 ' + users + ' people</div>';
-
-        // INTEL tasks (sorted by gap — most impact first)
-        var tasks = galaxy.nodes.filter(function (n) {
-            return n.kind !== 'USER' && typeof n.bits === 'number' && n.bits < 255 && n.bits > 0 && n.next_tier;
-        }).sort(function (a, b) { return (a.next_tier_gap || 999) - (b.next_tier_gap || 999); }).slice(0, 20);
-
-        html += '<div class="hud-chevron">\u25BC</div>';
-        html += '<div class="hud-tasks">';
-        if (tasks.length === 0) {
-            html += '<div style="padding:8px;text-align:center;color:#86868b;font-size:10px">All scopes at MAGIC 255</div>';
-        } else {
-            tasks.forEach(function (n) {
-                var tier = tierFor(n.bits);
-                var action = n.roadmap_now || (n.missing_dims && n.missing_dims.length > 0 ? 'Add ' + n.missing_dims.join(', ') : 'Increase compliance');
-                var gapLabel = n.next_tier ? '+' + n.next_tier_gap + ' \u2192 ' + n.next_tier : '';
-                html += '<div class="hud-task" onclick="event.stopPropagation(); GALAXY.focusScope(\'' + n.id + '\')">';
-                html += '<span class="hud-task-bits" style="color:' + tier.color + '">' + n.bits + '</span>';
-                html += '<div class="hud-task-info"><div class="hud-task-name" style="color:' + (n.color || '#f5f5f7') + '">' + n.label + '</div>';
-                html += '<div class="hud-task-action">' + action + '</div></div>';
-                if (gapLabel) html += '<span class="hud-task-gap">' + gapLabel + '</span>';
-                html += '</div>';
-            });
-        }
-        html += '</div>';
-
-        hud.innerHTML = html;
-
-        // Click to expand/collapse
-        hud.onclick = function (e) {
-            if (e.target.closest('.hud-task')) return;
-            _hudExpanded = !_hudExpanded;
-            hud.classList.toggle('expanded', _hudExpanded);
-        };
-    }
-
-    // ── LEGEND ──────────────────────────────────────────
-    function renderLegend() {
-        var el = document.getElementById('legend');
-        if (!el) return;
-
-        // Collect categories from galaxy nodes
-        var cats = {};
-        galaxy.nodes.forEach(function (n) {
-            if (n.category && n.kind !== 'USER') {
-                if (!cats[n.category]) cats[n.category] = { count: 0, color: n.color || '#64748b' };
-                cats[n.category].count++;
-            }
-        });
-
-        // Tier distribution (dynamic from compiled tiers)
-        var tierCounts = {};
-        _compiledTiers.forEach(function (t) { tierCounts[t.name] = 0; });
-        galaxy.nodes.forEach(function (n) {
-            if (n.kind !== 'USER' && typeof n.bits === 'number') {
-                var t = tierFor(n.bits);
-                if (tierCounts[t.name] !== undefined) tierCounts[t.name]++;
-                else tierCounts[t.name] = 1;
-            }
-        });
-
-        var html = '<div class="legend-title">TIERS</div>';
-        _compiledTiers.forEach(function (t) {
-            var cnt = tierCounts[t.name] || 0;
-            if (cnt > 0) {
-                html += '<div class="legend-row' + (_activeFilter === 'tier:' + t.name ? ' active' : '') + '" data-tier="' + t.name + '" onclick="GALAXY.filterTier(\'' + t.name + '\')">';
-                html += '<span class="legend-dot" style="background:' + t.color + ';box-shadow:0 0 6px ' + t.color + '"></span>';
-                html += '<span class="legend-label">' + t.badge + ' ' + t.name + '</span>';
-                html += '<span class="legend-count">' + cnt + '</span>';
-                html += '</div>';
-            }
-        });
-
-        html += '<div class="legend-title" style="margin-top:10px">CATEGORIES</div>';
-        Object.keys(cats).sort().forEach(function (cat) {
-            html += '<div class="legend-row' + (_activeFilter === cat ? ' active' : '') + '" data-category="' + cat + '" onclick="GALAXY.filterCategory(\'' + cat + '\')">';
-            html += '<span class="legend-dot" style="background:' + cats[cat].color + ';box-shadow:0 0 6px ' + cats[cat].color + '"></span>';
-            html += '<span class="legend-label">' + cat + '</span>';
-            html += '<span class="legend-count">' + cats[cat].count + '</span>';
-            html += '</div>';
-        });
-
-        html += '<div class="legend-title" style="margin-top:10px">EDGES</div>';
-        html += '<div class="legend-edge"><span class="legend-edge-line" style="border-style:solid"></span> INHERITS</div>';
-        html += '<div class="legend-edge"><span class="legend-edge-line" style="border-style:dashed;border-color:#00ff88"></span> CLUSTER</div>';
-        html += '<div class="legend-edge"><span class="legend-edge-line" style="border-style:dotted;border-color:#bf5af2"></span> DOMAINS</div>';
-
-        el.innerHTML = html;
-    }
-
+    // ── FILTER BAR (compact tier pills, replaces legend) ──
     var _activeFilter = null;
     function clearFilter() {
         _activeFilter = null;
@@ -1014,7 +1179,8 @@ var GALAXY = (function () {
                 }
             });
         }
-        renderLegend();
+        renderControlPanel();
+        renderCatLegend();
     }
     function filterTier(tierName) {
         if (!nodeDS) return;
@@ -1030,7 +1196,8 @@ var GALAXY = (function () {
                 }
             });
         }
-        renderLegend();
+        renderControlPanel();
+        renderCatLegend();
     }
 
     // ── TRANSFORM SCOPES → GALAXY ────────────────────────
@@ -1074,8 +1241,8 @@ var GALAXY = (function () {
         var container = el || document.getElementById('galaxy');
         if (!container) return;
         buildGraph(container);
-        renderHUD();
-        renderLegend();
+        renderControlPanel();
+        renderCatLegend();
 
         if (network) {
             network.once('stabilizationIterationsDone', function () {
@@ -1084,16 +1251,19 @@ var GALAXY = (function () {
             });
         }
 
-        // Launchpad keybinding (Cmd+K / Ctrl+K)
+        // Search keybinding (Cmd+K / Ctrl+K)
         document.addEventListener('keydown', function (e) {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
                 e.preventDefault();
-                if (_launchpadOpen) closeLaunchpad();
-                else openLaunchpad();
+                if (GALAXY.showSearch) GALAXY.showSearch();
             }
             if (e.key === 'Escape') {
-                if (_launchpadOpen) {
-                    closeLaunchpad();
+                if (_searchOpen) {
+                    closeSearch();
+                } else if (_leftOpen) {
+                    closeLeftDrawer();
+                } else if (_rightOpen) {
+                    closeRightDrawer();
                 } else {
                     if (_collapseAll) _collapseAll();
                     closeDetail();
@@ -1102,17 +1272,60 @@ var GALAXY = (function () {
             }
         });
 
-        // Launchpad input
-        var lpInput = document.getElementById('launchpadInput');
-        if (lpInput) {
-            lpInput.addEventListener('input', function () { handleLaunchpadInput(this.value); });
-            lpInput.addEventListener('focus', function () {
-                if (!_launchpadOpen) openLaunchpad();
+        // Search input
+        var searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function () { handleSearchInput(this.value); });
+            searchInput.addEventListener('focus', function () {
+                if (_leftOpen) closeLeftDrawer();
+                if (_rightOpen) closeRightDrawer();
+                showSearchBar();
             });
-            lpInput.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') closeLaunchpad();
+            searchInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') closeSearch();
             });
         }
+
+        // Clear animation so CSS transitions can control transform
+        var searchBar = document.getElementById('searchBar');
+        if (searchBar) {
+            searchBar.addEventListener('animationend', function () {
+                searchBar.classList.add('animated');
+            });
+        }
+
+        // Auto-hide search bar after idle
+        var searchPeek = document.getElementById('searchPeek');
+        var _hideTimer = null;
+        function resetHideTimer() {
+            clearTimeout(_hideTimer);
+            showSearchBar();
+            _hideTimer = setTimeout(function () {
+                if (!_searchOpen && document.activeElement !== searchInput) {
+                    hideSearchBar();
+                }
+            }, 5000);
+        }
+        function hideSearchBar() {
+            if (searchBar) searchBar.classList.add('collapsed');
+            if (searchPeek) searchPeek.classList.add('visible');
+        }
+        function showSearchBar() {
+            if (searchBar) searchBar.classList.remove('collapsed');
+            if (searchPeek) searchPeek.classList.remove('visible');
+            clearTimeout(_hideTimer);
+        }
+        if (searchBar) {
+            searchBar.addEventListener('mouseenter', function () { clearTimeout(_hideTimer); showSearchBar(); });
+            searchBar.addEventListener('mouseleave', resetHideTimer);
+        }
+        // Expose for peek tab + Cmd+K
+        GALAXY.showSearch = function () {
+            showSearchBar();
+            if (searchInput) searchInput.focus();
+            resetHideTimer();
+        };
+        resetHideTimer();
     }
 
     return {
@@ -1122,6 +1335,14 @@ var GALAXY = (function () {
         launchpadSelect: launchpadSelect,
         filterCategory: filterCategory,
         filterTier: filterTier,
+        toggleLeft: toggleLeft,
+        toggleRight: toggleRight,
+        closeLeft: closeLeftDrawer,
+        closeRight: closeRightDrawer,
+        fixScope: fixScope,
+        fixDim: fixDim,
+        fixFromIntel: fixFromIntel,
+        clearScope: clearScope,
         auth: function () { return _authUser; }
     };
 })();
