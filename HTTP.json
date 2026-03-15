@@ -1,0 +1,470 @@
+{
+  "version": "2026-03-09",
+  "nav": {
+    "fleet_tabs": true,
+    "breadcrumbs": true
+  },
+  "fleet": {
+    "canonic-canonic.github.io": "canonic.org",
+    "hadleylab-canonic.github.io": "hadleylab.org",
+    "RunnerMVP/Runner-MVP": "gorunner.pro"
+  },
+  "zones": [
+    {
+      "zone": "canonic.org",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    },
+    {
+      "zone": "hadleylab.org",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    },
+    {
+      "zone": "mammo.chat",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    },
+    {
+      "zone": "mammochat.com",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    },
+    {
+      "zone": "mammochat.ai",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    },
+    {
+      "zone": "carib.chat",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    },
+    {
+      "zone": "caribchat.org",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    },
+    {
+      "zone": "caribchat.ai",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    },
+    {
+      "zone": "atulisms.com",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    },
+    {
+      "zone": "gorunner.pro",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    }
+  ],
+  "domains": [
+    {
+      "domain": "mammo.chat",
+      "target": "hadleylab.org/talks/mammochat/",
+      "serve": "proxy"
+    },
+    {
+      "domain": "mammochat.ai",
+      "target": "hadleylab.org/services/talk/mammochat/",
+      "serve": "proxy"
+    },
+    {
+      "domain": "mammochat.com",
+      "target": "hadleylab.org/talks/mammochat/",
+      "serve": "proxy"
+    },
+    {
+      "domain": "carib.chat",
+      "target": "hadleylab.org/talks/caribchat/",
+      "serve": "proxy"
+    },
+    {
+      "domain": "caribchat.ai",
+      "target": "hadleylab.org/services/talk/caribchat/",
+      "serve": "proxy"
+    },
+    {
+      "domain": "caribchat.org",
+      "target": "hadleylab.org/talks/caribchat/",
+      "serve": "proxy"
+    },
+    {
+      "domain": "atulisms.com",
+      "target": "hadleylab.org/books/atulisms/",
+      "serve": "proxy"
+    },
+    {
+      "domain": "omicschat.hadleylab.org",
+      "target": "hadleylab.org/talks/omicschat/",
+      "serve": "subdomain"
+    },
+    {
+      "domain": "oncochat.hadleylab.org",
+      "target": "hadleylab.org/talks/oncochat/",
+      "serve": "subdomain"
+    },
+    {
+      "domain": "medchat.hadleylab.org",
+      "target": "hadleylab.org/talks/medchat/",
+      "serve": "subdomain"
+    },
+    {
+      "domain": "finchat.hadleylab.org",
+      "target": "hadleylab.org/talks/finchat/",
+      "serve": "subdomain"
+    },
+    {
+      "domain": "lawchat.hadleylab.org",
+      "target": "hadleylab.org/talks/lawchat/",
+      "serve": "subdomain"
+    },
+    {
+      "domain": "nona.hadleylab.org",
+      "target": "hadleylab.org/talks/nona/",
+      "serve": "subdomain"
+    },
+    {
+      "domain": "realty.hadleylab.org",
+      "target": "hadleylab.org/talks/realty/",
+      "serve": "subdomain"
+    },
+    {
+      "domain": "vitae.hadleylab.org",
+      "target": "hadleylab.org/talks/vitae/",
+      "serve": "subdomain"
+    },
+    {
+      "domain": "dev.hadleylab.org",
+      "target": "hadleylab.org/talks/dev/",
+      "serve": "subdomain"
+    },
+    {
+      "domain": "star.hadleylab.org",
+      "target": "hadleylab.org/services/star/",
+      "serve": "subdomain"
+    },
+    {
+      "domain": "shop.hadleylab.org",
+      "target": "hadleylab.org/services/shop/",
+      "serve": "subdomain"
+    }
+  ],
+  "fleets": [
+    {
+      "id": "canonic",
+      "label": "The Machine",
+      "tagline": "Triad · Introspection · Inheritance"
+    },
+    {
+      "id": "hadleylab",
+      "label": "The Proof",
+      "tagline": "Products · Library · Team"
+    },
+    {
+      "id": "runner",
+      "label": "The Marketplace",
+      "tagline": "Post · Track · Earn"
+    }
+  ],
+  "design_language": {
+    "FOUNDATION": [
+      "LANGUAGE",
+      "INDUSTRIES",
+      "PROGRAMMING"
+    ],
+    "INDUSTRIES": [
+      "VERTICALS",
+      "REGULATORY",
+      "HORIZONTAL",
+      "META"
+    ],
+    "MAGIC": [
+      "COMPLIANCE",
+      "GALAXY",
+      "SURFACE"
+    ],
+    "HADLEYLAB": [
+      "INSTANCES"
+    ]
+  },
+  "depth_sources": {
+    "FOUNDATION": {
+      "language": "canonic-canonic/FOUNDATION",
+      "industries": "canonic-canonic/INDUSTRIES",
+      "programming": "canonic-canonic/FOUNDATION/PROGRAMMING"
+    },
+    "INDUSTRIES": {
+      "verticals": "canonic-canonic/INDUSTRIES/VERTICALS",
+      "regulatory": "canonic-canonic/INDUSTRIES/REGULATORY",
+      "horizontal": "canonic-canonic/INDUSTRIES/HORIZONTAL",
+      "meta": "canonic-canonic/INDUSTRIES/META"
+    },
+    "MAGIC": {
+      "compliance": "canonic-canonic/MAGIC/COMPLIANCE",
+      "galaxy": "canonic-canonic/MAGIC/GALAXY",
+      "surface": "canonic-canonic/MAGIC/SURFACE"
+    },
+    "HADLEYLAB": {
+      "instances": "hadleylab-canonic"
+    }
+  },
+  "repos": {
+    "canonic.org": "https://github.com/canonic-canonic/canonic-canonic.github.io.git",
+    "hadleylab.org": "https://github.com/hadleylab-canonic/hadleylab-canonic.github.io.git",
+    "DESIGN": "https://github.com/canonic-canonic/DESIGN.git"
+  },
+  "api": {
+    "port": 8255,
+    "host": "0.0.0.0",
+    "base": "https://api.canonic.org"
+  },
+  "cors_origins": [
+    "https://canonic.org",
+    "https://www.canonic.org",
+    "https://hadleylab.org",
+    "https://www.hadleylab.org",
+    "https://canonic-canonic.github.io",
+    "https://hadleylab-canonic.github.io",
+    "https://hadleylab-dexter.github.io",
+    "https://api.canonic.org",
+    "https://mammo.chat",
+    "https://www.mammo.chat",
+    "https://mammochat.com",
+    "https://www.mammochat.com",
+    "https://mammochat.ai",
+    "https://www.mammochat.ai",
+    "https://carib.chat",
+    "https://www.carib.chat",
+    "https://caribchat.org",
+    "https://www.caribchat.org",
+    "https://caribchat.ai",
+    "https://www.caribchat.ai",
+    "https://atulisms.com",
+    "https://www.atulisms.com",
+    "https://gorunner.pro",
+    "https://www.gorunner.pro"
+  ],
+  "oauth": {
+    "provider": "github",
+    "token_url": "https://github.com/login/oauth/access_token",
+    "user_url": "https://api.github.com/user",
+    "emails_url": "https://api.github.com/user/emails",
+    "redirect_uri_template": "{base}/api/v1/auth/github/callback"
+  },
+  "galaxy": {
+    "gov_depth": 2,
+    "auth_kv_key": "galaxy:auth"
+  },
+  "brand": {
+    "mark": "∩",
+    "label": "CANONIC",
+    "url": "/"
+  },
+  "service_frontends": {
+    "hadleylab.org": [
+      {
+        "label": "VITAE",
+        "path": "vitae",
+        "gov": "hadleylab-canonic/VITAE"
+      },
+      {
+        "label": "TALKS",
+        "path": "talks",
+        "gov": "hadleylab-canonic/TALKS"
+      },
+      {
+        "label": "BLOGS",
+        "path": "blogs",
+        "gov": "hadleylab-canonic/BLOGS"
+      },
+      {
+        "label": "PAPERS",
+        "path": "papers",
+        "gov": "hadleylab-canonic/PAPERS"
+      },
+      {
+        "label": "BOOKS",
+        "path": "books",
+        "gov": "hadleylab-canonic/BOOKS"
+      },
+      {
+        "label": "DECKS",
+        "path": "decks",
+        "gov": "hadleylab-canonic/DECKS"
+      },
+      {
+        "label": "DEALS",
+        "path": "deals",
+        "gov": "hadleylab-canonic/DEALS"
+      },
+      {
+        "label": "GRANTS",
+        "path": "grants",
+        "gov": "hadleylab-canonic/GRANTS"
+      },
+      {
+        "label": "CHARTER",
+        "path": "charter",
+        "gov": "hadleylab-canonic/CHARTER"
+      },
+      {
+        "label": "SERVICES",
+        "path": "services",
+        "gov": "hadleylab-canonic/SERVICES"
+      },
+      {
+        "label": "USERS",
+        "path": "users",
+        "gov": "hadleylab-canonic/USERS"
+      }
+    ]
+  },
+  "sites": [
+    {
+      "site": "canonic.org",
+      "repo_owner": "canonic-canonic",
+      "scope": "CANONIC",
+      "label": "CANONIC",
+      "tagline": "Governance Intelligence",
+      "accent": "#00ff88",
+      "fleet": "canonic",
+      "nav": false,
+      "description": "Distribute Work. Govern Value.",
+      "image": "/assets/og.png",
+      "ga4_id": "G-FS0FDCM8EB",
+      "meta_pixel_id": "237958571262318",
+      "linkedin_partner_id": "520335172",
+      "twitter_pixel_id": "18ce53yfp0n",
+      "google_ads_id": "AW-2784372644",
+      "reddit_pixel_id": "a2_ilt7lbzhyelg",
+      "search_console_verified": "DONE"
+    },
+    {
+      "site": "FOUNDATION",
+      "domain": "canonic.org/FOUNDATION",
+      "repo_owner": "canonic-canonic",
+      "scope": "FOUNDATION",
+      "label": "Foundation",
+      "tagline": "Standards & Certification",
+      "accent": "#7c3aed",
+      "fleet": "canonic"
+    },
+    {
+      "site": "INDUSTRIES",
+      "domain": "canonic.org/INDUSTRIES",
+      "repo_owner": "canonic-canonic",
+      "scope": "INDUSTRIES",
+      "label": "Industries",
+      "tagline": "21 Governed Domains",
+      "accent": "#bf5af2",
+      "fleet": "canonic"
+    },
+    {
+      "site": "MAGIC",
+      "domain": "canonic.org/MAGIC",
+      "repo_owner": "canonic-canonic",
+      "scope": "MAGIC",
+      "label": "MAGIC",
+      "tagline": "INTEL · CHAT · COIN",
+      "accent": "#00ff88",
+      "fleet": "canonic"
+    },
+    {
+      "site": "hadleylab.org",
+      "repo_owner": "hadleylab-canonic",
+      "scope": "HADLEYLAB",
+      "label": "Hadley Lab",
+      "tagline": "From Bits to Bedside",
+      "accent": "#60a5fa",
+      "fleet": "hadleylab",
+      "description": "From Bits to Bedside.",
+      "image": "/assets/og.png",
+      "ga4_id": "G-0X3GCTH7TZ",
+      "meta_pixel_id": "237958571262318",
+      "linkedin_partner_id": "520335172",
+      "twitter_pixel_id": "18ce53yfp0n",
+      "google_ads_id": "AW-2784372644",
+      "reddit_pixel_id": "a2_ilt7lbzhyelg",
+      "search_console_verified": "DONE"
+    }
+  ],
+  "routing": {
+    "rules": {
+      "case_normalization": "enabled",
+      "canonical_case": "lowercase",
+      "redirect_code": 301,
+      "scope": "all fleet zones"
+    },
+    "governance_lanes": {
+      "hadleylab.org": [
+        {
+          "lane": "papers",
+          "origin": "PAPERS",
+          "sub-path": "lowercase slugs",
+          "source": "Service Frontends"
+        },
+        {
+          "lane": "blogs",
+          "origin": "BLOGS",
+          "sub-path": "lowercase slugs",
+          "source": "Service Frontends"
+        },
+        {
+          "lane": "books",
+          "origin": "BOOKS",
+          "sub-path": "UPPERCASE scopes",
+          "source": "Service Frontends"
+        },
+        {
+          "lane": "talks",
+          "origin": "talks",
+          "sub-path": "passthrough (origin already lowercase)",
+          "source": "Service Frontends"
+        },
+        {
+          "lane": "decks",
+          "origin": "DECKS",
+          "sub-path": "UPPERCASE scopes",
+          "source": "Service Frontends"
+        },
+        {
+          "lane": "services",
+          "origin": "SERVICES",
+          "sub-path": "UPPERCASE scopes",
+          "source": "Service Frontends"
+        },
+        {
+          "lane": "users",
+          "origin": "USERS",
+          "sub-path": "mixed (depth 1 UPPER, depth 2+ preserve)",
+          "source": "Service Frontends"
+        }
+      ],
+      "canonic.org": [
+        {
+          "lane": "foundation",
+          "origin": "FOUNDATION",
+          "source": "Sites"
+        },
+        {
+          "lane": "industries",
+          "origin": "INDUSTRIES",
+          "source": "Sites"
+        },
+        {
+          "lane": "magic",
+          "origin": "MAGIC",
+          "source": "Sites"
+        }
+      ]
+    }
+  },
+  "_generated": {
+    "contract": "canonic-canonic/MAGIC/TOOLCHAIN/HTTP.md",
+    "rule": "edit the contract or compiler — not this file"
+  }
+}
