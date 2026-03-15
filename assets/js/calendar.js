@@ -56,7 +56,7 @@ var CAL = (function () {
     events = [];
 
     lanes.forEach(function (lane) {
-      var url = dataPath + '/lanes/' + lane + '.jsonl';
+      var url = dataPath + '/lanes/' + lane + '.json';
       fetch(url).then(function (r) {
         if (!r.ok) { loaded++; checkReady(loaded, lanes.length); return; }
         return r.text();
