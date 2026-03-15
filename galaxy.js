@@ -516,6 +516,31 @@ var GALAXY = (function () {
         }
         html += '</div></div>';
 
+        // Fleet stats row
+        var st = galaxy.stats || {};
+        var userCount = st.user_count || 0;
+        var orgCount = st.org_count || 0;
+        var svcCount = st.svc_count || 0;
+        var scopeCount = st.scope_count || 0;
+        var healthPct = st.fleet_health_pct || 0;
+
+        html += '<div class="cp-divider"></div>';
+        html += '<div class="cp-fleet-stats">';
+        html += '<span class="cp-fleet-stat' + (_activeFilter === 'kind:USER' ? ' active' : '') + '" onclick="GALAXY.filterKind(\'USER\')" title="Filter users"><span class="cp-fleet-num">' + userCount + '</span> USER</span>';
+        html += '<span class="cp-fleet-stat' + (_activeFilter === 'kind:ORG' ? ' active' : '') + '" onclick="GALAXY.filterKind(\'ORG\')" title="Filter orgs"><span class="cp-fleet-num">' + orgCount + '</span> ORGS</span>';
+        html += '</div>';
+        html += '<div class="cp-fleet-stats">';
+        html += '<span class="cp-fleet-stat' + (_activeFilter === 'kind:SERVICE' ? ' active' : '') + '" onclick="GALAXY.filterKind(\'SERVICE\')" title="Filter services"><span class="cp-fleet-num">' + svcCount + '</span> SRVCS</span>';
+        html += '<span class="cp-fleet-stat' + (_activeFilter === 'kind:SCOPE' ? ' active' : '') + '" onclick="GALAXY.filterKind(\'SCOPE\')" title="Filter scopes"><span class="cp-fleet-num">' + scopeCount + '</span> SCOPES</span>';
+        html += '</div>';
+
+        // Fleet health bar
+        var healthColor = healthPct >= 90 ? '#22c55e' : healthPct >= 70 ? '#eab308' : '#ef4444';
+        html += '<div class="cp-health" onclick="GALAXY.filterHealthy(false)" title="Fleet health — click to filter healthy nodes">';
+        html += '<div class="cp-health-label">FLEET HEALTH</div>';
+        html += '<div class="cp-health-bar"><div class="cp-health-fill" style="width:' + healthPct + '%;background:' + healthColor + '"></div></div>';
+        html += '</div>';
+
         // Tier filter pills
         var tierCounts = {};
         _compiledTiers.forEach(function (t) { tierCounts[t.name] = 0; });
@@ -1200,6 +1225,42 @@ var GALAXY = (function () {
         renderCatLegend();
     }
 
+    function filterKind(kindName) {
+        if (!nodeDS) return;
+        var key = 'kind:' + kindName;
+        if (_activeFilter === key) {
+            clearFilter();
+        } else {
+            _activeFilter = key;
+            galaxy.nodes.forEach(function (n) {
+                if (nodeDS.get(n.id)) {
+                    nodeDS.update({ id: n.id, opacity: n.kind === kindName ? 1.0 : 0.15 });
+                }
+            });
+        }
+        renderControlPanel();
+        renderCatLegend();
+    }
+
+    function filterHealthy(below) {
+        if (!nodeDS) return;
+        var key = below ? 'health:below' : 'health:ok';
+        if (_activeFilter === key) {
+            clearFilter();
+        } else {
+            _activeFilter = key;
+            galaxy.nodes.forEach(function (n) {
+                if (nodeDS.get(n.id)) {
+                    var isHealthy = n.kind !== 'USER' && (n.bits || 0) >= 35;
+                    var show = below ? (!isHealthy && n.kind !== 'USER') : isHealthy;
+                    nodeDS.update({ id: n.id, opacity: show ? 1.0 : 0.15 });
+                }
+            });
+        }
+        renderControlPanel();
+        renderCatLegend();
+    }
+
     // ── TRANSFORM SCOPES → GALAXY ────────────────────────
     function transformScopes(scopes) {
         var childCount = {};
@@ -1335,6 +1396,8 @@ var GALAXY = (function () {
         launchpadSelect: launchpadSelect,
         filterCategory: filterCategory,
         filterTier: filterTier,
+        filterKind: filterKind,
+        filterHealthy: filterHealthy,
         toggleLeft: toggleLeft,
         toggleRight: toggleRight,
         closeLeft: closeLeftDrawer,

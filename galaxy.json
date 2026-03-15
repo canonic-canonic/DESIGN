@@ -2,9 +2,9 @@
   "_generated": {
     "contract": "canonic-canonic/MAGIC/TOOLCHAIN/TOOLCHAIN.md",
     "rule": "edit the contract or compiler \u2014 not this file",
-    "gov_hash": "62abdd4a68db5e8a"
+    "gov_hash": "eaab71bb2468f3d8"
   },
-  "generated": "2026-03-14T19:01:09Z",
+  "generated": "2026-03-15T05:15:00Z",
   "api_base": "https://api.canonic.org",
   "tiers": [
     {
@@ -39,14 +39,19 @@
     }
   ],
   "stats": {
-    "total": 284,
+    "total": 286,
     "avg_bits": 251,
     "below_magic": 4,
-    "intel_coverage": 140,
+    "intel_coverage": 142,
     "total_coin": 149566,
     "total_events": 687,
     "total_sessions": 136,
-    "active_channels": 5
+    "active_channels": 5,
+    "user_count": 34,
+    "org_count": 4,
+    "svc_count": 81,
+    "scope_count": 167,
+    "fleet_health_pct": 99
   },
   "nodes": [
     {
@@ -75,7 +80,189 @@
           "credit": 150777,
           "debit": 1211,
           "net": 149566
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.096616Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          },
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for TREASURY",
+            "ts": "2026-02-23T15:27:44.553966Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "TRANSFER",
+            "amount": 100,
+            "delta": -100,
+            "note": "first-transfer-test",
+            "ts": "2026-02-23T15:27:49.643601Z",
+            "service": "WALLET",
+            "product": "TRANSFER"
+          },
+          {
+            "event": "TRANSFER",
+            "amount": 95,
+            "delta": 95,
+            "note": "first-transfer-test",
+            "ts": "2026-02-23T15:27:49.645122Z",
+            "service": "WALLET",
+            "product": "TRANSFER"
+          },
+          {
+            "event": "TRANSFER",
+            "amount": 5,
+            "delta": 5,
+            "note": "Transfer fee: DEXTER -> YANA",
+            "ts": "2026-02-23T15:27:49.645591Z",
+            "service": "WALLET",
+            "product": "TRANSFER_FEE"
+          },
+          {
+            "event": "SPEND",
+            "amount": 35,
+            "delta": -35,
+            "note": "first-spend-event",
+            "ts": "2026-02-23T15:27:54.837383Z",
+            "service": "SHOP",
+            "product": "CANONIC-WHITEPAPER-V1"
+          },
+          {
+            "event": "SPEND",
+            "amount": 35,
+            "delta": 35,
+            "note": "first-spend-event",
+            "ts": "2026-02-23T15:27:54.839346Z",
+            "service": "SHOP",
+            "product": "CANONIC-WHITEPAPER-V1"
+          },
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ROBERT",
+            "ts": "2026-02-25T18:25:40.777035Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "MINT:PYRAMID",
+            "amount": 500,
+            "delta": 500,
+            "note": "Pyramid bonus: DEXTER referred ROBERT",
+            "ts": "2026-02-25T18:25:53.156352Z",
+            "service": "WALLET",
+            "product": "PYRAMID"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 3,
+            "delta": 3,
+            "note": "Signs installed at 9700 Blandford Rd, Lake Nona",
+            "ts": "2026-02-25T18:26:31.762841Z",
+            "service": "RUNNER",
+            "product": "WORK"
+          },
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for FATIMA",
+            "ts": "2026-02-25T18:45:10.608004Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "MINT:PYRAMID",
+            "amount": 500,
+            "delta": 500,
+            "note": "Pyramid bonus: DEXTER referred FATIMA",
+            "ts": "2026-02-25T18:45:19.908831Z",
+            "service": "WALLET",
+            "product": "PYRAMID"
+          },
+          {
+            "event": "DEBIT:DRIFT",
+            "amount": 127,
+            "delta": -127,
+            "note": "drift:.canonic",
+            "ts": "2026-02-26T01:59:28.593306Z",
+            "service": "LEDGER",
+            "product": "WORK"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 255,
+            "delta": 255,
+            "note": "git-commit:CANONIC",
+            "ts": "2026-02-26T19:29:24.978795Z",
+            "service": "LEDGER",
+            "product": "WORK"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 247,
+            "delta": 247,
+            "note": "git-commit:canonic-canonic",
+            "ts": "2026-02-26T20:40:44.309783Z",
+            "service": "LEDGER",
+            "product": "WORK"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 255,
+            "delta": 255,
+            "note": "git-commit:hadleylab-canonic",
+            "ts": "2026-02-26T21:41:56.053426Z",
+            "service": "LEDGER",
+            "product": "WORK"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 8,
+            "delta": 8,
+            "note": "git-commit:canonic-canonic",
+            "ts": "2026-02-27T01:02:23.109763Z",
+            "service": "LEDGER",
+            "product": "WORK"
+          },
+          {
+            "event": "SPEND",
+            "amount": 35,
+            "delta": -35,
+            "note": "Purchase: CANONIC-WHITEPAPER-V1",
+            "ts": "2026-02-27T06:19:55.171731Z",
+            "service": "SHOP",
+            "product": "CANONIC-WHITEPAPER-V1"
+          },
+          {
+            "event": "SPEND",
+            "amount": 35,
+            "delta": 35,
+            "note": "Sale: CANONIC-WHITEPAPER-V1 to DEXTER",
+            "ts": "2026-02-27T06:19:55.178775Z",
+            "service": "SHOP",
+            "product": "CANONIC-WHITEPAPER-V1"
+          },
+          {
+            "event": "SETTLE",
+            "amount": 35,
+            "delta": -35,
+            "note": "Settle 35 COIN to fiat",
+            "ts": "2026-02-27T06:19:58.814796Z",
+            "service": "WALLET",
+            "product": "SETTLE"
+          }
+        ]
       },
       "talk": null,
       "learning": [
@@ -4670,19 +4857,13 @@
       "has_intel": true,
       "intel_summary": "**KNOW YOUR GOVERNANCE. EVERY CLAIM SOURCED. EVERY CHAPTER INTEL-BACKED.**",
       "roadmap_now": "NYT POLISH PASS 3: Continue expanding chapters to 3K+ average",
-      "learning_count": 12,
+      "learning_count": 13,
       "surface_type": "JEKYLL_BOOK",
       "fleet_path": "books/CANONIC-CANON",
       "children": 1,
       "wallet": null,
       "talk": null,
       "learning": [
-        {
-          "date": "2026-02-26",
-          "signal": "NEW_CONSTRAINT",
-          "pattern": "INTEL-first: every chapter is a knowledge unit backing a contextual agent. Cross-axiomatic compilation.",
-          "source": "MAGIC/SERVICES/LEARNING/CANON.md"
-        },
         {
           "date": "2026-02-26",
           "signal": "NEW_CONSTRAINT",
@@ -4736,6 +4917,12 @@
           "signal": "NYT_POLISH_PASS2",
           "pattern": "Targeted expansion: 30,560 \u2192 46,239 words (+51%). Product chapters (OncoChat/MedChat/LawChat/FinChat/Fleet), verticals (",
           "source": "Session 2 execution"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "GRAPH_NATIVE_REFRESH",
+          "pattern": "Book refresh: Canon Ch 9 (Galaxy) updated with real galaxy stats (284 nodes, 340 edges, 4 edge kinds), graph-native BFS ",
+          "source": "Galaxy + compiler hardening"
         }
       ],
       "score": 128
@@ -4778,19 +4965,13 @@
       "has_intel": true,
       "intel_summary": "**KNOW YOUR BUILD. EVERY COMMAND SOURCED. EVERY CHAPTER INTEL-BACKED.**",
       "roadmap_now": "AUDIENCE: Ilya Beda (CTO BedaSoftware, FHIR expert) + Yana Beda (CEO, Apple/frontend)",
-      "learning_count": 13,
+      "learning_count": 14,
       "surface_type": "JEKYLL_BOOK",
       "fleet_path": "books/CANONIC-DOCTRINE",
       "children": 1,
       "wallet": null,
       "talk": null,
       "learning": [
-        {
-          "date": "2026-02-26",
-          "signal": "NEW_CONSTRAINT",
-          "pattern": "Devs speak programming. Imperative. Code blocks. Tables. DRY. MATH. FIXED. PURE.",
-          "source": "User directive"
-        },
         {
           "date": "2026-02-26",
           "signal": "NEW_SCOPE",
@@ -4844,6 +5025,12 @@
           "signal": "NYT_POLISH_PASS1",
           "pattern": "Targeted expansion: 14,360 \u2192 20,800 words (+45%). Foundations (Ch 1-4), Building (Ch 5, 9), Services (Ch 11, 13, 22) exp",
           "source": "Session 2 execution"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "GRAPH_NATIVE_REFRESH",
+          "pattern": "Full book refresh: scopes.json \u2192 galaxy.json (284 nodes, 340 edges, 4 edge kinds), build-scopes-json \u2192 build-galaxy-json",
+          "source": "Galaxy + compiler + pipeline hardening"
         }
       ],
       "score": 128
@@ -4982,7 +5169,189 @@
           "credit": 150777,
           "debit": 1211,
           "net": 149566
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.096616Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          },
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for TREASURY",
+            "ts": "2026-02-23T15:27:44.553966Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "TRANSFER",
+            "amount": 100,
+            "delta": -100,
+            "note": "first-transfer-test",
+            "ts": "2026-02-23T15:27:49.643601Z",
+            "service": "WALLET",
+            "product": "TRANSFER"
+          },
+          {
+            "event": "TRANSFER",
+            "amount": 95,
+            "delta": 95,
+            "note": "first-transfer-test",
+            "ts": "2026-02-23T15:27:49.645122Z",
+            "service": "WALLET",
+            "product": "TRANSFER"
+          },
+          {
+            "event": "TRANSFER",
+            "amount": 5,
+            "delta": 5,
+            "note": "Transfer fee: DEXTER -> YANA",
+            "ts": "2026-02-23T15:27:49.645591Z",
+            "service": "WALLET",
+            "product": "TRANSFER_FEE"
+          },
+          {
+            "event": "SPEND",
+            "amount": 35,
+            "delta": -35,
+            "note": "first-spend-event",
+            "ts": "2026-02-23T15:27:54.837383Z",
+            "service": "SHOP",
+            "product": "CANONIC-WHITEPAPER-V1"
+          },
+          {
+            "event": "SPEND",
+            "amount": 35,
+            "delta": 35,
+            "note": "first-spend-event",
+            "ts": "2026-02-23T15:27:54.839346Z",
+            "service": "SHOP",
+            "product": "CANONIC-WHITEPAPER-V1"
+          },
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ROBERT",
+            "ts": "2026-02-25T18:25:40.777035Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "MINT:PYRAMID",
+            "amount": 500,
+            "delta": 500,
+            "note": "Pyramid bonus: DEXTER referred ROBERT",
+            "ts": "2026-02-25T18:25:53.156352Z",
+            "service": "WALLET",
+            "product": "PYRAMID"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 3,
+            "delta": 3,
+            "note": "Signs installed at 9700 Blandford Rd, Lake Nona",
+            "ts": "2026-02-25T18:26:31.762841Z",
+            "service": "RUNNER",
+            "product": "WORK"
+          },
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for FATIMA",
+            "ts": "2026-02-25T18:45:10.608004Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "MINT:PYRAMID",
+            "amount": 500,
+            "delta": 500,
+            "note": "Pyramid bonus: DEXTER referred FATIMA",
+            "ts": "2026-02-25T18:45:19.908831Z",
+            "service": "WALLET",
+            "product": "PYRAMID"
+          },
+          {
+            "event": "DEBIT:DRIFT",
+            "amount": 127,
+            "delta": -127,
+            "note": "drift:.canonic",
+            "ts": "2026-02-26T01:59:28.593306Z",
+            "service": "LEDGER",
+            "product": "WORK"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 255,
+            "delta": 255,
+            "note": "git-commit:CANONIC",
+            "ts": "2026-02-26T19:29:24.978795Z",
+            "service": "LEDGER",
+            "product": "WORK"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 247,
+            "delta": 247,
+            "note": "git-commit:canonic-canonic",
+            "ts": "2026-02-26T20:40:44.309783Z",
+            "service": "LEDGER",
+            "product": "WORK"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 255,
+            "delta": 255,
+            "note": "git-commit:hadleylab-canonic",
+            "ts": "2026-02-26T21:41:56.053426Z",
+            "service": "LEDGER",
+            "product": "WORK"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 8,
+            "delta": 8,
+            "note": "git-commit:canonic-canonic",
+            "ts": "2026-02-27T01:02:23.109763Z",
+            "service": "LEDGER",
+            "product": "WORK"
+          },
+          {
+            "event": "SPEND",
+            "amount": 35,
+            "delta": -35,
+            "note": "Purchase: CANONIC-WHITEPAPER-V1",
+            "ts": "2026-02-27T06:19:55.171731Z",
+            "service": "SHOP",
+            "product": "CANONIC-WHITEPAPER-V1"
+          },
+          {
+            "event": "SPEND",
+            "amount": 35,
+            "delta": 35,
+            "note": "Sale: CANONIC-WHITEPAPER-V1 to DEXTER",
+            "ts": "2026-02-27T06:19:55.178775Z",
+            "service": "SHOP",
+            "product": "CANONIC-WHITEPAPER-V1"
+          },
+          {
+            "event": "SETTLE",
+            "amount": 35,
+            "delta": -35,
+            "note": "Settle 35 COIN to fiat",
+            "ts": "2026-02-27T06:19:58.814796Z",
+            "service": "WALLET",
+            "product": "SETTLE"
+          }
+        ]
       },
       "talk": null,
       "learning": [
@@ -6605,13 +6974,57 @@
       "missing_dims": [],
       "has_intel": true,
       "intel_summary": "**KNOW YOUR SCHEDULE. EVERY MEETING GOVERNED. EVERY PARTICIPANT RESOLVED.**",
-      "roadmap_now": "Calendar.sqlitedb read access (Full Disk Access)",
+      "roadmap_now": "[ ] Visual calendar app (month/week/day views) \u2014 CALENDAR-APP.html + calendar.js",
+      "learning_count": 7,
       "surface_type": "JEKYLL_SERVICE",
       "fleet_path": "services/CALENDAR",
       "children": 0,
       "wallet": null,
       "talk": null,
-      "learning": null,
+      "learning": [
+        {
+          "date": "2026-02-14",
+          "signal": "DB_LOCATION",
+          "pattern": "Apple Calendar lives at `~/Library/Group Containers/group.com.apple.calendar/Calendar.sqlitedb`, not ~/Library/Calendars",
+          "source": "Calendar extraction"
+        },
+        {
+          "date": "2026-02-14",
+          "signal": "DATE_ENCODING",
+          "pattern": "`start_date + 978307200` = Unix epoch. Apple Core Data epoch offset is 2001-01-01.",
+          "source": "Calendar extraction"
+        },
+        {
+          "date": "2026-02-14",
+          "signal": "PARTICIPANT_RESOLVE",
+          "pattern": "Participant `email` field maps directly to INTEL contact (isabella@e4c.tech \u2192 isabella-johnston)",
+          "source": "Calendar extraction"
+        },
+        {
+          "date": "2026-02-14",
+          "signal": "ORGANIZER_SIGNAL",
+          "pattern": "Isabella organized all I-Corps events, proving operational leadership role. Calendar metadata is governance evidence.",
+          "source": "Calendar analysis"
+        },
+        {
+          "date": "2026-02-14",
+          "signal": "LOCATION_ANCHOR",
+          "pattern": "MS2 / Lake Nona Accelerator = recurring venue for I-Corps + deal meetings. Location consistency signals relationship dep",
+          "source": "Calendar analysis"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "TIMELINE_INTEGRATION",
+          "pattern": "CALENDAR adapter compiled 5,520 events into TIMELINE INDEX spanning 1970-2031. CALENDAR is the time axis; all other chan",
+          "source": "TIMELINE compiler first run"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "VISUAL_SURFACE",
+          "pattern": "Calendar app is a projection of TIMELINE INDEX, not a direct database reader. All events flow through the compiler. Visu",
+          "source": "Architecture decision"
+        }
+      ],
       "score": 128
     },
     {
@@ -6654,7 +7067,7 @@
       "learning_count": 93,
       "surface_type": "JEKYLL_DEFAULT",
       "fleet_path": "services",
-      "children": 43,
+      "children": 45,
       "wallet": null,
       "talk": null,
       "learning": [
@@ -6869,6 +7282,73 @@
           "signal": "TRIAD_COMPLETE",
           "pattern": "COIN service scope governance completed \u2014 full MAGIC 255",
           "source": "CANON.md"
+        }
+      ],
+      "score": 128
+    },
+    {
+      "id": "hadleylab-canonic/SERVICES/CONTACTS",
+      "kind": "SERVICE",
+      "label": "CONTACTS",
+      "repo": "hadleylab-canonic",
+      "path": "SERVICES/CONTACTS",
+      "parent": "hadleylab-canonic/SERVICES",
+      "category": "ORG",
+      "color": "#64748b",
+      "bits": 255,
+      "tier": "FULL",
+      "missing_dims": [],
+      "has_intel": true,
+      "intel_summary": "**KNOW YOUR SERVICE. EVERY CAPABILITY TRACED. EVERY INTEGRATION GOVERNED.**",
+      "roadmap_now": "[ ] CONTACTS lane adapter for TIMELINE INDEX (NEW_CONTACT, RESOLVED events)",
+      "learning_count": 7,
+      "surface_type": "JEKYLL_SERVICE",
+      "fleet_path": "services/CONTACTS",
+      "children": 0,
+      "wallet": null,
+      "talk": null,
+      "learning": [
+        {
+          "date": "2026-03-14",
+          "signal": "CONTACTS_PROMOTION",
+          "pattern": "CONTACTS promoted to first-class service. Previously contact resolution was distributed across IMESSAGE (AddressBook.py)",
+          "source": "Governance audit"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "CNCONTACTSTORE",
+          "pattern": "Apple Contacts must be read via Contacts framework (CNContactStore), not direct SQLite. Framework handles authorization,",
+          "source": "Architecture decision"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "RESOLUTION_SPINE",
+          "pattern": "CONTACTS is the resolution spine: every service that touches people resolves through one index. Without this, each servi",
+          "source": "Architecture decision"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "CROSS_AXIOMATIC",
+          "pattern": "The resolution index enables cross-axiomatic INTEL: when CALENDAR resolves a participant to a galaxy node, it gains acce",
+          "source": "Architecture decision"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "FIRST_COMPILE",
+          "pattern": "First compile: 2,389 Apple Contacts from 6 AddressBook source databases. 37 resolved to galaxy nodes via email cross-ref",
+          "source": "build-contacts first run"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "SQLITE_FALLBACK",
+          "pattern": "CNContactStore requires PyObjC and macOS Contacts permission. SQLite fallback reads AddressBook-v22.abcddb source databa",
+          "source": "Compiler implementation"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "MULTI_SOURCE",
+          "pattern": "Apple Contacts has 6 source databases (iCloud, Google, Exchange, etc.), each with its own AddressBook-v22.abcddb. Dedupl",
+          "source": "AddressBook exploration"
         }
       ],
       "score": 128
@@ -8982,7 +9462,32 @@
           "RUNNER"
         ]
       },
-      "learning": null,
+      "learning": [
+        {
+          "date": "2026-03-15",
+          "signal": "SURFACE_BUILD",
+          "pattern": "GOV",
+          "source": "FINCHAT community learning surface built \u2014 8 community learn"
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "COMMUNITY_BRIDGE",
+          "pattern": "COMMUNITY",
+          "source": "Community learning dashboard sourced from TALK/FINCHAT LEARN"
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "EVIDENCE_CHAIN",
+          "pattern": "INTEL",
+          "source": "6 evidence sources surfaced with institutional attribution ("
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "CROSS_SCOPE",
+          "pattern": "GOV",
+          "source": "Marketing surface (SERVICES/TALK/FINCHAT) cross-references c"
+        }
+      ],
       "score": 128
     },
     {
@@ -9014,7 +9519,32 @@
           "RUNNER"
         ]
       },
-      "learning": null,
+      "learning": [
+        {
+          "date": "2026-03-15",
+          "signal": "SURFACE_BUILD",
+          "pattern": "GOV",
+          "source": "LAWCHAT community learning surface built \u2014 8 community learn"
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "COMMUNITY_BRIDGE",
+          "pattern": "COMMUNITY",
+          "source": "Community learning dashboard sourced from TALK/LAWCHAT LEARN"
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "EVIDENCE_CHAIN",
+          "pattern": "INTEL",
+          "source": "6 evidence sources surfaced with institutional attribution ("
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "CROSS_SCOPE",
+          "pattern": "GOV",
+          "source": "Marketing surface (SERVICES/TALK/LAWCHAT) cross-references c"
+        }
+      ],
       "score": 128
     },
     {
@@ -9113,7 +9643,32 @@
           "RUNNER"
         ]
       },
-      "learning": null,
+      "learning": [
+        {
+          "date": "2026-03-15",
+          "signal": "SURFACE_BUILD",
+          "pattern": "GOV",
+          "source": "MEDCHAT community learning surface built \u2014 8 community learn"
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "COMMUNITY_BRIDGE",
+          "pattern": "COMMUNITY",
+          "source": "Community learning dashboard sourced from TALK/MEDCHAT LEARN"
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "EVIDENCE_CHAIN",
+          "pattern": "INTEL",
+          "source": "6 evidence sources surfaced with institutional attribution ("
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "CROSS_SCOPE",
+          "pattern": "GOV",
+          "source": "Marketing surface (SERVICES/TALK/MEDCHAT) cross-references c"
+        }
+      ],
       "score": 128
     },
     {
@@ -9173,7 +9728,38 @@
           "OMICSCHAT"
         ]
       },
-      "learning": null,
+      "learning": [
+        {
+          "date": "2026-03-15",
+          "signal": "SURFACE_BUILD",
+          "pattern": "GOV",
+          "source": "OMICSCHAT community learning surface built \u2014 8 community lea"
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "COMMUNITY_BRIDGE",
+          "pattern": "COMMUNITY",
+          "source": "Community learning dashboard sourced from TALK/OMICSCHAT LEA"
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "HERITAGE_SURFACE",
+          "pattern": "HERITAGE",
+          "source": "StarGEO heritage section surfaced \u2014 NIH BD2K UH2CA203792, $6"
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "EVIDENCE_CHAIN",
+          "pattern": "INTEL",
+          "source": "6 evidence sources surfaced with institutional attribution ("
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "CROSS_SCOPE",
+          "pattern": "GOV",
+          "source": "Marketing surface (SERVICES/TALK/OMICSCHAT) cross-references"
+        }
+      ],
       "score": 128
     },
     {
@@ -9201,7 +9787,32 @@
           "ONCOCHAT"
         ]
       },
-      "learning": null,
+      "learning": [
+        {
+          "date": "2026-03-15",
+          "signal": "SURFACE_BUILD",
+          "pattern": "GOV",
+          "source": "ONCOCHAT community learning surface built \u2014 8 community lear"
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "COMMUNITY_BRIDGE",
+          "pattern": "COMMUNITY",
+          "source": "Community learning dashboard sourced from TALK/ONCOCHAT LEAR"
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "EVIDENCE_CHAIN",
+          "pattern": "INTEL",
+          "source": "6 evidence sources surfaced with institutional attribution ("
+        },
+        {
+          "date": "2026-03-15",
+          "signal": "CROSS_SCOPE",
+          "pattern": "GOV",
+          "source": "Marketing surface (SERVICES/TALK/ONCOCHAT) cross-references "
+        }
+      ],
       "score": 128
     },
     {
@@ -9326,6 +9937,66 @@
         ]
       },
       "learning": null,
+      "score": 128
+    },
+    {
+      "id": "hadleylab-canonic/SERVICES/TIMELINE",
+      "kind": "SERVICE",
+      "label": "TIMELINE",
+      "repo": "hadleylab-canonic",
+      "path": "SERVICES/TIMELINE",
+      "parent": "hadleylab-canonic/SERVICES",
+      "category": "ORG",
+      "color": "#64748b",
+      "bits": 255,
+      "tier": "FULL",
+      "missing_dims": [],
+      "has_intel": true,
+      "intel_summary": "**KNOW YOUR SERVICE. EVERY CAPABILITY TRACED. EVERY INTEGRATION GOVERNED.**",
+      "learning_count": 6,
+      "surface_type": "JEKYLL_SERVICE",
+      "fleet_path": "services/TIMELINE",
+      "children": 0,
+      "wallet": null,
+      "talk": null,
+      "learning": [
+        {
+          "date": "2026-03-14",
+          "signal": "TIMELINE_PROMOTION",
+          "pattern": "TIMELINE promoted from STAR sub-concept to first-class service. Previously an ungoverned runtime artifact (VAULT TIMELIN",
+          "source": "Governance audit"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "READ_ONLY_JOIN",
+          "pattern": "TIMELINE is a read-only JOIN, never a write target. Source lanes own their data; TIMELINE indexes pointers. This prevent",
+          "source": "Architecture design"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "ADAPTER_PATTERN",
+          "pattern": "Each source lane requires its own adapter to transform native format into unified event schema. VAULT (JSONL) is trivial",
+          "source": "Lane analysis"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "FIRST_COMPILE",
+          "pattern": "First compile: 24,375 events across 4 lanes (COIN 687, LEDGER 7, LEARNING 18,161, CALENDAR 5,520). TRANSCRIPT dark (NAS ",
+          "source": "build-timeline first run"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "LEARNING_DOMINANCE",
+          "pattern": "LEARNING lane contributed 74% of all events (18,161 of 24,375), spanning 2013-2026. The governed pattern history is the ",
+          "source": "Compiler output analysis"
+        },
+        {
+          "date": "2026-03-14",
+          "signal": "CALENDAR_APP_GOV",
+          "pattern": "Calendar app is a visual surface reading compiled TIMELINE INDEX, not a standalone calendar reader. CALENDAR service gov",
+          "source": "Architecture decision"
+        }
+      ],
       "score": 128
     },
     {
@@ -10816,7 +11487,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for AVINASH",
+            "ts": "2026-02-21T17:28:04.530294Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.090438Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": [
@@ -10858,7 +11549,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for AVINASH",
+            "ts": "2026-02-21T17:28:04.530294Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.090438Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -10889,7 +11600,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for AVINASH",
+            "ts": "2026-02-21T17:28:04.530294Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.090438Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -10977,7 +11708,18 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for FATIMA",
+            "ts": "2026-02-25T18:45:10.608004Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          }
+        ]
       },
       "talk": null,
       "learning": [
@@ -11073,7 +11815,18 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for FATIMA",
+            "ts": "2026-02-25T18:45:10.608004Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11104,7 +11857,18 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for FATIMA",
+            "ts": "2026-02-25T18:45:10.608004Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11223,7 +11987,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ILYA",
+            "ts": "2026-02-21T17:28:04.673485Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.094337Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": [
@@ -11265,7 +12049,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ILYA",
+            "ts": "2026-02-21T17:28:04.673485Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.094337Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11296,7 +12100,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ILYA",
+            "ts": "2026-02-21T17:28:04.673485Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.094337Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11329,7 +12153,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ISABELLA",
+            "ts": "2026-02-21T17:28:04.385448Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.095071Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": [
@@ -11371,7 +12215,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ISABELLA",
+            "ts": "2026-02-21T17:28:04.385448Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.095071Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11402,7 +12266,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ISABELLA",
+            "ts": "2026-02-21T17:28:04.385448Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.095071Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11435,7 +12319,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for JP",
+            "ts": "2026-02-21T17:28:04.461221Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.095777Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": [
@@ -11477,7 +12381,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for JP",
+            "ts": "2026-02-21T17:28:04.461221Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.095777Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11508,7 +12432,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for JP",
+            "ts": "2026-02-21T17:28:04.461221Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.095777Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11541,7 +12485,27 @@
           "credit": 503,
           "debit": 0,
           "net": 503
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ROBERT",
+            "ts": "2026-02-25T18:25:40.777035Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 3,
+            "delta": 3,
+            "note": "Signs installed at 9700 Blandford Rd, Lake Nona",
+            "ts": "2026-02-25T18:26:31.762841Z",
+            "service": "RUNNER",
+            "product": "WORK"
+          }
+        ]
       },
       "talk": null,
       "learning": [
@@ -11583,7 +12547,27 @@
           "credit": 503,
           "debit": 0,
           "net": 503
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ROBERT",
+            "ts": "2026-02-25T18:25:40.777035Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 3,
+            "delta": 3,
+            "note": "Signs installed at 9700 Blandford Rd, Lake Nona",
+            "ts": "2026-02-25T18:26:31.762841Z",
+            "service": "RUNNER",
+            "product": "WORK"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11614,7 +12598,27 @@
           "credit": 503,
           "debit": 0,
           "net": 503
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ROBERT",
+            "ts": "2026-02-25T18:25:40.777035Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 3,
+            "delta": 3,
+            "note": "Signs installed at 9700 Blandford Rd, Lake Nona",
+            "ts": "2026-02-25T18:26:31.762841Z",
+            "service": "RUNNER",
+            "product": "WORK"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11673,7 +12677,45 @@
           "credit": 595,
           "debit": 35,
           "net": 560
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for YANA",
+            "ts": "2026-02-21T17:28:04.601128Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.096616Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          },
+          {
+            "event": "TRANSFER",
+            "amount": 95,
+            "delta": 95,
+            "note": "first-transfer-test",
+            "ts": "2026-02-23T15:27:49.645122Z",
+            "service": "WALLET",
+            "product": "TRANSFER"
+          },
+          {
+            "event": "SPEND",
+            "amount": 35,
+            "delta": -35,
+            "note": "first-spend-event",
+            "ts": "2026-02-23T15:27:54.837383Z",
+            "service": "SHOP",
+            "product": "CANONIC-WHITEPAPER-V1"
+          }
+        ]
       },
       "talk": null,
       "learning": [
@@ -11715,7 +12757,45 @@
           "credit": 595,
           "debit": 35,
           "net": 560
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for YANA",
+            "ts": "2026-02-21T17:28:04.601128Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.096616Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          },
+          {
+            "event": "TRANSFER",
+            "amount": 95,
+            "delta": 95,
+            "note": "first-transfer-test",
+            "ts": "2026-02-23T15:27:49.645122Z",
+            "service": "WALLET",
+            "product": "TRANSFER"
+          },
+          {
+            "event": "SPEND",
+            "amount": 35,
+            "delta": -35,
+            "note": "first-spend-event",
+            "ts": "2026-02-23T15:27:54.837383Z",
+            "service": "SHOP",
+            "product": "CANONIC-WHITEPAPER-V1"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11746,7 +12826,45 @@
           "credit": 595,
           "debit": 35,
           "net": 560
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for YANA",
+            "ts": "2026-02-21T17:28:04.601128Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.096616Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          },
+          {
+            "event": "TRANSFER",
+            "amount": 95,
+            "delta": 95,
+            "note": "first-transfer-test",
+            "ts": "2026-02-23T15:27:49.645122Z",
+            "service": "WALLET",
+            "product": "TRANSFER"
+          },
+          {
+            "event": "SPEND",
+            "amount": 35,
+            "delta": -35,
+            "note": "first-spend-event",
+            "ts": "2026-02-23T15:27:54.837383Z",
+            "service": "SHOP",
+            "product": "CANONIC-WHITEPAPER-V1"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11865,7 +12983,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for AVINASH",
+            "ts": "2026-02-21T17:28:04.530294Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.090438Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11904,7 +13042,18 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for FATIMA",
+            "ts": "2026-02-25T18:45:10.608004Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11943,7 +13092,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ILYA",
+            "ts": "2026-02-21T17:28:04.673485Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.094337Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -11982,7 +13151,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ISABELLA",
+            "ts": "2026-02-21T17:28:04.385448Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.095071Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -12021,7 +13210,27 @@
           "credit": 500,
           "debit": 0,
           "net": 500
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for JP",
+            "ts": "2026-02-21T17:28:04.461221Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.095777Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -12060,7 +13269,27 @@
           "credit": 503,
           "debit": 0,
           "net": 503
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for ROBERT",
+            "ts": "2026-02-25T18:25:40.777035Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "MINT:WORK",
+            "amount": 3,
+            "delta": 3,
+            "note": "Signs installed at 9700 Blandford Rd, Lake Nona",
+            "ts": "2026-02-25T18:26:31.762841Z",
+            "service": "RUNNER",
+            "product": "WORK"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -12099,7 +13328,45 @@
           "credit": 595,
           "debit": 35,
           "net": 560
-        }
+        },
+        "recent_transactions": [
+          {
+            "event": "MINT:SIGNUP",
+            "amount": 500,
+            "delta": 500,
+            "note": "Signup bonus for YANA",
+            "ts": "2026-02-21T17:28:04.601128Z",
+            "service": "WALLET",
+            "product": "SIGNUP"
+          },
+          {
+            "event": "CLOSE",
+            "amount": 0,
+            "delta": 0,
+            "note": "CLOSE epoch 2026-02",
+            "ts": "2026-02-23T15:26:43.096616Z",
+            "service": "WALLET",
+            "product": "CLOSE"
+          },
+          {
+            "event": "TRANSFER",
+            "amount": 95,
+            "delta": 95,
+            "note": "first-transfer-test",
+            "ts": "2026-02-23T15:27:49.645122Z",
+            "service": "WALLET",
+            "product": "TRANSFER"
+          },
+          {
+            "event": "SPEND",
+            "amount": 35,
+            "delta": -35,
+            "note": "first-spend-event",
+            "ts": "2026-02-23T15:27:54.837383Z",
+            "service": "SHOP",
+            "product": "CANONIC-WHITEPAPER-V1"
+          }
+        ]
       },
       "talk": null,
       "learning": null,
@@ -13338,6 +14605,11 @@
     },
     {
       "kind": "PARENT",
+      "from": "hadleylab-canonic/SERVICES/CONTACTS",
+      "to": "hadleylab-canonic/SERVICES"
+    },
+    {
+      "kind": "PARENT",
       "from": "hadleylab-canonic/SERVICES/DEAL/BAKEOFF",
       "to": "hadleylab-canonic/SERVICES/DEAL"
     },
@@ -13633,6 +14905,11 @@
     },
     {
       "kind": "PARENT",
+      "from": "hadleylab-canonic/SERVICES/TIMELINE",
+      "to": "hadleylab-canonic/SERVICES"
+    },
+    {
+      "kind": "PARENT",
       "from": "hadleylab-canonic/SERVICES/TRANSCRIPT",
       "to": "hadleylab-canonic/SERVICES"
     },
@@ -13861,5 +15138,15 @@
       "from": "org:canonic-apple",
       "to": "canonic-canonic/MAGIC/GALAXY/ORGS"
     }
-  ]
+  ],
+  "master": {
+    "id": "hadleylab-canonic",
+    "label": "HADLEYLAB",
+    "bits": 255,
+    "score": 255,
+    "tier": "FULL",
+    "missing_dims": [],
+    "wallet_balance": 149566,
+    "wallet_events": 687
+  }
 }
