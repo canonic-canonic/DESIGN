@@ -7,6 +7,7 @@ import { json, fetchWithTimeout } from '../kernel/http.js';
 import { requireIntEnv } from '../kernel/env.js';
 import { clampString, redactSecrets } from '../kernel/util.js';
 import { PROVIDERS, timeoutMsFor } from './providers.js';
+import { addCors } from '../kernel/cors.js';
 
 export async function chat(request, env) {
   let body;
@@ -116,14 +117,16 @@ export async function chat(request, env) {
       }
     })();
 
+    // CORS: streaming responses must carry the same origin headers as non-streaming.
+    // Without this, browsers block the SSE body even though the preflight passes.
     return new Response(readable, {
       status: 200,
-      headers: {
+      headers: addCors({
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
         'X-Trace-Id': trace_id,
-      },
+      }),
     });
   }
 
