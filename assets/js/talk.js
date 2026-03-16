@@ -75,15 +75,17 @@ const TALK = {
             try {
                 var q = new URLSearchParams(window.location.search).get('q');
                 if (q) {
-                    var ci = document.getElementById('talkChatInput');
-                    if (ci) {
-                        ci.value = q;
-                        var overlay = document.getElementById('talkOverlay') || document.getElementById('chatOverlay');
-                        if (overlay) {
-                            TALK.open();
+                    setTimeout(function() {
+                        var ci = document.getElementById('talkChatInput');
+                        if (ci) {
+                            ci.value = q;
+                            var overlay = document.getElementById('talkOverlay') || document.getElementById('chatOverlay');
+                            if (overlay) {
+                                TALK.open();
+                            }
+                            setTimeout(function() { TALK.send(); }, 100);
                         }
-                        setTimeout(function() { TALK.send(); }, 300);
-                    }
+                    }, 500);
                 }
             } catch (e) {}
         });
