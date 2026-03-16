@@ -70,6 +70,19 @@ const TALK = {
         this.loadCanon().then(function() {
             TALK.loadIntel();
             TALK.initPlugins();
+
+            // ?q= URL parameter — auto-open and submit query from community learning cards
+            try {
+                var q = new URLSearchParams(window.location.search).get('q');
+                if (q) {
+                    var ci = document.getElementById('talkChatInput');
+                    if (ci) {
+                        ci.value = q;
+                        TALK.open();
+                        setTimeout(function() { TALK.send(); }, 200);
+                    }
+                }
+            } catch (e) {}
         });
     },
 
