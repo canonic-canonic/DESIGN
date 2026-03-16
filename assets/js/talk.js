@@ -78,8 +78,11 @@ const TALK = {
                     var ci = document.getElementById('talkChatInput');
                     if (ci) {
                         ci.value = q;
-                        TALK.open();
-                        setTimeout(function() { TALK.send(); }, 200);
+                        var overlay = document.getElementById('talkOverlay') || document.getElementById('chatOverlay');
+                        if (overlay) {
+                            TALK.open();
+                        }
+                        setTimeout(function() { TALK.send(); }, 300);
                     }
                 }
             } catch (e) {}
