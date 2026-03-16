@@ -77,18 +77,22 @@ const TALK = {
         try {
             var q = new URLSearchParams(window.location.search).get('q');
             if (q) {
+                var _qDone = false;
                 var attempts = 0;
                 var qInterval = setInterval(function() {
+                    if (_qDone) return;
                     attempts++;
                     if (attempts > 30) { clearInterval(qInterval); return; }
                     if (!TALK.governed || !TALK.system) return;
                     var ci = document.getElementById('talkChatInput');
                     if (!ci) return;
+                    _qDone = true;
                     clearInterval(qInterval);
                     ci.value = q;
                     var overlay = document.getElementById('talkOverlay') || document.getElementById('chatOverlay');
                     if (overlay) TALK.open();
-                    setTimeout(function() { TALK.send(); }, 150);
+                    // Direct send: set value, then call send() which reads and clears it
+                    try { TALK.send(); } catch(e) { console.warn('[TALK] ?q= send error:', e); }
                 }, 500);
             }
         } catch (e) {}
