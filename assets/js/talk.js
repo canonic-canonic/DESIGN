@@ -70,28 +70,28 @@ const TALK = {
         this.loadCanon().then(function() {
             TALK.loadIntel();
             TALK.initPlugins();
-
-            // ?q= URL parameter — auto-open and submit query from community learning cards
-            // Uses polling to wait for governed state, since CANON.json fetch timing varies.
-            try {
-                var q = new URLSearchParams(window.location.search).get('q');
-                if (q) {
-                    var attempts = 0;
-                    var qInterval = setInterval(function() {
-                        attempts++;
-                        if (attempts > 20) { clearInterval(qInterval); return; } // give up after 10s
-                        if (!TALK.governed || !TALK.system) return; // not ready yet
-                        var ci = document.getElementById('talkChatInput');
-                        if (!ci) return; // DOM not ready
-                        clearInterval(qInterval);
-                        ci.value = q;
-                        var overlay = document.getElementById('talkOverlay') || document.getElementById('chatOverlay');
-                        if (overlay) TALK.open();
-                        setTimeout(function() { TALK.send(); }, 100);
-                    }, 500);
-                }
-            } catch (e) {}
         });
+
+        // ?q= URL parameter — auto-open and submit query from community learning cards.
+        // Runs independently of the CANON load chain. Polls until governed + DOM ready.
+        try {
+            var q = new URLSearchParams(window.location.search).get('q');
+            if (q) {
+                var attempts = 0;
+                var qInterval = setInterval(function() {
+                    attempts++;
+                    if (attempts > 30) { clearInterval(qInterval); return; }
+                    if (!TALK.governed || !TALK.system) return;
+                    var ci = document.getElementById('talkChatInput');
+                    if (!ci) return;
+                    clearInterval(qInterval);
+                    ci.value = q;
+                    var overlay = document.getElementById('talkOverlay') || document.getElementById('chatOverlay');
+                    if (overlay) TALK.open();
+                    setTimeout(function() { TALK.send(); }, 150);
+                }, 500);
+            }
+        } catch (e) {}
     },
 
     // ── Plugins (optional, governed by CANON.json flags) ────────────
