@@ -27,7 +27,7 @@
 {% include AUTH.html %}
 <script src="{{ '/assets/js/auth.js?v=4' | relative_url }}"></script>
 {% endunless %}
-{% unless include.minimal and page.talk == true %}{% include TALK.html %}{% endunless %}
+{% unless page.layout == 'talk' %}{% include TALK.html %}{% endunless %}
 <script src="{{ '/assets/js/talk.js?v=6' | relative_url }}"></script>
 {% endif %}
 {% if page.star %}
