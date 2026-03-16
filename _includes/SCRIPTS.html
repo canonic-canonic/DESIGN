@@ -22,20 +22,25 @@
 <script src="{{ '/assets/js/galaxy.js' | relative_url }}"></script>
 {% endif %}
 {% if page.talk %}
+{% unless page.auth %}
+<!-- AUTH loaded automatically for TALK (session token support) -->
+{% include AUTH.html %}
+<script src="{{ '/assets/js/auth.js?v=4' | relative_url }}"></script>
+{% endunless %}
 {% unless include.minimal and page.talk == true %}{% include TALK.html %}{% endunless %}
-<script src="{{ '/assets/js/talk.js?v=5' | relative_url }}"></script>
+<script src="{{ '/assets/js/talk.js?v=6' | relative_url }}"></script>
 {% endif %}
 {% if page.star %}
 {% include STAR.html %}
 <script src="{{ '/assets/js/star.js' | relative_url }}"></script>
 {% endif %}
 {% if page.calendar %}
-{% include CALENDAR-APP.html %}
-<script src="{{ '/assets/js/calendar.js' | relative_url }}"></script>
+{% include TIMELINE.html %}
+<script src="{{ '/assets/js/timeline.js' | relative_url }}"></script>
 {% endif %}
 <script src="{{ '/assets/js/controls.js' | relative_url }}"></script>
 <script>
-{% if page.auth %}AUTH.init(); {% endif %}
+{% if page.auth or page.talk %}AUTH.init(); {% endif %}
 {% if include.deck %}DECK.init(); {% endif %}
 {% if page.galaxy %}GALAXY.init(); {% endif %}
 {% if page.shop %}SHOP.init(); {% endif %}
@@ -43,3 +48,24 @@
 {% if page.star %}STAR.init(); {% endif %}
 {% if page.calendar %}CAL.init({ dataPath: '{{ page.calendar_data | default: "/SERVICES/TIMELINE" }}' }); {% endif %}
 </script>
+{% if page.mint_read %}
+<!-- MINT:READ beacon — fire-and-forget pageview → COIN for author -->
+<script>
+(function(){
+  try {
+    var sid = localStorage.getItem('canonic_sid');
+    if (!sid) { sid = crypto.randomUUID(); localStorage.setItem('canonic_sid', sid); }
+    fetch('https://api.canonic.org/mint/read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        scope: '{{ page.scope | default: site.scope }}',
+        page: location.pathname,
+        session_id: sid,
+        author: '{{ page.author | default: "" }}'
+      })
+    }).catch(function(){});
+  } catch(e) {}
+})();
+</script>
+{% endif %}

@@ -27,6 +27,10 @@ export async function ledgerWrite(request, env) {
     trace_id: trace_id || null,
     user: user_message, assistant: assistant_message || null,
     provider: provider_used || null, elapsed_ms: elapsed_ms || null,
+    model: body.model || null,
+    input_tokens: body.input_tokens || null,
+    output_tokens: body.output_tokens || null,
+    cache_read_input_tokens: body.cache_read_input_tokens || null,
   }, { key: `ledger:${scope}` });
 
   // Notify targets inline at write time (GOV: NOTIFIER/CANON.md)

@@ -5,11 +5,6 @@ workers_dev = false
 
 routes = [
   { pattern = "api.canonic.org/*", zone_name = "canonic.org" },
-  { pattern = "anthropic.canonic.org", zone_name = "canonic.org", custom_domain = true },
-  { pattern = "runpod.canonic.org", zone_name = "canonic.org", custom_domain = true },
-  { pattern = "vast.canonic.org", zone_name = "canonic.org", custom_domain = true },
-  { pattern = "openai.canonic.org", zone_name = "canonic.org", custom_domain = true },
-  { pattern = "deepseek.canonic.org", zone_name = "canonic.org", custom_domain = true }
 ]
 
 [[kv_namespaces]]
@@ -22,114 +17,38 @@ id = "f770e3f28f7b44979b92c610eb34025f"
 
 [vars]
 CORS_ALLOWED_ORIGINS = "https://hadleylab.org,https://www.hadleylab.org,https://*.hadleylab.org,https://canonic.org,https://www.canonic.org,https://canonic-canonic.github.io,https://hadleylab-canonic.github.io,https://hadleylab-dexter.github.io,https://api.canonic.org,https://*.canonic.org,https://mammochat.ai,https://www.mammochat.ai,https://mammochat.com,https://www.mammochat.com,https://mammo.chat,https://www.mammo.chat,https://carib.chat,https://www.carib.chat,https://caribchat.org,https://www.caribchat.org,https://caribchat.ai,https://www.caribchat.ai,https://atulisms.com,https://www.atulisms.com,https://gorunner.pro,https://www.gorunner.pro,http://localhost:3000"
+# ── Provider: Anthropic only. No fallbacks. No chain. Strict. ──
 PROVIDER = "anthropic"
-FALLBACK_PROVIDER = "anthropic"
-PROVIDER_CHAIN = "anthropic,runpod,vastai"
 MODEL = "claude-sonnet-4-20250514"
+HAIKU_MODEL = "claude-haiku-4-5-20251001"
+ANTHROPIC_VERSION = "2023-06-01"
 ANTHROPIC_KILOCODE_MODEL = "claude-opus-4-20250514"
 ANTHROPIC_KILOCODE_TOKENS_MAX = "4096"
-OPENAI_MODEL = "gpt-4o-mini"
-OPENAI_KILOCODE_MODEL = "gpt-4.1-mini"
-OPENAI_KILOCODE_BASE_URL = ""
-OPENAI_KILOCODE_TOKENS_MAX = "4096"
-DEEPSEEK_MODEL = "deepseek-chat"
-DEEPSEEK_KILOCODE_MODEL = "deepseek-chat"
-DEEPSEEK_KILOCODE_BASE_URL = ""
-DEEPSEEK_KILOCODE_TOKENS_MAX = "4096"
+# ── Gateway models (Anthropic only) ──
 CHAT_MODEL_ID = "canonic-chat"
-CHAT_PROVIDER = "deepseek"
-CHAT_UPSTREAM_MODEL = "deepseek-chat"
+CHAT_PROVIDER = "anthropic"
+CHAT_UPSTREAM_MODEL = "claude-sonnet-4-20250514"
 CHAT_BASE_URL = ""
-CHAT_COMMERCIAL_MODEL_ID = "canonic-chat-commercial"
-CHAT_COMMERCIAL_PROVIDER = "deepseek"
-CHAT_COMMERCIAL_UPSTREAM_MODEL = "deepseek-chat"
-CHAT_COMMERCIAL_BASE_URL = ""
-CHAT_COMMERCIAL_OPENAI_MODEL_ID = "canonic-chat-commercial-openai"
-CHAT_COMMERCIAL_OPENAI_PROVIDER = "openai"
-CHAT_COMMERCIAL_OPENAI_UPSTREAM_MODEL = "gpt-4o-mini"
-CHAT_COMMERCIAL_OPENAI_BASE_URL = ""
-CHAT_COMMERCIAL_ANTHROPIC_MODEL_ID = "canonic-chat-commercial-anthropic"
-CHAT_COMMERCIAL_ANTHROPIC_PROVIDER = "anthropic"
-CHAT_COMMERCIAL_ANTHROPIC_UPSTREAM_MODEL = "claude-sonnet-4-20250514"
-CHAT_COMMERCIAL_ANTHROPIC_BASE_URL = ""
-CHAT_OPENSOURCE_RUNPOD_MODEL_ID = "canonic-chat-opensource-runpod"
-CHAT_OPENSOURCE_RUNPOD_PROVIDER = "runpod"
-CHAT_OPENSOURCE_RUNPOD_UPSTREAM_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-CHAT_OPENSOURCE_RUNPOD_BASE_URL = "https://aq0t10sits4kz2-8000.proxy.runpod.net/v1"
-CHAT_OPENSOURCE_VAST_MODEL_ID = "canonic-chat-opensource-vast"
-CHAT_OPENSOURCE_VAST_PROVIDER = "vastai"
-CHAT_OPENSOURCE_VAST_UPSTREAM_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-CHAT_OPENSOURCE_VAST_BASE_URL = "https://vast-origin.canonic.org/v1"
-CHAT_RUNPOD_DEEPSEEK_MODEL_ID = "canonic-chat-runpod-deepseek"
-CHAT_RUNPOD_DEEPSEEK_PROVIDER = "runpod"
-CHAT_RUNPOD_DEEPSEEK_UPSTREAM_MODEL = "deepseek-ai/deepseek-coder-6.7b-instruct"
-CHAT_RUNPOD_DEEPSEEK_BASE_URL = "https://g0aelua3ct8eb4-8000.proxy.runpod.net/v1"
-CHAT_RUNPOD_QWEN_MODEL_ID = "canonic-chat-runpod-qwen"
-CHAT_RUNPOD_QWEN_PROVIDER = "runpod"
-CHAT_RUNPOD_QWEN_UPSTREAM_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-CHAT_RUNPOD_QWEN_BASE_URL = "https://aq0t10sits4kz2-8000.proxy.runpod.net/v1"
-# Mistral, Llama, GLM removed — not deployed on any pod (2026-02-18)
-CHAT_VAST_DEEPSEEK_MODEL_ID = "canonic-chat-vast-deepseek"
-CHAT_VAST_DEEPSEEK_PROVIDER = "vastai"
-CHAT_VAST_DEEPSEEK_UPSTREAM_MODEL = "deepseek-ai/deepseek-coder-6.7b-instruct"
-CHAT_VAST_DEEPSEEK_BASE_URL = "https://vast-deepseek.canonic.org/v1"
-CHAT_VAST_QWEN_MODEL_ID = "canonic-chat-vast-qwen"
-CHAT_VAST_QWEN_PROVIDER = "vastai"
-CHAT_VAST_QWEN_UPSTREAM_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-CHAT_VAST_QWEN_BASE_URL = "https://vast-origin.canonic.org/v1"
-# Vast Mistral, Llama, GLM removed — not deployed (2026-02-18)
+CHAT_HAIKU_MODEL_ID = "canonic-chat-haiku"
+CHAT_HAIKU_PROVIDER = "anthropic"
+CHAT_HAIKU_UPSTREAM_MODEL = "claude-haiku-4-5-20251001"
+CHAT_HAIKU_BASE_URL = ""
 KILOCODE_MODEL_ID = "canonic-kilocode"
-KILOCODE_PROVIDER = "deepseek"
-KILOCODE_UPSTREAM_MODEL = "deepseek-chat"
+KILOCODE_PROVIDER = "anthropic"
+KILOCODE_UPSTREAM_MODEL = "claude-opus-4-20250514"
 KILOCODE_BASE_URL = ""
-KILOCODE_COMMERCIAL_MODEL_ID = "canonic-kilocode-commercial"
-KILOCODE_COMMERCIAL_PROVIDER = "openai"
-KILOCODE_COMMERCIAL_UPSTREAM_MODEL = "gpt-4.1-mini"
-KILOCODE_COMMERCIAL_BASE_URL = ""
-KILOCODE_OPENSOURCE_RUNPOD_MODEL_ID = "canonic-kilocode-opensource-runpod"
-KILOCODE_OPENSOURCE_RUNPOD_PROVIDER = "runpod"
-KILOCODE_OPENSOURCE_RUNPOD_UPSTREAM_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-KILOCODE_OPENSOURCE_RUNPOD_BASE_URL = "https://aq0t10sits4kz2-8000.proxy.runpod.net/v1"
-KILOCODE_OPENSOURCE_VAST_MODEL_ID = "canonic-kilocode-opensource-vast"
-KILOCODE_OPENSOURCE_VAST_PROVIDER = "vastai"
-KILOCODE_OPENSOURCE_VAST_UPSTREAM_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-KILOCODE_OPENSOURCE_VAST_BASE_URL = "https://vast-origin.canonic.org/v1"
-KILOCODE_RUNPOD_DEEPSEEK_MODEL_ID = "canonic-kilocode-runpod-deepseek"
-KILOCODE_RUNPOD_DEEPSEEK_PROVIDER = "runpod"
-KILOCODE_RUNPOD_DEEPSEEK_UPSTREAM_MODEL = "deepseek-ai/deepseek-coder-6.7b-instruct"
-KILOCODE_RUNPOD_DEEPSEEK_BASE_URL = "https://g0aelua3ct8eb4-8000.proxy.runpod.net/v1"
-KILOCODE_RUNPOD_QWEN_MODEL_ID = "canonic-kilocode-runpod-qwen"
-KILOCODE_RUNPOD_QWEN_PROVIDER = "runpod"
-KILOCODE_RUNPOD_QWEN_UPSTREAM_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-KILOCODE_RUNPOD_QWEN_BASE_URL = "https://aq0t10sits4kz2-8000.proxy.runpod.net/v1"
-# Kilocode RunPod GLM removed — not deployed (2026-02-18)
-KILOCODE_VAST_DEEPSEEK_MODEL_ID = "canonic-kilocode-vast-deepseek"
-KILOCODE_VAST_DEEPSEEK_PROVIDER = "vastai"
-KILOCODE_VAST_DEEPSEEK_UPSTREAM_MODEL = "deepseek-ai/deepseek-coder-6.7b-instruct"
-KILOCODE_VAST_DEEPSEEK_BASE_URL = "https://vast-deepseek.canonic.org/v1"
-KILOCODE_VAST_QWEN_MODEL_ID = "canonic-kilocode-vast-qwen"
-KILOCODE_VAST_QWEN_PROVIDER = "vastai"
-KILOCODE_VAST_QWEN_UPSTREAM_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-KILOCODE_VAST_QWEN_BASE_URL = "https://vast-origin.canonic.org/v1"
-# Kilocode Vast GLM removed — not deployed (2026-02-18)
-BAKEOFF_DEV_MODELS = "canonic-chat,canonic-kilocode,canonic-chat-commercial-openai,canonic-chat-commercial-anthropic,canonic-chat-commercial,canonic-chat-runpod-deepseek,canonic-chat-runpod-qwen,canonic-chat-opensource-vast,canonic-kilocode-runpod-deepseek,canonic-kilocode-runpod-qwen,canonic-kilocode-opensource-vast"
-BAKEOFF_USER_MODELS = "canonic-chat-commercial-openai,canonic-chat-commercial-anthropic,canonic-chat-commercial,canonic-chat-runpod-qwen,canonic-chat-opensource-vast"
-BAKEOFF_EXPERIMENT_MODELS = "canonic-chat-commercial-openai,canonic-chat-commercial-anthropic,canonic-chat-commercial,canonic-chat-runpod-deepseek,canonic-chat-runpod-qwen,canonic-chat-opensource-vast"
-MAX_TOKENS = "4096"
+BAKEOFF_DEV_MODELS = "canonic-chat,canonic-chat-haiku,canonic-kilocode"
+BAKEOFF_USER_MODELS = "canonic-chat,canonic-chat-haiku"
+BAKEOFF_EXPERIMENT_MODELS = "canonic-chat,canonic-chat-haiku,canonic-kilocode"
+# ── Token economics ──
+MAX_TOKENS = "2048"
 TOKENS_MIN = "16"
-TOKENS_MAX = "4096"
-RUNPOD_TIMEOUT_MS = "12000"
-RUNPOD_TRIES = "2"
-RUNPOD_RETRY_DELAY_MS = "750"
-RUNPOD_TOKENS_MAX = "512"
-VASTAI_TIMEOUT_MS = "25000"
-VASTAI_TRIES = "1"
-VASTAI_RETRY_DELAY_MS = "0"
-VASTAI_TOKENS_MAX = "4096"
+TOKENS_MAX = "2048"
 PROVIDER_TIMEOUT_MS = "25000"
-ANTHROPIC_VERSION = "2023-06-01"
+# ── Auth ──
 GITHUB_CLIENT_ID = "Ov23libAbRu20g5MLTLJ"
 EMAIL_FROM = "founder@canonic.org"
+# ── Shop ──
 SHOP_ORIGIN = "https://hadleylab-dexter.github.io"
 SHOP_CURRENCY = "usd"
 SHOP_COIN_USD_CENTS = "100"
@@ -137,7 +56,8 @@ SHOP_SUCCESS_URL = "https://hadleylab-dexter.github.io/BOOKS/?checkout=success&s
 SHOP_CANCEL_URL = "https://hadleylab-dexter.github.io/BOOKS/?checkout=cancel"
 SHOP_WALLET_PAGE_LIMIT = "100"
 SHOP_WALLET_MAX_PAGES = "3"
-GOV_HADLEYLAB_SCOPES = "AUTH,BLOG,BOOK,CALENDAR,CLINICAL,COIN,DEAL,DECK,DEV,EMAIL,FINANCIALS,FORECASTS,GUIDEPOINT,IMESSAGE,KYC,LATEX,LEARNING,LEDGER,LINKEDIN,MAGIC,MAGIC/BAKEOFF,MAGIC/RUNPOD,MAGIC/VASTAI,NOTIFIER,OMICS,PAPER,PATENT,PLAYBOOKS,PLUGINS,RESERVES,SHOP,STAR,TALK,VAULT,VITAE,WHATSAPP"
+# ── GOV ──
+GOV_HADLEYLAB_SCOPES = "AUTH,BLOG,BOOK,CALENDAR,CLINICAL,COIN,DEAL,DECK,DEV,EMAIL,FINANCIALS,FORECASTS,GUIDEPOINT,IMESSAGE,KYC,LATEX,LEARNING,LEDGER,LINKEDIN,MAGIC,NOTIFIER,OMICS,PAPER,PATENT,PLAYBOOKS,PLUGINS,RESERVES,SHOP,STAR,TALK,VAULT,VITAE,WHATSAPP"
 GOV_CANONIC_SCOPES = "MAGIC/SERVICES/API,MAGIC/SERVICES/CHAIN,MAGIC/SERVICES/CONTRIBUTE,MAGIC/SERVICES/DEPLOY,MAGIC/SERVICES/IDENTITY,MAGIC/SERVICES/LEARNING,MAGIC/SERVICES/LEDGER,MAGIC/SERVICES/MINT,MAGIC/SERVICES/MONITORING,MAGIC/SERVICES/NOTIFIER,MAGIC/SERVICES/SHOP,MAGIC/SERVICES/STAR,MAGIC/SERVICES/TALK,MAGIC/SERVICES/VAULT,MAGIC/SERVICES/WALLET"
 STAR_TIMELINE_LIMIT = "500"
 STAR_CACHE_TTL = "300"
@@ -150,39 +70,14 @@ HEALTH_INTEL_BUDGET = "3"
 HEALTH_INTEL_TTL_S = "900"
 GOV_EXTRA_SURFACES = "https://hadleylab.org/CHAT/MAMMOCHAT/,https://hadleylab.org/CHAT/ONCOCHAT/,https://hadleylab.org/BOOKS/ATULISMS/"
 SHOP_WEBHOOK_TOLERANCE_SEC = "300"
-RUNPOD_BASE_URL = "https://aq0t10sits4kz2-8000.proxy.runpod.net/v1"
-RUNPOD_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-RUNPOD_KILOCODE_BASE_URL = "https://g0aelua3ct8eb4-8000.proxy.runpod.net/v1"
-RUNPOD_KILOCODE_MODEL = "deepseek-ai/deepseek-coder-6.7b-instruct"
-RUNPOD_KILOCODE_TOKENS_MAX = "1024"
-RUNPOD_PREFLIGHT_HEALTH = "1"
-RUNPOD_HEALTH_TIMEOUT_MS = "2000"
-# ── Preflight health check (GOV: TALK/TALK.md § Preflight) ──
+# ── Preflight (GOV: TALK/TALK.md § Preflight) ──
 PREFLIGHT_HEALTH = "1"
 ANTHROPIC_PREFLIGHT_HEALTH = "1"
-OPENAI_PREFLIGHT_HEALTH = "1"
-DEEPSEEK_PREFLIGHT_HEALTH = "1"
-VASTAI_PREFLIGHT_HEALTH = "0"
 PREFLIGHT_TIMEOUT_MS = "5000"
 PREFLIGHT_CACHE_TTL_S = "60"
 BAKEOFF_TIMEOUT_MS = "60000"
-VASTAI_BASE_URL = "https://vast-origin.canonic.org/v1"
-VASTAI_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-VASTAI_KILOCODE_BASE_URL = "https://vast-deepseek.canonic.org/v1"
-VASTAI_KILOCODE_MODEL = "deepseek-ai/deepseek-coder-6.7b-instruct"
-VASTAI_KILOCODE_TOKENS_MAX = "1024"
-# Optional: if set as a secret, the gateway requires Authorization: Bearer <CANONIC_API_KEY>
-# CANONIC_API_KEY
-# Providers (set PROVIDER var to switch):
-#   anthropic  → ANTHROPIC_API_KEY, MODEL, ANTHROPIC_VERSION
-#   openai     → OPENAI_API_KEY, MODEL
-#   deepseek   → DEEPSEEK_API_KEY, MODEL
-#   runpod     → RUNPOD_API_KEY, RUNPOD_BASE_URL, RUNPOD_MODEL (or MODEL)
-#   vastai     → VASTAI_BASE_URL, VASTAI_MODEL (or MODEL), optional VASTAI_API_KEY (or VLLM_API_KEY)
-#
-# Secrets: wrangler secret put <KEY_NAME>
-#   ANTHROPIC_API_KEY, OPENAI_API_KEY, DEEPSEEK_API_KEY, RUNPOD_API_KEY
-#   VASTAI_API_KEY (optional; only if upstream requires a bearer key)
+# ── Secrets: wrangler secret put <KEY_NAME> ──
+#   ANTHROPIC_API_KEY
 #   GITHUB_CLIENT_SECRET
 #   RESEND_API_KEY
 #   STRIPE_SECRET_KEY
@@ -190,3 +85,4 @@ VASTAI_KILOCODE_TOKENS_MAX = "1024"
 #   GUIDEPOINT_WEBHOOK_SECRET
 #
 # Custom domain: api.canonic.org
+# Multi-provider code preserved in git branch: multi-provider

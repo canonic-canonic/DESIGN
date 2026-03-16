@@ -12,7 +12,7 @@
 
 import { json } from './kernel/http.js';
 import { corsOrigin, CORS_DEFAULTS, setReqOrigin } from './kernel/cors.js';
-import { checkRate } from './kernel/rate.js';
+import { checkRate, checkBurst, resolveRateKey } from './kernel/rate.js';
 
 // ── Domain imports ──
 import { envForLane, oaiModels, oaiChatCompletions, oaiResponses } from './domains/gateway/index.js';
@@ -29,12 +29,13 @@ import * as star from './domains/star.js';
 import { handle as runnerRoute } from './domains/runner/index.js';
 import { digestWrite, digestRead, witnessWrite, witnessRead, verify as federationVerify } from './domains/federation.js';
 import { inbound as guidepointInbound, complete as guidepointComplete, ledger as guidepointLedger } from './domains/guidepoint.js';
+import { mintRead } from './domains/mint.js';
 
 // ── Helpers ──
 
 function rateGuard(env, bucket, request, limit) {
-  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-  return checkRate(env, bucket, ip, limit);
+  const key = resolveRateKey(request);
+  return checkRate(env, bucket, key, limit);
 }
 
 // ── Router ──
@@ -105,6 +106,8 @@ export default {
 
     // ── Chat ──
     if (path === '/chat' && method === 'POST') {
+      const chatKey = resolveRateKey(request);
+      if (await checkBurst(env, 'chat', chatKey, 10, 10)) return json({ error: 'Rate limited (burst)' }, 429);
       if (await rateGuard(env, 'chat', request, 120)) return json({ error: 'Rate limited' }, 429);
       return chat(request, env);
     }
@@ -124,6 +127,13 @@ export default {
       return shopStripeWebhook(request, env);
     if (path === '/shop/wallet' && method === 'GET')
       return shopWallet(request, env);
+
+    // ── MINT:READ (attention → COIN) ──
+    if (path === '/mint/read' && method === 'POST') {
+      const mintKey = resolveRateKey(request);
+      if (await checkRate(env, 'mint-read', mintKey, 60)) return json({ error: 'Rate limited' }, 429);
+      return mintRead(request, env);
+    }
 
     // ── Talk ──
     if (path === '/talk/ledger' && method === 'POST') return ledgerWrite(request, env);

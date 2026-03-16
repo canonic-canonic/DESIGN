@@ -23,11 +23,7 @@ export function checkGatewayKey(request, env) {
 
 export function laneProviderFromHostname(hostname) {
   const h = String(hostname || '').toLowerCase();
-  if (h === 'anthropic.canonic.org') return 'anthropic';
-  if (h === 'runpod.canonic.org') return 'runpod';
-  if (h === 'vast.canonic.org') return 'vastai';
-  if (h === 'openai.canonic.org') return 'openai';
-  if (h === 'deepseek.canonic.org') return 'deepseek';
+  if (h === 'anthropic.canonic.org' || h === 'api.canonic.org') return 'anthropic';
   return null;
 }
 
@@ -36,10 +32,6 @@ export function envForLane(hostname, env) {
   if (!lane) return env;
   const out = { ...env, LANE_PROVIDER: lane };
   out.PROVIDER = lane; out.FALLBACK_PROVIDER = lane; out.PROVIDER_CHAIN = lane;
-  if (lane === 'runpod') out.MODEL = (env.RUNPOD_MODEL || env.MODEL);
-  if (lane === 'vastai') out.MODEL = (env.VASTAI_MODEL || env.MODEL);
-  if (lane === 'openai') out.MODEL = (env.OPENAI_MODEL || env.MODEL);
-  if (lane === 'deepseek') out.MODEL = (env.DEEPSEEK_MODEL || env.MODEL);
   return out;
 }
 
@@ -57,17 +49,13 @@ export function tokenBoundsForEntry(entry, env) {
   const provider = String((entry && entry.provider) || '').toUpperCase();
   const profile = String((entry && entry.profile) || 'talk').toLowerCase();
   const lo = parseIntEnv(env, `${provider}_TOKENS_MIN`) ?? requireIntEnv(env, 'TOKENS_MIN', 'tokens');
-  const hi = parseIntEnv(env, `${provider}_${profile === 'kilocode' ? 'KILOCODE_TOKENS_MAX' : 'TOKENS_MAX'}`) ?? parseIntEnv(env, `${provider}_TOKENS_MAX`) ?? (provider === 'RUNPOD' ? 512 : requireIntEnv(env, 'TOKENS_MAX', 'tokens'));
+  const hi = parseIntEnv(env, `${provider}_TOKENS_MAX`) ?? requireIntEnv(env, 'TOKENS_MAX', 'tokens');
   return { lo, hi };
 }
 
 function providerHasGatewayConfig(provider, env) {
   const p = String(provider || '').toLowerCase();
   if (p === 'anthropic') return !!(env.ANTHROPIC_API_KEY && (env.MODEL || '').trim());
-  if (p === 'openai') return !!(env.OPENAI_API_KEY && ((env.OPENAI_MODEL || env.OPENAI_KILOCODE_MODEL || '').trim()));
-  if (p === 'deepseek') return !!(env.DEEPSEEK_API_KEY && ((env.DEEPSEEK_MODEL || env.DEEPSEEK_KILOCODE_MODEL || '').trim()));
-  if (p === 'runpod') return !!(env.RUNPOD_API_KEY && ((env.RUNPOD_BASE_URL || env.RUNPOD_KILOCODE_BASE_URL || '').trim()) && ((env.RUNPOD_MODEL || env.RUNPOD_KILOCODE_MODEL || '').trim()));
-  if (p === 'vastai') return !!((env.VASTAI_BASE_URL || env.VASTAI_KILOCODE_BASE_URL || '').trim()) && !!((env.VASTAI_MODEL || env.VASTAI_KILOCODE_MODEL || '').trim());
   return false;
 }
 
@@ -83,40 +71,20 @@ export function resolveGatewayAliasEntry(env, spec) {
   const profile = spec?.profile === 'kilocode' ? 'kilocode' : 'chat';
   const required = !!spec?.required;
   const defaultId = String(spec?.defaultId || `canonic-${profile}`).trim();
-  const defaultProviderOrder = Array.isArray(spec?.defaultProviderOrder)
-    ? spec.defaultProviderOrder
-    : (profile === 'kilocode' ? ['runpod', 'deepseek', 'openai', 'anthropic', 'vastai'] : ['deepseek', 'anthropic', 'openai', 'runpod', 'vastai']);
   if (!prefix) return null;
   if (!required && !hasAliasConfig(env, prefix)) return null;
 
-  const requestedProvider = String(env[`${prefix}_PROVIDER`] || defaultProviderOrder[0]).toLowerCase().trim();
-  const provider = providerHasGatewayConfig(requestedProvider, env)
-    ? requestedProvider
-    : (defaultProviderOrder.find(p => providerHasGatewayConfig(p, env)) || requestedProvider);
+  const provider = 'anthropic';
+  if (!providerHasGatewayConfig(provider, env)) return null;
 
   const id = String(env[`${prefix}_MODEL_ID`] || defaultId).trim();
   let upstreamModel = String(env[`${prefix}_UPSTREAM_MODEL`] || '').trim();
-  let baseUrl = String(env[`${prefix}_BASE_URL`] || '').trim();
 
-  const providerKeys = {
-    anthropic: { model: profile === 'kilocode' ? 'ANTHROPIC_KILOCODE_MODEL' : 'MODEL', fallback: 'MODEL', baseUrl: '' },
-    openai: { model: profile === 'kilocode' ? 'OPENAI_KILOCODE_MODEL' : 'OPENAI_MODEL', fallback: 'OPENAI_MODEL', base: profile === 'kilocode' ? 'OPENAI_KILOCODE_BASE_URL' : 'OPENAI_BASE_URL', baseFallback: 'OPENAI_BASE_URL' },
-    deepseek: { model: profile === 'kilocode' ? 'DEEPSEEK_KILOCODE_MODEL' : 'DEEPSEEK_MODEL', fallback: 'DEEPSEEK_MODEL', base: profile === 'kilocode' ? 'DEEPSEEK_KILOCODE_BASE_URL' : 'DEEPSEEK_BASE_URL', baseFallback: 'DEEPSEEK_BASE_URL' },
-    runpod: { model: profile === 'kilocode' ? 'RUNPOD_KILOCODE_MODEL' : 'RUNPOD_MODEL', fallback: 'RUNPOD_MODEL', base: profile === 'kilocode' ? 'RUNPOD_KILOCODE_BASE_URL' : 'RUNPOD_BASE_URL', baseFallback: 'RUNPOD_BASE_URL' },
-    vastai: { model: profile === 'kilocode' ? 'VASTAI_KILOCODE_MODEL' : 'VASTAI_MODEL', fallback: 'VASTAI_MODEL', base: profile === 'kilocode' ? 'VASTAI_KILOCODE_BASE_URL' : 'VASTAI_BASE_URL', baseFallback: 'VASTAI_BASE_URL' },
-  };
-
-  const pk = providerKeys[provider];
-  if (pk) {
-    if (!upstreamModel) upstreamModel = String(env[pk.model] || env[pk.fallback] || '').trim();
-    if (provider === 'anthropic') { baseUrl = ''; }
-    else if (!baseUrl && pk.base) { baseUrl = String(env[pk.base] || env[pk.baseFallback] || '').trim(); }
-  }
+  const modelKey = profile === 'kilocode' ? 'ANTHROPIC_KILOCODE_MODEL' : 'MODEL';
+  if (!upstreamModel) upstreamModel = String(env[modelKey] || env.MODEL || '').trim();
 
   if (!id || !upstreamModel) return null;
-  const entry = { id, provider, profile, upstream_model: upstreamModel };
-  if (baseUrl) entry.base_url = baseUrl;
-  return entry;
+  return { id, provider, profile, upstream_model: upstreamModel };
 }
 
 function pushGatewayModel(out, seen, entry) {
@@ -130,32 +98,9 @@ function pushGatewayModel(out, seen, entry) {
 export function listGatewayModels(env) {
   const out = []; const seen = new Set();
   const specs = [
-    { prefix: 'CHAT', profile: 'chat', defaultId: 'canonic-chat', required: true, defaultProviderOrder: ['deepseek', 'anthropic', 'openai', 'runpod', 'vastai'] },
-    { prefix: 'KILOCODE', profile: 'kilocode', defaultId: 'canonic-kilocode', required: true, defaultProviderOrder: ['runpod', 'deepseek', 'openai', 'anthropic', 'vastai'] },
-    { prefix: 'CHAT_COMMERCIAL', profile: 'chat', defaultId: 'canonic-chat-commercial', defaultProviderOrder: ['deepseek', 'anthropic', 'openai', 'runpod', 'vastai'] },
-    { prefix: 'CHAT_COMMERCIAL_OPENAI', profile: 'chat', defaultId: 'canonic-chat-commercial-openai', defaultProviderOrder: ['openai', 'deepseek', 'anthropic', 'runpod', 'vastai'] },
-    { prefix: 'CHAT_COMMERCIAL_ANTHROPIC', profile: 'chat', defaultId: 'canonic-chat-commercial-anthropic', defaultProviderOrder: ['anthropic', 'deepseek', 'openai', 'runpod', 'vastai'] },
-    { prefix: 'CHAT_OPENSOURCE_RUNPOD', profile: 'chat', defaultId: 'canonic-chat-opensource-runpod', defaultProviderOrder: ['runpod', 'vastai', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'CHAT_OPENSOURCE_VAST', profile: 'chat', defaultId: 'canonic-chat-opensource-vast', defaultProviderOrder: ['vastai', 'runpod', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'CHAT_RUNPOD_DEEPSEEK', profile: 'chat', defaultId: 'canonic-chat-runpod-deepseek', defaultProviderOrder: ['runpod', 'vastai', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'CHAT_RUNPOD_QWEN', profile: 'chat', defaultId: 'canonic-chat-runpod-qwen', defaultProviderOrder: ['runpod', 'vastai', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'CHAT_RUNPOD_MISTRAL', profile: 'chat', defaultId: 'canonic-chat-runpod-mistral', defaultProviderOrder: ['runpod', 'vastai', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'CHAT_RUNPOD_LLAMA', profile: 'chat', defaultId: 'canonic-chat-runpod-llama', defaultProviderOrder: ['runpod', 'vastai', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'CHAT_RUNPOD_GLM', profile: 'chat', defaultId: 'canonic-chat-runpod-glm', defaultProviderOrder: ['runpod', 'vastai', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'CHAT_VAST_DEEPSEEK', profile: 'chat', defaultId: 'canonic-chat-vast-deepseek', defaultProviderOrder: ['vastai', 'runpod', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'CHAT_VAST_QWEN', profile: 'chat', defaultId: 'canonic-chat-vast-qwen', defaultProviderOrder: ['vastai', 'runpod', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'CHAT_VAST_MISTRAL', profile: 'chat', defaultId: 'canonic-chat-vast-mistral', defaultProviderOrder: ['vastai', 'runpod', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'CHAT_VAST_LLAMA', profile: 'chat', defaultId: 'canonic-chat-vast-llama', defaultProviderOrder: ['vastai', 'runpod', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'CHAT_VAST_GLM', profile: 'chat', defaultId: 'canonic-chat-vast-glm', defaultProviderOrder: ['vastai', 'runpod', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'KILOCODE_COMMERCIAL', profile: 'kilocode', defaultId: 'canonic-kilocode-commercial', defaultProviderOrder: ['openai', 'deepseek', 'anthropic', 'runpod', 'vastai'] },
-    { prefix: 'KILOCODE_OPENSOURCE_RUNPOD', profile: 'kilocode', defaultId: 'canonic-kilocode-opensource-runpod', defaultProviderOrder: ['runpod', 'vastai', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'KILOCODE_OPENSOURCE_VAST', profile: 'kilocode', defaultId: 'canonic-kilocode-opensource-vast', defaultProviderOrder: ['vastai', 'runpod', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'KILOCODE_RUNPOD_DEEPSEEK', profile: 'kilocode', defaultId: 'canonic-kilocode-runpod-deepseek', defaultProviderOrder: ['runpod', 'vastai', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'KILOCODE_RUNPOD_QWEN', profile: 'kilocode', defaultId: 'canonic-kilocode-runpod-qwen', defaultProviderOrder: ['runpod', 'vastai', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'KILOCODE_RUNPOD_GLM', profile: 'kilocode', defaultId: 'canonic-kilocode-runpod-glm', defaultProviderOrder: ['runpod', 'vastai', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'KILOCODE_VAST_DEEPSEEK', profile: 'kilocode', defaultId: 'canonic-kilocode-vast-deepseek', defaultProviderOrder: ['vastai', 'runpod', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'KILOCODE_VAST_QWEN', profile: 'kilocode', defaultId: 'canonic-kilocode-vast-qwen', defaultProviderOrder: ['vastai', 'runpod', 'deepseek', 'openai', 'anthropic'] },
-    { prefix: 'KILOCODE_VAST_GLM', profile: 'kilocode', defaultId: 'canonic-kilocode-vast-glm', defaultProviderOrder: ['vastai', 'runpod', 'deepseek', 'openai', 'anthropic'] },
+    { prefix: 'CHAT', profile: 'chat', defaultId: 'canonic-chat', required: true, defaultProviderOrder: ['anthropic'] },
+    { prefix: 'KILOCODE', profile: 'kilocode', defaultId: 'canonic-kilocode', required: true, defaultProviderOrder: ['anthropic'] },
+    { prefix: 'CHAT_COMMERCIAL_ANTHROPIC', profile: 'chat', defaultId: 'canonic-chat-commercial-anthropic', defaultProviderOrder: ['anthropic'] },
   ];
   for (const spec of specs) {
     const entry = resolveGatewayAliasEntry(env, spec);

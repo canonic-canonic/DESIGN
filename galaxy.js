@@ -1287,7 +1287,7 @@ var GALAXY = (function () {
     async function init(el) {
         _authUser = await validateGalaxyAuth();
 
-        var res = await fetch('./galaxy.json');
+        var res = await fetch('../galaxy.json');
         var raw = await res.json();
         galaxy = Array.isArray(raw) ? transformScopes(raw) : raw;
 
