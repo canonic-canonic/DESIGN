@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF Viewer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#525659;font-family:system-ui,-apple-system,sans-serif}
+#toolbar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#323639;color:#d7d7d7;font-size:13px;height:40px;user-select:none}
+#toolbar button{background:none;border:1px solid #555;color:#d7d7d7;padding:4px 10px;border-radius:3px;cursor:pointer;font-size:13px}
+#toolbar button:hover{background:#454545}
+#toolbar button:disabled{opacity:.4;cursor:default}
+#pageInfo{min-width:100px;text-align:center}
+#toolbar input[type="number"]{width:50px;background:#1a1a1a;border:1px solid #555;color:#d7d7d7;text-align:center;border-radius:3px;padding:2px 4px;font-size:13px}
+.spacer{flex:1}
+#viewer{position:absolute;top:40px;bottom:0;left:0;right:0;overflow:auto;display:flex;flex-direction:column;align-items:center;padding:8px 0}
+canvas{display:block;margin:0 auto 8px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+</style>
+</head>
+<body>
+<div id="toolbar">
+  <button id="prev" title="Previous page">&lsaquo;</button>
+  <span id="pageInfo">
+    <input type="number" id="pageInput" min="1" value="1"> / <span id="pageCount">-</span>
+  </span>
+  <button id="next" title="Next page">&rsaquo;</button>
+  <span class="spacer"></span>
+  <button id="zoomOut" title="Zoom out">&minus;</button>
+  <span id="zoomLevel">100%</span>
+  <button id="zoomIn" title="Zoom in">+</button>
+  <button id="fitWidth" title="Fit width">&#x2194;</button>
+  <span class="spacer"></span>
+  <button id="download" title="Download PDF">&#8615; PDF</button>
+</div>
+<div id="viewer"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+        integrity="sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e"
+        crossorigin="anonymous"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const params = new URLSearchParams(location.search);
+const fileUrl = params.get('file');
+if (!fileUrl) { document.getElementById('viewer').textContent = 'No PDF specified.'; }
+
+let pdfDoc = null, currentPage = 1, currentScale = 1.5, rendering = false;
+const viewer = document.getElementById('viewer');
+const pageInput = document.getElementById('pageInput');
+const pageCount = document.getElementById('pageCount');
+const zoomLevel = document.getElementById('zoomLevel');
+
+function updateZoomLabel() { zoomLevel.textContent = Math.round(currentScale * 100 / 1.5) + '%'; }
+
+function renderPage(num) {
+  if (!pdfDoc) return;
+  rendering = true;
+  pdfDoc.getPage(num).then(function(page) {
+    const vp = page.getViewport({ scale: currentScale });
+    const canvas = document.createElement('canvas');
+    canvas.width = vp.width;
+    canvas.height = vp.height;
+    const ctx = canvas.getContext('2d');
+    viewer.innerHTML = '';
+    viewer.appendChild(canvas);
+    page.render({ canvasContext: ctx, viewport: vp }).promise.then(function() {
+      rendering = false;
+      pageInput.value = num;
+      currentPage = num;
+    });
+  });
+}
+
+function renderAll() {
+  if (!pdfDoc) return;
+  rendering = true;
+  viewer.innerHTML = '';
+  const fragment = document.createDocumentFragment();
+  let rendered = 0;
+  for (let i = 1; i <= pdfDoc.numPages; i++) {
+    (function(pageNum) {
+      pdfDoc.getPage(pageNum).then(function(page) {
+        const vp = page.getViewport({ scale: currentScale });
+        const canvas = document.createElement('canvas');
+        canvas.width = vp.width;
+        canvas.height = vp.height;
+        canvas.dataset.page = pageNum;
+        const ctx = canvas.getContext('2d');
+        page.render({ canvasContext: ctx, viewport: vp }).promise.then(function() {
+          rendered++;
+          if (rendered === pdfDoc.numPages) {
+            const sorted = Array.from(viewer.querySelectorAll('canvas')).sort(function(a,b) {
+              return +a.dataset.page - +b.dataset.page;
+            });
+            viewer.innerHTML = '';
+            sorted.forEach(function(c) { viewer.appendChild(c); });
+            rendering = false;
+          }
+        });
+        viewer.appendChild(canvas);
+      });
+    })(i);
+  }
+}
+
+if (fileUrl) {
+  pdfjsLib.getDocument(fileUrl).promise.then(function(pdf) {
+    pdfDoc = pdf;
+    pageCount.textContent = pdf.numPages;
+    pageInput.max = pdf.numPages;
+    updateZoomLabel();
+    renderAll();
+  }).catch(function(err) {
+    viewer.innerHTML = '<p style="color:#fff;padding:40px">Failed to load PDF: ' + err.message + '</p>';
+  });
+}
+
+document.getElementById('prev').onclick = function() {
+  if (currentPage <= 1) return;
+  currentPage--;
+  pageInput.value = currentPage;
+  var target = viewer.querySelectorAll('canvas')[currentPage - 1];
+  if (target) target.scrollIntoView({ behavior: 'smooth' });
+};
+document.getElementById('next').onclick = function() {
+  if (!pdfDoc || currentPage >= pdfDoc.numPages) return;
+  currentPage++;
+  pageInput.value = currentPage;
+  var target = viewer.querySelectorAll('canvas')[currentPage - 1];
+  if (target) target.scrollIntoView({ behavior: 'smooth' });
+};
+pageInput.onchange = function() {
+  var n = parseInt(pageInput.value);
+  if (n >= 1 && pdfDoc && n <= pdfDoc.numPages) {
+    currentPage = n;
+    var target = viewer.querySelectorAll('canvas')[n - 1];
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+document.getElementById('zoomIn').onclick = function() {
+  currentScale *= 1.2; updateZoomLabel(); renderAll();
+};
+document.getElementById('zoomOut').onclick = function() {
+  currentScale /= 1.2; updateZoomLabel(); renderAll();
+};
+document.getElementById('fitWidth').onclick = function() {
+  if (!pdfDoc) return;
+  pdfDoc.getPage(1).then(function(page) {
+    var vp = page.getViewport({ scale: 1 });
+    currentScale = (viewer.clientWidth - 24) / vp.width;
+    updateZoomLabel();
+    renderAll();
+  });
+};
+document.getElementById('download').onclick = function() {
+  var a = document.createElement('a');
+  a.href = fileUrl;
+  a.download = '';
+  a.click();
+};
+</script>
+</body>
+</html>
