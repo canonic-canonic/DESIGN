@@ -1,0 +1,166 @@
+% CANONIC Business Plan Template — MAGIC DESIGN
+% Pandoc LaTeX template for governed business plans.
+% Single-column professional format. Derived from paper.latex.
+% _generated: MAGIC/SURFACE/DESIGN
+\documentclass[11pt,a4paper]{article}
+
+% === Document Setup ===
+\usepackage{fontspec}
+\usepackage{setspace}
+\usepackage{microtype}
+\setmainfont{Helvetica Neue}[
+  BoldFont = Helvetica Neue Bold,
+  ItalicFont = Helvetica Neue Italic,
+]
+
+% === Page Geometry ===
+\usepackage[a4paper,margin=1in]{geometry}
+
+% === Colors — CANONIC Branding ===
+\usepackage{xcolor}
+\definecolor{canonic-gold}{HTML}{EC4899}
+\definecolor{canonic-accent}{HTML}{EC4899}
+\definecolor{canonic-slate}{HTML}{4B5563}
+\definecolor{canonic-light}{HTML}{F9FAFB}
+\definecolor{canonic-green}{HTML}{10B981}
+\definecolor{linkblue}{HTML}{9D174D}
+
+% === Graphics ===
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{tikz}
+
+% === Tables and Math ===
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{longtable}
+\newcounter{none}
+
+% === References and Hyperlinks ===
+\usepackage{hyperref}
+\hypersetup{
+    unicode=true,
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=linkblue,
+    urlcolor=linkblue,
+    pdftitle={$title$},
+    pdfauthor={$if(author)$$for(author)$$author$$sep$, $endfor$$else$CANONIC$endif$},
+}
+
+% === Formatting ===
+\renewcommand{\baselinestretch}{1.25}
+\setlength{\parskip}{0.6em}
+\setlength{\parindent}{0pt}
+
+% === Section Styling ===
+\usepackage{titlesec}
+\titleformat{\section}
+  {\color{canonic-slate}\Large\bfseries}
+  {\thesection.}{0.5em}{}
+\titleformat{\subsection}
+  {\color{canonic-slate}\large\bfseries}
+  {\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}
+  {\color{canonic-slate}\normalsize\bfseries}
+  {\thesubsubsection}{0.5em}{}
+
+% === Header / Footer — CANONIC ===
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{canonic-gold}{\ensuremath{\cap}}\hspace{4pt}\textcolor{canonic-slate}{\textbf{CANONIC}}}
+\fancyhead[R]{\textcolor{canonic-accent}{\textbf{CONFIDENTIAL}}}
+\fancyfoot[C]{\textcolor{canonic-slate}{\small hadleylab.org — Governed Research \quad Page \thepage}}
+
+% === Lists ===
+\usepackage{enumitem}
+\setlist[itemize]{itemsep=2pt, topsep=2pt, parsep=0pt, partopsep=0pt, leftmargin=*}
+
+% === Balance ===
+\usepackage{ragged2e}
+
+% === Provenance ===
+\usepackage{fancyvrb}
+
+% === Pandoc compatibility ===
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\providecommand{\pandocbounded}[1]{#1}
+
+% Code highlighting (pandoc --highlight-style)
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
+
+% Header includes from pandoc metadata
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+\begin{document}
+
+% === Title Page ===
+\begin{titlepage}
+\thispagestyle{empty}
+\centering
+
+\vspace*{2.5cm}
+
+\begin{tikzpicture}[scale=1.8]
+  \fill[canonic-gold, rounded corners=1pt]
+    (-0.6,-0.05) -- (-0.6,0.5) arc[start angle=180, end angle=0, radius=0.6]
+    -- (0.6,-0.05) -- (0.45,-0.05) -- (0.45,0.5) arc[start angle=0, end angle=180, radius=0.45]
+    -- (-0.45,-0.05) -- cycle;
+\end{tikzpicture}\par
+
+\vspace{0.3cm}
+
+{\small\color{canonic-slate}\textbf{CANONIC}\par}
+
+\vspace{1.2cm}
+
+{\fontsize{28}{34}\selectfont\bfseries\color{canonic-slate} $title$\par}
+
+\vspace{0.3cm}
+
+{\color{canonic-gold}\rule{4cm}{1.5pt}\par}
+
+\vspace{0.8cm}
+
+$if(author)$
+$for(author)$
+{\large\color{canonic-slate} $author$\par}
+$endfor$
+$else$
+{\large\color{canonic-slate} Dexter Hadley, MD/PhD\par}
+{\small\color{canonic-slate} Founder and Chair, CANONIC Foundation\par}
+$endif$
+
+\vspace{0.4cm}
+
+$if(date)$
+{\small\color{canonic-slate} $date$\par}
+$endif$
+
+\vfill
+
+{\small\color{canonic-gold} \textbf{mammochat.ai} · \textbf{hadleylab.org} · \textbf{canonic.org}\par}
+\vspace{0.2cm}
+{\footnotesize\color{canonic-slate} Governed by CANONIC MAGIC 255\par}
+
+\end{titlepage}
+
+\pagestyle{fancy}
+
+$if(toc)$
+\tableofcontents
+\newpage
+$endif$
+
+$body$
+
+\end{document}
