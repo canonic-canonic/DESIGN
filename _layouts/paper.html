@@ -96,8 +96,11 @@
   <style>.pdf-iframe{width:100%;height:calc(100vh - 56px);border:none;display:block;}</style>
   {% endif %}
 
-  <!-- ═══ GOV + WEB VIEW: contract prose (article serves both — GOV is fixed contract, WEB is same content with TALK) ═══ -->
-  <article class="post paper container view-gov view-web"{% if page.pdf and page.gate != "contribute" and page.view == "tex" %} style="display:none"{% endif %}>
+  <!-- ═══ GOV VIEW: service contract from CANON.json ═══ -->
+  {% include VIEW-GOV.html badge=badge_label %}
+
+  <!-- ═══ WEB VIEW: rendered paper content ═══ -->
+  <article class="post paper container view-web"{% if page.view == "gov" or (page.pdf and page.gate != "contribute" and page.view == "tex") %} style="display:none"{% endif %}>
     <!-- Academic title block -->
     <header class="paper-title-block">
       <div class="paper-foundation">CANONIC Foundation</div>

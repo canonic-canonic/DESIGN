@@ -142,8 +142,11 @@
   <style>.pdf-iframe{width:100%;height:calc(100vh - 56px);border:none;display:block;}</style>
   {% endif %}
 
-  <!-- ═══ GOV + WEB VIEW: contract prose ═══ -->
-  <article class="post paper book container view-gov view-web"{% if page.pdf and page.gate != "contribute" and page.view == "tex" %} style="display:none"{% endif %}>
+  <!-- ═══ GOV VIEW: service contract from CANON.json ═══ -->
+  {% include VIEW-GOV.html badge=badge_label %}
+
+  <!-- ═══ WEB VIEW: rendered book content ═══ -->
+  <article class="post paper book container view-web"{% if page.view == "gov" or (page.pdf and page.gate != "contribute" and page.view == "tex") %} style="display:none"{% endif %}>
 
     {% if page.abstract %}
     <div class="paper-abstract">
