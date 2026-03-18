@@ -1071,6 +1071,14 @@ body.galaxy-surface {
     background: rgba(0,255,136,0.06);
 }
 
+/* Finder content — clear HUD panels */
+.galaxy-surface .finder-breadcrumb,
+.galaxy-surface .finder-scope-header,
+.galaxy-surface .finder-grid {
+    margin-left: 320px;
+    margin-right: 16px;
+}
+
 /* Scope cards grid */
 .finder-grid {
     display: grid;
