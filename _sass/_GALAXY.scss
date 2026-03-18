@@ -67,7 +67,7 @@ body.galaxy-surface {
     height: 100%;
 }
 .auth-ring-arc {
-    animation: auth-ring-spin 8s linear infinite;
+    animation: auth-ring-spin 30s linear infinite;
     transform-origin: 60px 60px;
 }
 @keyframes auth-ring-spin {
