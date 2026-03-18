@@ -53,9 +53,11 @@
             </div>
             <div class="chat-input-area">
               <div class="chat-input">
+                {% assign input_idx = 0 %}
                 {% for msg in p.messages %}
                   {% if msg.role == 'user' %}
-                  <div class="input-text-wrapper input-wrapper-{{ forloop.index }}">
+                  {% assign input_idx = input_idx | plus: 1 %}
+                  <div class="input-text-wrapper input-wrapper-{{ input_idx }}">
                     <span class="input-text">{{ msg.text }}</span>
                     <span class="input-cursor"></span>
                   </div>
