@@ -235,14 +235,16 @@
     flex-shrink: 0;
 }
 
-/* Demo scroll animation (24s cycle) — traverse full phone surface */
+/* Demo scroll animation (24s cycle)
+   Scroll tracks the conversation: nudge up as messages stack.
+   2-exchange demo (5 msgs): content ~300px, viewport ~520px → scroll -80px max.
+   4-exchange demo (10 msgs): content ~600px → scroll -480px.
+   Scroll stages match message appearance timings. */
 @keyframes demo-scroll {
-    0%, 15% { transform: translateY(0); }
-    20%, 35% { transform: translateY(-100px); }
-    40%, 58% { transform: translateY(-220px); }
-    62%, 82% { transform: translateY(-350px); }
-    87%, 95% { transform: translateY(-480px); }
-    98%, 100% { transform: translateY(0); }
+    0%, 8% { transform: translateY(0); }
+    18%, 28% { transform: translateY(-40px); }
+    38%, 92% { transform: translateY(-80px); }
+    96%, 100% { transform: translateY(0); }
 }
 
 /* Chat message animations (24s cycle)
@@ -332,24 +334,20 @@
     .device-container { order: -1; }
     .iphone { width: 240px; height: 500px; }
     @keyframes demo-scroll {
-        0%, 15% { transform: translateY(0); }
-        20%, 35% { transform: translateY(-80px); }
-        40%, 58% { transform: translateY(-170px); }
-        62%, 82% { transform: translateY(-270px); }
-        87%, 95% { transform: translateY(-380px); }
-        98%, 100% { transform: translateY(0); }
+        0%, 8% { transform: translateY(0); }
+        18%, 28% { transform: translateY(-30px); }
+        38%, 92% { transform: translateY(-60px); }
+        96%, 100% { transform: translateY(0); }
     }
 }
 @media (max-width: 640px) {
     .hero-content h1 { font-size: 32px; }
     .iphone { width: 200px; height: 420px; }
     @keyframes demo-scroll {
-        0%, 15% { transform: translateY(0); }
-        20%, 35% { transform: translateY(-60px); }
-        40%, 58% { transform: translateY(-140px); }
-        62%, 82% { transform: translateY(-220px); }
-        87%, 95% { transform: translateY(-300px); }
-        98%, 100% { transform: translateY(0); }
+        0%, 8% { transform: translateY(0); }
+        18%, 28% { transform: translateY(-20px); }
+        38%, 92% { transform: translateY(-40px); }
+        96%, 100% { transform: translateY(0); }
     }
 }
 
