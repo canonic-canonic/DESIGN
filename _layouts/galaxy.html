@@ -1,0 +1,103 @@
+<!-- LAYOUT: galaxy | Chrome-free operating surface | GALAXY is the OS of MAGIC -->
+<!-- No NAV-UNIFIED, no FOOTER, no hero. Galaxy owns every pixel. -->
+<!-- Auth required: renders login gate if no session. -->
+{% assign scope_key = page.scope | default: site.scope | downcase %}
+{% assign sd = site.data[scope_key] %}
+<!DOCTYPE html>
+<html lang="en" data-scope="{{ page.scope | default: site.scope | downcase }}">
+<head>
+  {% include HEAD.html %}
+</head>
+<body class="galaxy-surface">
+
+  <!-- AUTH GATE: login screen shown if no valid session -->
+  <div id="galaxyAuthGate" class="galaxy-auth-gate">
+    <div class="galaxy-auth-card">
+      <div class="auth-ring-wrap">
+        <svg class="auth-ring" viewBox="0 0 120 120" width="120" height="120">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+          <circle cx="60" cy="60" r="52" fill="none" stroke="url(#auth-ring-grad)" stroke-width="3"
+                  stroke-dasharray="245 82" stroke-linecap="round" class="auth-ring-arc"/>
+          <defs>
+            <linearGradient id="auth-ring-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#00ff88"/>
+              <stop offset="100%" stop-color="#2997ff"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="auth-lock">
+          <i class="fas fa-lock"></i>
+        </div>
+      </div>
+      <div class="auth-brand">
+        <span class="auth-mark">&#8745;</span>
+        <span class="auth-title">CANONIC</span>
+      </div>
+      <div class="auth-subtitle">GALAXY</div>
+      <div class="auth-tagline">Authenticate to access the operating surface</div>
+      <button id="galaxyLoginBtn" class="auth-login-btn" onclick="galaxyLogin()">
+        <i class="fab fa-github"></i> Sign in with GitHub
+      </button>
+      <div class="auth-footer">Governed access &middot; GitHub identity required</div>
+    </div>
+  </div>
+
+  <!-- GALAXY OPERATING SURFACE: hidden until authenticated -->
+  <div id="galaxySurface" class="galaxy-surface-container" style="display:none;">
+    {% include GALAXY.html %}
+  </div>
+
+  <!-- Scripts: auth + galaxy (no nav.js, no figures.js — chrome-free) -->
+  <!-- FA + vis-network loaded by GALAXY.html include above -->
+  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+  {% include AUTH.html %}
+  <script src="{{ '/assets/js/auth.js?v=4' | relative_url }}"></script>
+  <script src="{{ '/assets/js/galaxy.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/controls.js' | relative_url }}"></script>
+  <script>
+    function galaxyLogin() {
+      var apiBase = AUTH._apiBase || 'https://api.canonic.org';
+      window.location.href = apiBase + '/auth/github?redirect=' + encodeURIComponent(window.location.href);
+    }
+
+    (function initGalaxySurface() {
+      AUTH.init();
+      var token = localStorage.getItem('canonic_session_token');
+      if (token) {
+        // Validate session before showing surface
+        fetch((AUTH._apiBase || 'https://api.canonic.org') + '/auth/session', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+        }).then(function(r) {
+          if (r.ok) return r.json();
+          throw new Error('session invalid');
+        }).then(function(session) {
+          // Unlock sequence: ring completes, lock opens, gate fades
+          var gate = document.getElementById('galaxyAuthGate');
+          var surface = document.getElementById('galaxySurface');
+          var lock = gate.querySelector('.auth-lock i');
+          var ring = gate.querySelector('.auth-ring-arc');
+          gate.classList.add('auth-unlocking');
+          if (lock) lock.className = 'fas fa-lock-open';
+          if (ring) { ring.style.strokeDasharray = '327 0'; ring.style.animation = 'none'; }
+          setTimeout(function() {
+            gate.classList.add('auth-unlocked');
+            surface.style.display = 'block';
+            surface.classList.add('galaxy-entering');
+            GALAXY.init({ session: session });
+            setTimeout(function() {
+              gate.style.display = 'none';
+              surface.classList.remove('galaxy-entering');
+            }, 600);
+          }, 500);
+        }).catch(function() {
+          // Invalid session — show login
+          localStorage.removeItem('canonic_session_token');
+          document.getElementById('galaxyAuthGate').style.display = '';
+        });
+      }
+      // else: auth gate already visible
+    })();
+  </script>
+</body>
+</html>
