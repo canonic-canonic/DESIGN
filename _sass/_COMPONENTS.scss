@@ -655,8 +655,8 @@
     overflow-y: auto;
 }
 
-/* FAB — Floating Action Button */
-.fab {
+/* FAB — Floating Action Button (scoped to avoid FontAwesome .fab collision) */
+.fab:not([class*="fa-"]) {
     position: fixed;
     bottom: var(--space-md);
     right: var(--space-md);

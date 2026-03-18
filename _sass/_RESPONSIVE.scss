@@ -28,7 +28,7 @@
     .apps-grid { grid-template-columns: 1fr; }
     section { padding: var(--space-lg) var(--space-sm); }
     .message { max-width: 90%; }
-    .fab { width: 48px; height: 48px; font-size: 20px; bottom: 16px; right: 16px; }
+    .fab:not([class*="fa-"]) { width: 48px; height: 48px; font-size: 20px; bottom: 16px; right: 16px; }
     .slide { padding: 0 5vw; }
 }
 
