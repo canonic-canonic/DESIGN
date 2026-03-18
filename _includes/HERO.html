@@ -34,13 +34,14 @@
             <div class="chat-header">{{ p.productIcon }} {{ p.product }}</div>
             <div class="chat-messages">
               {% assign msg_idx = 0 %}
+              {% assign typ_idx = 0 %}
               {% for msg in p.messages %}
                 {% if msg.role == 'user' %}
                   {% assign msg_idx = msg_idx | plus: 1 %}
                   <div class="chat-msg chat-user msg-{{ msg_idx }}">{{ msg.text }}</div>
                 {% elsif msg.role == 'bot' %}
-                  {% assign msg_idx = msg_idx | plus: 1 %}
-                  <div class="typing-indicator typing-{{ msg_idx }}"><span></span><span></span><span></span></div>
+                  {% assign typ_idx = typ_idx | plus: 1 %}
+                  <div class="typing-indicator typing-{{ typ_idx }}"><span></span><span></span><span></span></div>
                   {% assign msg_idx = msg_idx | plus: 1 %}
                   <div class="chat-msg chat-bot msg-{{ msg_idx }}">{{ msg.text }}</div>
                   {% if msg.citation %}

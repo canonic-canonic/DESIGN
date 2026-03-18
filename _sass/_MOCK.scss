@@ -245,29 +245,59 @@
     98%, 100% { transform: translateY(0); }
 }
 
-/* Chat message animations (24s cycle) — 10 messages, 4 typing, 4 typewriter */
-.msg-1 { animation: msg-u1 24s infinite; } .typing-1 { animation: typ1 24s infinite; }
-.msg-2 { animation: msg-b1 24s infinite; } .msg-3 { animation: msg-u2 24s infinite; }
-.typing-2 { animation: typ2 24s infinite; } .msg-4 { animation: msg-b2 24s infinite; }
-.msg-5 { animation: msg-c1 24s infinite; } .msg-6 { animation: msg-u3 24s infinite; }
-.typing-3 { animation: typ3 24s infinite; } .msg-7 { animation: msg-b3 24s infinite; }
-.msg-8 { animation: msg-u4 24s infinite; } .typing-4 { animation: typ4 24s infinite; }
-.msg-9 { animation: msg-b4 24s infinite; } .msg-10 { animation: msg-c2 24s infinite; }
+/* Chat message animations (24s cycle)
+   Pattern per exchange: user types → send → typing dots → bot reply (+ optional cite)
+   MammoChat has 2 exchanges (5 msgs + 2 typing), but up to 10 msgs + 4 typing supported.
 
-@keyframes msg-u1 { 0%,8%{opacity:0;transform:translateY(8px)} 10%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
+   Sequence for 2-exchange demo (MammoChat):
+     0-8%   input-1 types        → user typing in input bar
+     8-10%  msg-1 appears         → user message bubble
+     10-16% typing-1 appears      → bot thinking dots
+     16-18% msg-2 appears         → bot response
+     18-20% msg-3 appears         → citation
+     28-30% input-2 types         → user typing in input bar
+     30-32% msg-4 appears         → user message bubble
+     32-38% typing-2 appears      → bot thinking dots
+     38-40% msg-5 appears         → bot response
+     hold until 95%, then fade all out at 98%.
+*/
+.msg-1 { animation: msg1 24s infinite; }
+.msg-2 { animation: msg2 24s infinite; }
+.msg-3 { animation: msg3 24s infinite; }
+.msg-4 { animation: msg4 24s infinite; }
+.msg-5 { animation: msg5 24s infinite; }
+.msg-6 { animation: msg6 24s infinite; }
+.msg-7 { animation: msg7 24s infinite; }
+.msg-8 { animation: msg8 24s infinite; }
+.msg-9 { animation: msg9 24s infinite; }
+.msg-10 { animation: msg10 24s infinite; }
+.typing-1 { animation: typ1 24s infinite; }
+.typing-2 { animation: typ2 24s infinite; }
+.typing-3 { animation: typ3 24s infinite; }
+.typing-4 { animation: typ4 24s infinite; }
+
+/* msg-1: user "I was just diagnosed with DCIS" — appears at 10% */
+@keyframes msg1 { 0%,8%{opacity:0;transform:translateY(8px)} 10%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
+/* typing-1: bot thinking — appears 10-16%, disappears before bot reply */
 @keyframes typ1 { 0%,10%{opacity:0} 12%,16%{opacity:1} 18%,100%{opacity:0} }
-@keyframes msg-b1 { 0%,16%{opacity:0;transform:translateY(8px)} 18%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
-@keyframes msg-u2 { 0%,28%{opacity:0;transform:translateY(8px)} 30%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
-@keyframes typ2 { 0%,30%{opacity:0} 32%,36%{opacity:1} 38%,100%{opacity:0} }
-@keyframes msg-b2 { 0%,36%{opacity:0;transform:translateY(8px)} 38%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
-@keyframes msg-c1 { 0%,38%{opacity:0} 40%,95%{opacity:1} 98%,100%{opacity:0} }
-@keyframes msg-u3 { 0%,52%{opacity:0;transform:translateY(8px)} 54%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
+/* msg-2: bot "DCIS is non-invasive..." — appears at 18% */
+@keyframes msg2 { 0%,16%{opacity:0;transform:translateY(8px)} 18%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
+/* msg-3: cite "NCCN Guidelines" — appears at 20% (fades in right after bot) */
+@keyframes msg3 { 0%,18%{opacity:0} 20%,95%{opacity:1} 98%,100%{opacity:0} }
+/* msg-4: user "What should I ask my surgeon?" — appears at 32% */
+@keyframes msg4 { 0%,30%{opacity:0;transform:translateY(8px)} 32%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
+/* typing-2: bot thinking — appears 32-38% */
+@keyframes typ2 { 0%,32%{opacity:0} 34%,38%{opacity:1} 40%,100%{opacity:0} }
+/* msg-5: bot "Ask about lumpectomy..." — appears at 40% */
+@keyframes msg5 { 0%,38%{opacity:0;transform:translateY(8px)} 40%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
+/* msg-6 through msg-10: additional exchanges (3rd and 4th) */
+@keyframes msg6 { 0%,52%{opacity:0;transform:translateY(8px)} 54%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
 @keyframes typ3 { 0%,54%{opacity:0} 56%,60%{opacity:1} 62%,100%{opacity:0} }
-@keyframes msg-b3 { 0%,60%{opacity:0;transform:translateY(8px)} 62%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
-@keyframes msg-u4 { 0%,77%{opacity:0;transform:translateY(8px)} 79%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
-@keyframes typ4 { 0%,79%{opacity:0} 81%,85%{opacity:1} 87%,100%{opacity:0} }
-@keyframes msg-b4 { 0%,85%{opacity:0;transform:translateY(8px)} 87%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
-@keyframes msg-c2 { 0%,87%{opacity:0} 89%,95%{opacity:1} 98%,100%{opacity:0} }
+@keyframes msg7 { 0%,60%{opacity:0;transform:translateY(8px)} 62%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
+@keyframes msg8 { 0%,72%{opacity:0;transform:translateY(8px)} 74%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
+@keyframes typ4 { 0%,74%{opacity:0} 76%,80%{opacity:1} 82%,100%{opacity:0} }
+@keyframes msg9 { 0%,80%{opacity:0;transform:translateY(8px)} 82%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
+@keyframes msg10 { 0%,82%{opacity:0} 84%,95%{opacity:1} 98%,100%{opacity:0} }
 
 /* Typewriter input animations */
 .input-wrapper-1 { animation: si1 24s infinite; } .input-wrapper-1 .input-text { animation: st1 24s infinite; }
@@ -275,20 +305,22 @@
 .input-wrapper-3 { animation: si3 24s infinite; } .input-wrapper-3 .input-text { animation: st3 24s infinite; }
 .input-wrapper-4 { animation: si4 24s infinite; } .input-wrapper-4 .input-text { animation: st4 24s infinite; }
 
+/* Typewriter: input-1 types 0-8% (before msg-1), input-2 types 22-30% (before msg-4) */
 @keyframes si1 { 0%,8%{opacity:1} 9%,100%{opacity:0} }
 @keyframes st1 { 0%{max-width:0} 2%{max-width:60px} 4%{max-width:120px} 6%,8%{max-width:200px} 9%,100%{max-width:0} }
-@keyframes si2 { 0%,20%{opacity:0} 21%,29%{opacity:1} 30%,100%{opacity:0} }
-@keyframes st2 { 0%,20%{max-width:0} 23%{max-width:40px} 25%{max-width:80px} 27%,29%{max-width:150px} 30%,100%{max-width:0} }
-@keyframes si3 { 0%,44%{opacity:0} 45%,54%{opacity:1} 55%,100%{opacity:0} }
-@keyframes st3 { 0%,44%{max-width:0} 47%{max-width:50px} 49%{max-width:100px} 51%{max-width:150px} 53%,54%{max-width:200px} 55%,100%{max-width:0} }
-@keyframes si4 { 0%,69%{opacity:0} 70%,79%{opacity:1} 80%,100%{opacity:0} }
-@keyframes st4 { 0%,69%{max-width:0} 72%{max-width:50px} 74%{max-width:100px} 76%{max-width:150px} 78%,79%{max-width:200px} 80%,100%{max-width:0} }
+@keyframes si2 { 0%,22%{opacity:0} 23%,30%{opacity:1} 31%,100%{opacity:0} }
+@keyframes st2 { 0%,22%{max-width:0} 24%{max-width:50px} 26%{max-width:100px} 28%,30%{max-width:200px} 31%,100%{max-width:0} }
+@keyframes si3 { 0%,44%{opacity:0} 45%,52%{opacity:1} 53%,100%{opacity:0} }
+@keyframes st3 { 0%,44%{max-width:0} 46%{max-width:50px} 48%{max-width:100px} 50%,52%{max-width:200px} 53%,100%{max-width:0} }
+@keyframes si4 { 0%,64%{opacity:0} 65%,72%{opacity:1} 73%,100%{opacity:0} }
+@keyframes st4 { 0%,64%{max-width:0} 66%{max-width:50px} 68%{max-width:100px} 70%,72%{max-width:200px} 73%,100%{max-width:0} }
 
+/* Send button pulses when user message fires (at 8%, 30% for 2-exchange demo) */
 @keyframes send-pulse {
     0%,7%{transform:scale(1)} 8%{transform:scale(0.8);box-shadow:0 0 12px rgba(var(--demo-accent-rgb, 236,72,153),0.6)}
-    9%,28%{transform:scale(1);box-shadow:none} 29%{transform:scale(0.8);box-shadow:0 0 12px rgba(var(--demo-accent-rgb, 236,72,153),0.6)}
-    30%,53%{transform:scale(1);box-shadow:none} 54%{transform:scale(0.8);box-shadow:0 0 12px rgba(var(--demo-accent-rgb, 236,72,153),0.6)}
-    55%,78%{transform:scale(1);box-shadow:none} 79%{transform:scale(0.8);box-shadow:0 0 12px rgba(var(--demo-accent-rgb, 236,72,153),0.6)}
+    9%,29%{transform:scale(1);box-shadow:none} 30%{transform:scale(0.8);box-shadow:0 0 12px rgba(var(--demo-accent-rgb, 236,72,153),0.6)}
+    31%,51%{transform:scale(1);box-shadow:none} 52%{transform:scale(0.8);box-shadow:0 0 12px rgba(var(--demo-accent-rgb, 236,72,153),0.6)}
+    53%,71%{transform:scale(1);box-shadow:none} 72%{transform:scale(0.8);box-shadow:0 0 12px rgba(var(--demo-accent-rgb, 236,72,153),0.6)}
     80%,100%{transform:scale(1);box-shadow:none}
 }
 .chat-send { animation: send-pulse 24s infinite; }
