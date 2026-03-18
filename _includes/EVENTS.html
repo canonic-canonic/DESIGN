@@ -1,0 +1,18 @@
+<!-- EVENTS | Auto-rendered from _data/events.json | DESIGN.md 255 Map -->
+{% assign upcoming = site.data.events %}
+{% if upcoming.size > 0 %}
+<div class="card-grid" style="grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;">
+  {% for event in upcoming %}
+  <div class="card">
+    {% if event.badge %}<div class="status-badge">{{ event.badge }}</div>{% endif %}
+    <div class="card-title">{{ event.title }}</div>
+    <div class="card-text">
+      {% if event.talk and event.talk != "" %}{{ event.talk }}.{% endif %}
+      {% if event.venue and event.venue != "" %} {{ event.venue }}.{% endif %}
+      {% if event.format and event.format != "" %} <em>{{ event.format }}</em>.{% endif %}
+    </div>
+    {% if event.href %}<a href="{{ event.href }}" class="card-link">Learn more &rarr;</a>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

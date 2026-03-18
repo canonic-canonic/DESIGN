@@ -75,6 +75,13 @@
       </div>
       {% endif %}
 
+      {% if section.discover.type == "EVENT" and site.data.events %}
+        {% include EVENTS.html %}
+      {% elsif section.discover.type == "LEARNING" and site.data.learning_stats %}
+        {% include LEARNING-FLEET.html %}
+      {% elsif section.discover.type == "CHAT" %}
+        {% include PRODUCTS.html discover=section.discover %}
+      {% endif %}
       {% if section.cards %}{% include CARDS.html cards=section.cards columns=section.columns gap=section.gap %}{% endif %}
       {% if section.dashboard %}{% include DASHBOARD.html widgets=section.dashboard %}{% endif %}
       {% if section.table %}{% include TABLE.html table=section.table %}{% endif %}

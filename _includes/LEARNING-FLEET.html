@@ -1,0 +1,26 @@
+<!-- LEARNING-FLEET | Auto-rendered from _data/learning_stats.json | DESIGN.md 255 Map -->
+{% assign ls = site.data.learning_stats %}
+{% if ls %}
+<div class="card-grid" style="grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;">
+  {% for scope in ls %}
+  {% unless scope[0] == 'fleet_total' %}
+  {% assign info = scope[1] %}
+  <div class="card">
+    <div class="status-badge">{{ info.status }}</div>
+    <div class="card-title">{{ info.label }} Learning</div>
+    <div class="card-text">
+      {{ info.sessions }} community sessions. {{ info.patterns }} governed patterns.
+      {% if info.domain and info.domain != "" %}{{ info.domain }}.{% endif %}
+    </div>
+    <a href="https://{{ scope[0] }}.ai" class="card-link">See community learning &rarr;</a>
+  </div>
+  {% endunless %}
+  {% endfor %}
+</div>
+{% assign ft = ls.fleet_total %}
+{% if ft %}
+<div class="muted text-center" style="margin-top:var(--space-sm);font-size:var(--font-sm);">
+  {{ ft.sessions }} total community sessions across the fleet
+</div>
+{% endif %}
+{% endif %}

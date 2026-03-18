@@ -235,13 +235,13 @@
     flex-shrink: 0;
 }
 
-/* Demo scroll animation (24s cycle) */
+/* Demo scroll animation (24s cycle) — traverse full phone surface */
 @keyframes demo-scroll {
     0%, 15% { transform: translateY(0); }
-    20%, 35% { transform: translateY(-60px); }
-    40%, 58% { transform: translateY(-140px); }
-    62%, 82% { transform: translateY(-220px); }
-    87%, 95% { transform: translateY(-300px); }
+    20%, 35% { transform: translateY(-100px); }
+    40%, 58% { transform: translateY(-220px); }
+    62%, 82% { transform: translateY(-350px); }
+    87%, 95% { transform: translateY(-480px); }
     98%, 100% { transform: translateY(0); }
 }
 
@@ -299,10 +299,26 @@
     .hero-split { padding: calc(var(--header-offset) + 20px) var(--space-md) var(--space-lg); }
     .device-container { order: -1; }
     .iphone { width: 240px; height: 500px; }
+    @keyframes demo-scroll {
+        0%, 15% { transform: translateY(0); }
+        20%, 35% { transform: translateY(-80px); }
+        40%, 58% { transform: translateY(-170px); }
+        62%, 82% { transform: translateY(-270px); }
+        87%, 95% { transform: translateY(-380px); }
+        98%, 100% { transform: translateY(0); }
+    }
 }
 @media (max-width: 640px) {
     .hero-content h1 { font-size: 32px; }
     .iphone { width: 200px; height: 420px; }
+    @keyframes demo-scroll {
+        0%, 15% { transform: translateY(0); }
+        20%, 35% { transform: translateY(-60px); }
+        40%, 58% { transform: translateY(-140px); }
+        62%, 82% { transform: translateY(-220px); }
+        87%, 95% { transform: translateY(-300px); }
+        98%, 100% { transform: translateY(0); }
+    }
 }
 
 
