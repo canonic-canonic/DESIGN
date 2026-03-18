@@ -52,17 +52,19 @@ body.galaxy-surface {
     -webkit-backdrop-filter: blur(40px);
     backdrop-filter: blur(40px);
     box-shadow: 0 12px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
-    max-width: 380px;
+    max-width: 480px;
     width: 90%;
 }
 .auth-ring-wrap {
     position: relative;
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 28px;
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 36px;
 }
 .auth-ring {
     display: block;
+    width: 100%;
+    height: 100%;
 }
 .auth-ring-arc {
     animation: auth-ring-spin 8s linear infinite;
@@ -77,55 +79,55 @@ body.galaxy-surface {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 36px;
     color: rgba(255,255,255,0.25);
 }
 .auth-brand {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 6px;
+    gap: 14px;
+    margin-bottom: 8px;
 }
 .auth-mark {
-    font-size: 28px;
+    font-size: 36px;
     color: var(--accent, #00ff88);
     text-shadow: 0 0 20px rgba(0,255,136,0.35);
 }
 .auth-title {
     font-family: var(--mono);
-    font-size: 22px;
+    font-size: 32px;
     font-weight: 700;
     letter-spacing: 0.2em;
     color: var(--fg, #e5e5e5);
 }
 .auth-subtitle {
     font-family: var(--mono);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 600;
     letter-spacing: 0.25em;
     text-transform: uppercase;
     color: var(--accent, #00ff88);
     opacity: 0.5;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 .auth-tagline {
-    font-size: 13px;
+    font-size: 16px;
     color: rgba(255,255,255,0.35);
     line-height: 1.5;
-    margin-bottom: 32px;
+    margin-bottom: 36px;
 }
 .auth-login-btn {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 14px 32px;
+    gap: 12px;
+    padding: 16px 40px;
     border-radius: 14px;
     border: 1px solid rgba(255,255,255,0.1);
     background: rgba(255,255,255,0.05);
     color: var(--fg, #e5e5e5);
     font-family: var(--mono);
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -139,11 +141,11 @@ body.galaxy-surface {
     box-shadow: 0 6px 28px rgba(0,255,136,0.12);
 }
 .auth-login-btn i {
-    font-size: 18px;
+    font-size: 22px;
 }
 .auth-footer {
-    margin-top: 24px;
-    font-size: 11px;
+    margin-top: 28px;
+    font-size: 13px;
     color: rgba(255,255,255,0.18);
     letter-spacing: 0.06em;
 }
