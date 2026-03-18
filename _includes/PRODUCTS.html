@@ -6,6 +6,7 @@
     <div class="app-icon {{ p.iconClass }}">{{ p.icon }}</div>
     <div class="app-name">{{ p.name }}</div>
     <div class="app-desc">{{ p.description }}</div>
+    {% if p.detail %}<div class="app-desc muted" style="font-size:var(--font-xs);margin-top:var(--space-2xs);line-height:1.5;">{{ p.detail }}</div>{% endif %}
     <span class="app-badge" style="{% if p.statusColor %}background:rgba({{ p.statusColorRgb | default: '96,165,250' }},0.15);color:{{ p.statusColor }};{% endif %}">{{ p.status }}</span>
   </a>
   {% endfor %}
