@@ -35,6 +35,7 @@
         {% elsif fig.type == "donut" %}{% include figures/DONUT.html segments=fig.segments total=fig.total label=fig.label %}
         {% elsif fig.type == "area-chart" %}{% include figures/AREA.html points=fig.points label=fig.label %}
         {% elsif fig.type == "bar-chart" %}{% include figures/BARS.html bars=fig.bars %}
+        {% elsif fig.type == "app-grid" %}{% include figures/APP-GRID.html apps=fig.apps %}
         {% endif %}
       </div>
       {% endif %}
