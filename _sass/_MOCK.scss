@@ -240,11 +240,12 @@
    2-exchange demo (5 msgs): content ~300px, viewport ~520px → scroll -80px max.
    4-exchange demo (10 msgs): content ~600px → scroll -480px.
    Scroll stages match message appearance timings. */
+/* Scroll resets at 92% AFTER msgs fade at 88% — no visible jump on cycle restart */
 @keyframes demo-scroll {
     0%, 8% { transform: translateY(0); }
     18%, 28% { transform: translateY(-40px); }
-    38%, 92% { transform: translateY(-80px); }
-    96%, 100% { transform: translateY(0); }
+    38%, 86% { transform: translateY(-80px); }
+    92%, 100% { transform: translateY(0); }
 }
 
 /* Chat message animations (24s cycle)
@@ -278,28 +279,23 @@
 .typing-3 { animation: typ3 24s infinite; }
 .typing-4 { animation: typ4 24s infinite; }
 
-/* msg-1: user "I was just diagnosed with DCIS" — appears at 10% */
-@keyframes msg1 { 0%,8%{opacity:0;transform:translateY(8px)} 10%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
-/* typing-1: bot thinking — appears 10-16%, disappears before bot reply */
+/* Message + typing animations (24s cycle)
+   Msgs fade at 88% BEFORE scroll resets at 92% — prevents visible jump on cycle restart.
+   Sequence: type in bar → user bubble → typing dots → bot reply → cite → repeat */
+@keyframes msg1 { 0%,8%{opacity:0;transform:translateY(8px)} 10%,86%{opacity:1;transform:translateY(0)} 88%,100%{opacity:0;transform:translateY(0)} }
 @keyframes typ1 { 0%,10%{opacity:0} 12%,16%{opacity:1} 18%,100%{opacity:0} }
-/* msg-2: bot "DCIS is non-invasive..." — appears at 18% */
-@keyframes msg2 { 0%,16%{opacity:0;transform:translateY(8px)} 18%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
-/* msg-3: cite "NCCN Guidelines" — appears at 20% (fades in right after bot) */
-@keyframes msg3 { 0%,18%{opacity:0} 20%,95%{opacity:1} 98%,100%{opacity:0} }
-/* msg-4: user "What should I ask my surgeon?" — appears at 32% */
-@keyframes msg4 { 0%,30%{opacity:0;transform:translateY(8px)} 32%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
-/* typing-2: bot thinking — appears 32-38% */
+@keyframes msg2 { 0%,16%{opacity:0;transform:translateY(8px)} 18%,86%{opacity:1;transform:translateY(0)} 88%,100%{opacity:0;transform:translateY(0)} }
+@keyframes msg3 { 0%,18%{opacity:0} 20%,86%{opacity:1} 88%,100%{opacity:0} }
+@keyframes msg4 { 0%,30%{opacity:0;transform:translateY(8px)} 32%,86%{opacity:1;transform:translateY(0)} 88%,100%{opacity:0;transform:translateY(0)} }
 @keyframes typ2 { 0%,32%{opacity:0} 34%,38%{opacity:1} 40%,100%{opacity:0} }
-/* msg-5: bot "Ask about lumpectomy..." — appears at 40% */
-@keyframes msg5 { 0%,38%{opacity:0;transform:translateY(8px)} 40%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
-/* msg-6 through msg-10: additional exchanges (3rd and 4th) */
-@keyframes msg6 { 0%,52%{opacity:0;transform:translateY(8px)} 54%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
+@keyframes msg5 { 0%,38%{opacity:0;transform:translateY(8px)} 40%,86%{opacity:1;transform:translateY(0)} 88%,100%{opacity:0;transform:translateY(0)} }
+@keyframes msg6 { 0%,52%{opacity:0;transform:translateY(8px)} 54%,86%{opacity:1;transform:translateY(0)} 88%,100%{opacity:0;transform:translateY(0)} }
 @keyframes typ3 { 0%,54%{opacity:0} 56%,60%{opacity:1} 62%,100%{opacity:0} }
-@keyframes msg7 { 0%,60%{opacity:0;transform:translateY(8px)} 62%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
-@keyframes msg8 { 0%,72%{opacity:0;transform:translateY(8px)} 74%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
+@keyframes msg7 { 0%,60%{opacity:0;transform:translateY(8px)} 62%,86%{opacity:1;transform:translateY(0)} 88%,100%{opacity:0;transform:translateY(0)} }
+@keyframes msg8 { 0%,72%{opacity:0;transform:translateY(8px)} 74%,86%{opacity:1;transform:translateY(0)} 88%,100%{opacity:0;transform:translateY(0)} }
 @keyframes typ4 { 0%,74%{opacity:0} 76%,80%{opacity:1} 82%,100%{opacity:0} }
-@keyframes msg9 { 0%,80%{opacity:0;transform:translateY(8px)} 82%,95%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0} }
-@keyframes msg10 { 0%,82%{opacity:0} 84%,95%{opacity:1} 98%,100%{opacity:0} }
+@keyframes msg9 { 0%,80%{opacity:0;transform:translateY(8px)} 82%,86%{opacity:1;transform:translateY(0)} 88%,100%{opacity:0;transform:translateY(0)} }
+@keyframes msg10 { 0%,82%{opacity:0} 84%,86%{opacity:1} 88%,100%{opacity:0} }
 
 /* Typewriter input animations */
 .input-wrapper-1 { animation: si1 24s infinite; } .input-wrapper-1 .input-text { animation: st1 24s infinite; }
