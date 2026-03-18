@@ -1284,8 +1284,13 @@ var GALAXY = (function () {
     }
 
     // ── INIT ─────────────────────────────────────────────
-    async function init(el) {
-        _authUser = await validateGalaxyAuth();
+    async function init(elOrOpts) {
+        // Accept DOM element, options object { session }, or nothing
+        var opts = (elOrOpts && !elOrOpts.nodeType) ? elOrOpts : {};
+        var el = (elOrOpts && elOrOpts.nodeType) ? elOrOpts : null;
+
+        if (opts.session) _authUser = opts.session.user || opts.session.login || null;
+        if (!_authUser) _authUser = await validateGalaxyAuth();
 
         var res = await fetch('../galaxy.json');
         var raw = await res.json();
