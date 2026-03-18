@@ -60,38 +60,68 @@
       window.location.href = apiBase + '/auth/github?redirect=' + encodeURIComponent(window.location.href);
     }
 
+    function unlockGalaxy(session) {
+      var gate = document.getElementById('galaxyAuthGate');
+      var surface = document.getElementById('galaxySurface');
+      var lock = gate.querySelector('.auth-lock i');
+      var ring = gate.querySelector('.auth-ring-arc');
+      gate.classList.add('auth-unlocking');
+      if (lock) lock.className = 'fas fa-lock-open';
+      if (ring) { ring.style.strokeDasharray = '327 0'; ring.style.animation = 'none'; }
+      setTimeout(function() {
+        gate.classList.add('auth-unlocked');
+        surface.style.display = 'block';
+        surface.classList.add('galaxy-entering');
+        GALAXY.init({ session: session });
+        setTimeout(function() {
+          gate.style.display = 'none';
+          surface.classList.remove('galaxy-entering');
+        }, 600);
+      }, 500);
+    }
+
     (function initGalaxySurface() {
-      AUTH.init();
+      var apiBase = 'https://api.canonic.org';
+
+      // Handle OAuth callback (?code= in URL)
+      var params = new URLSearchParams(window.location.search);
+      var code = params.get('code');
+      if (code) {
+        params.delete('code');
+        params.delete('state');
+        var clean = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+        window.history.replaceState({}, '', clean);
+
+        fetch(apiBase + '/auth/github', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: code })
+        }).then(function(r) {
+          if (r.ok) return r.json();
+          throw new Error('auth failed');
+        }).then(function(data) {
+          if (data.session_token) {
+            localStorage.setItem('canonic_session_token', data.session_token);
+            unlockGalaxy(data);
+          }
+        }).catch(function(e) {
+          console.error('[GALAXY] OAuth exchange failed:', e);
+          document.getElementById('galaxyAuthGate').style.display = '';
+        });
+        return;
+      }
+
+      // Check existing session
       var token = localStorage.getItem('canonic_session_token');
       if (token) {
-        // Validate session before showing surface
-        fetch((AUTH._apiBase || 'https://api.canonic.org') + '/auth/session', {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+        fetch(apiBase + '/auth/session', {
+          headers: { 'Authorization': 'Bearer ' + token }
         }).then(function(r) {
           if (r.ok) return r.json();
           throw new Error('session invalid');
         }).then(function(session) {
-          // Unlock sequence: ring completes, lock opens, gate fades
-          var gate = document.getElementById('galaxyAuthGate');
-          var surface = document.getElementById('galaxySurface');
-          var lock = gate.querySelector('.auth-lock i');
-          var ring = gate.querySelector('.auth-ring-arc');
-          gate.classList.add('auth-unlocking');
-          if (lock) lock.className = 'fas fa-lock-open';
-          if (ring) { ring.style.strokeDasharray = '327 0'; ring.style.animation = 'none'; }
-          setTimeout(function() {
-            gate.classList.add('auth-unlocked');
-            surface.style.display = 'block';
-            surface.classList.add('galaxy-entering');
-            GALAXY.init({ session: session });
-            setTimeout(function() {
-              gate.style.display = 'none';
-              surface.classList.remove('galaxy-entering');
-            }, 600);
-          }, 500);
+          unlockGalaxy(session);
         }).catch(function() {
-          // Invalid session — show login
           localStorage.removeItem('canonic_session_token');
           document.getElementById('galaxyAuthGate').style.display = '';
         });

@@ -19,7 +19,7 @@ import { envForLane, oaiModels, oaiChatCompletions, oaiResponses } from './domai
 import { oaiBakeoff } from './domains/gateway/bakeoff.js';
 import { chat } from './domains/chat.js';
 import { deepHealth } from './domains/health.js';
-import { authConfig, authGitHub, authSession, authLogout, authGrants, galaxyAuth, requireSession } from './domains/auth.js';
+import { authConfig, authGitHub, authSession, authLogout, authGrants, galaxyAuth, galaxyScope, requireSession } from './domains/auth.js';
 import { handle as emailSend } from './domains/email.js';
 import { shopCheckout, shopStripeWebhook, shopWallet } from './domains/shop.js';
 import { ledgerWrite, ledgerRead, send as talkSend, inbox as talkInbox, ack as talkAck } from './domains/talk.js';
@@ -30,6 +30,7 @@ import { handle as runnerRoute } from './domains/runner/index.js';
 import { digestWrite, digestRead, witnessWrite, witnessRead, verify as federationVerify } from './domains/federation.js';
 import { inbound as guidepointInbound, complete as guidepointComplete, ledger as guidepointLedger } from './domains/guidepoint.js';
 import { mintRead } from './domains/mint.js';
+import { scopeCreate, intelUpdate, learningAdd, triggerRebuild, mutationsList } from './domains/admin.js';
 
 // ── Helpers ──
 
@@ -81,6 +82,13 @@ export default {
     // ── Auth ──
     if (path === '/auth/config')
       return authConfig(env);
+    if (path === '/auth/github' && method === 'GET') {
+      if (!env.GITHUB_CLIENT_ID) return json({ error: 'GITHUB_CLIENT_ID not configured' }, 500);
+      const redirect = url.searchParams.get('redirect') || 'https://canonic.org/magic/galaxy/';
+      const callbackUrl = `${url.origin}/api/v1/auth/github/callback`;
+      const ghUrl = `https://github.com/login/oauth/authorize?client_id=${env.GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=read:user&state=${encodeURIComponent(redirect)}`;
+      return new Response(null, { status: 302, headers: { 'Location': ghUrl } });
+    }
     if (path === '/api/v1/auth/github/callback' && method === 'GET') {
       const code = url.searchParams.get('code');
       const state = url.searchParams.get('state');
@@ -103,6 +111,20 @@ export default {
       return authGrants(request, env);
     if (path === '/galaxy/auth' && method === 'GET')
       return galaxyAuth(request, env);
+    if (path === '/galaxy/scope' && method === 'GET')
+      return galaxyScope(request, env);
+
+    // ── Admin (GALAXY operating surface governance) ──
+    if (path === '/admin/scope/create' && method === 'POST')
+      return scopeCreate(request, env);
+    if (path === '/admin/intel/update' && method === 'POST')
+      return intelUpdate(request, env);
+    if (path === '/admin/learning/add' && method === 'POST')
+      return learningAdd(request, env);
+    if (path === '/admin/rebuild' && method === 'POST')
+      return triggerRebuild(request, env);
+    if (path === '/admin/mutations' && method === 'GET')
+      return mutationsList(request, env);
 
     // ── Chat ──
     if (path === '/chat' && method === 'POST') {
