@@ -14,20 +14,20 @@
     'pipeline': function (el) {
       var steps = JSON.parse(el.dataset.steps || '[]');
       var n = steps.length; if (!n) return;
-      var w = 600, h = 160, padX = 60, stepW = (w - padX * 2) / (n - 1 || 1), cy = 55;
+      var w = 420, h = 160, padX = 40, stepW = (w - padX * 2) / (n - 1 || 1), cy = 55;
       var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
       steps.forEach(function (s, i) {
         var cx = n === 1 ? w / 2 : padX + stepW * i;
-        var fill = i === n - 1 ? A + '0.25)' : fg(0.04);
-        var stroke = i === n - 1 ? A + '0.7)' : fg(0.15);
+        var fill = i === n - 1 ? A + '0.25)' : fg(0.08);
+        var stroke = i === n - 1 ? A + '0.7)' : fg(0.25);
         svg += '<circle cx="' + cx + '" cy="' + cy + '" r="24" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5"/>';
-        svg += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-size="12" font-weight="700" fill="' + (i === n - 1 ? A + '0.9)' : fg(0.6)) + '" font-family="var(--mono)">' + (i + 1) + '</text>';
+        svg += '<text x="' + cx + '" y="' + (cy + 5) + '" text-anchor="middle" font-size="13" font-weight="700" fill="' + (i === n - 1 ? A + '0.9)' : fg(0.75)) + '" font-family="var(--mono)">' + (i + 1) + '</text>';
         var label = (s.label || s);
-        svg += '<text x="' + cx + '" y="' + (cy + 44) + '" text-anchor="middle" font-size="9" fill="' + fg(0.6) + '" font-family="var(--mono)">' + label + '</text>';
+        svg += '<text x="' + cx + '" y="' + (cy + 46) + '" text-anchor="middle" font-size="11" font-weight="500" fill="' + fg(0.7) + '" font-family="var(--mono)">' + label + '</text>';
         if (i < n - 1) {
           var x1 = cx + 26, x2 = padX + stepW * (i + 1) - 26;
-          svg += '<line x1="' + x1 + '" y1="' + cy + '" x2="' + x2 + '" y2="' + cy + '" stroke="' + A + '0.35)" stroke-width="1.5"/>';
-          svg += '<polygon points="' + x2 + ',' + (cy - 4) + ' ' + (x2 + 6) + ',' + cy + ' ' + x2 + ',' + (cy + 4) + '" fill="' + A + '0.5)"/>';
+          svg += '<line x1="' + x1 + '" y1="' + cy + '" x2="' + x2 + '" y2="' + cy + '" stroke="' + A + '0.45)" stroke-width="1.5"/>';
+          svg += '<polygon points="' + x2 + ',' + (cy - 4) + ' ' + (x2 + 6) + ',' + cy + ' ' + x2 + ',' + (cy + 4) + '" fill="' + A + '0.6)"/>';
         }
       });
       svg += '</svg>';
@@ -58,19 +58,19 @@
       var n = nodes.length; if (!n) return;
       var w = 420, h = 180, padX = 40, segW = (w - padX * 2) / (n - 1 || 1), cy = h / 2;
       var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
-      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="' + fg(0.02) + '"/>';
+      svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" rx="16" fill="' + fg(0.04) + '"/>';
       if (n > 1) {
         var d = 'M' + padX + ' ' + cy;
         for (var i = 1; i < n; i++) {
           var px = padX + segW * (i - 1), nx = padX + segW * i, mx = (px + nx) / 2;
           d += ' C' + mx + ' ' + (cy - 40) + ',' + mx + ' ' + (cy - 40) + ',' + nx + ' ' + cy;
         }
-        svg += '<path d="' + d + '" stroke="' + A + '0.35)" stroke-width="2" fill="none"/>';
+        svg += '<path d="' + d + '" stroke="' + A + '0.45)" stroke-width="2" fill="none"/>';
       }
       nodes.forEach(function (nd, i) {
         var x = padX + segW * i;
         svg += '<circle cx="' + x + '" cy="' + cy + '" r="22" fill="' + A + '0.2)" stroke="' + A + '0.5)" stroke-width="1.5"/>';
-        svg += '<text x="' + x + '" y="' + (cy + 42) + '" text-anchor="middle" font-size="10" fill="' + fg(0.6) + '" font-family="var(--mono)">' + (nd.label || nd) + '</text>';
+        svg += '<text x="' + x + '" y="' + (cy + 42) + '" text-anchor="middle" font-size="11" font-weight="500" fill="' + fg(0.7) + '" font-family="var(--mono)">' + (nd.label || nd) + '</text>';
       });
       svg += '</svg>';
       el.innerHTML = svg;
