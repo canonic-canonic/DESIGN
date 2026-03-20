@@ -1412,6 +1412,49 @@ body.galaxy-surface .finder-breadcrumb ~ .control-panel { display: none; }
     font-weight: 600;
 }
 
+// ── HUD widget card (iOS-style, inline in grid) ──
+.fc-hud {
+    background: var(--panel, rgba(255,255,255,0.04));
+    border-color: rgba(0,255,136,0.15);
+}
+.fc-hud-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.12);
+    object-fit: cover;
+}
+
+// ── Inline identity in breadcrumb bar ──
+.fb-identity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-right: 8px;
+    padding-right: 10px;
+    border-right: 1px solid var(--glass-strong, rgba(255,255,255,0.08));
+}
+.fb-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.12);
+}
+.fb-ring { flex-shrink: 0; }
+.fb-coin {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: #ffd60a;
+    text-decoration: none;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    i { font-size: 9px; }
+}
+
 // ── Talk mode toggle active state ──
 .talk-mode-toggle.active {
     color: var(--accent, #00ff88);
