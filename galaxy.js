@@ -874,15 +874,26 @@ var GALAXY = (function () {
     function renderBreadcrumb() {
         var el = document.getElementById('finderBreadcrumb');
         if (!el) return;
+
+        // Hide control panel in Finder (HUD is inline here)
+        var cp = document.getElementById('controlPanel');
+        if (cp) cp.style.display = _viewMode === 'finder' ? 'none' : '';
+
         var html = '<div class="fb-bar">';
-        // View toggle (right-aligned)
-        var finderActive = _viewMode === 'finder' ? ' active' : '';
-        var graphActive = _viewMode === 'graph' ? ' active' : '';
-        html += '<div class="fb-toggle">';
-        html += '<button class="fb-toggle-btn' + finderActive + '" onclick="GALAXY.setView(\'finder\')" title="Finder"><i class="fas fa-th-list"></i> Finder</button>';
-        html += '<button class="fb-toggle-btn' + graphActive + '" onclick="GALAXY.setView(\'graph\')" title="Graph"><i class="fas fa-project-diagram"></i> Graph</button>';
-        html += '</div>';
-        // Breadcrumb segments
+
+        // Inline HUD: avatar + ring + COIN (left side)
+        if (_authUser && _authUser.avatar_url) {
+            html += '<div class="fb-identity">';
+            html += '<img class="fb-avatar" src="' + _authUser.avatar_url + '" alt="">';
+            var scoped = _selectedNodeId ? nodeMap[_selectedNodeId] : null;
+            var bits = scoped ? (scoped.bits || 0) : (galaxy.master ? galaxy.master.bits : 0);
+            var balance = scoped && scoped.wallet ? scoped.wallet.balance : (galaxy.stats ? galaxy.stats.total_coin : 0);
+            html += '<div class="fb-ring">' + ringHTML(bits, 28, true) + '</div>';
+            html += '<a class="fb-coin" href="https://hadleylab.org/timeline/" target="_blank"><i class="fas fa-coins"></i> ' + formatCoin(balance) + '</a>';
+            html += '</div>';
+        }
+
+        // Breadcrumb segments (center)
         html += '<div class="fb-segments">';
         html += '<span class="fb-segment fb-root" onclick="GALAXY.navigateToRoot()"><i class="fas fa-home"></i></span>';
         _finderPath.forEach(function (nid, i) {
@@ -896,7 +907,17 @@ var GALAXY = (function () {
                 html += '<span class="fb-segment" onclick="GALAXY.navigateToBreadcrumb(' + i + ')">' + label + '</span>';
             }
         });
-        html += '</div></div>';
+        html += '</div>';
+
+        // View toggle (right-aligned)
+        var finderActive = _viewMode === 'finder' ? ' active' : '';
+        var graphActive = _viewMode === 'graph' ? ' active' : '';
+        html += '<div class="fb-toggle">';
+        html += '<button class="fb-toggle-btn' + finderActive + '" onclick="GALAXY.setView(\'finder\')" title="Finder"><i class="fas fa-th-list"></i> Finder</button>';
+        html += '<button class="fb-toggle-btn' + graphActive + '" onclick="GALAXY.setView(\'graph\')" title="Graph"><i class="fas fa-project-diagram"></i> Graph</button>';
+        html += '</div>';
+
+        html += '</div>';
         el.innerHTML = html;
         el.style.display = _viewMode === 'finder' ? '' : 'none';
     }
@@ -916,6 +937,22 @@ var GALAXY = (function () {
         });
 
         var html = '<div class="finder-grid">';
+
+        // HUD widget card (first in grid, iOS-style)
+        if (_authUser && _authUser.avatar_url) {
+            var hudBits = galaxy.master ? galaxy.master.bits : 0;
+            var hudBalance = galaxy.stats ? galaxy.stats.total_coin : 0;
+            var hudTier = tierFor(hudBits);
+            var displayName = _authUser.name || _authUser.login || 'Governor';
+            html += '<div class="finder-card fc-hud sc-card" style="--i:0">';
+            html += '<div class="fc-header"><img class="fc-hud-avatar" src="' + _authUser.avatar_url + '" alt=""><div class="fc-ring">' + ringHTML(hudBits, 28, true) + '</div></div>';
+            html += '<div class="fc-label">' + displayName.split(' ')[0] + '</div>';
+            html += '<div class="fc-meta">';
+            html += '<span class="fc-bits" style="color:' + hudTier.color + '">' + hudTier.badge + ' ' + hudTier.name + '</span>';
+            html += '<span class="fc-coin">\u2229' + formatCoin(hudBalance) + '</span>';
+            html += '</div></div>';
+        }
+
         children.forEach(function (n, i) {
             var isFolder = (n.children || 0) > 0;
             var label = n.kind === 'USER' ? titleCase(n.label.toLowerCase()) : n.label;

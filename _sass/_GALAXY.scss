@@ -1253,15 +1253,17 @@ body.galaxy-surface {
     letter-spacing: 0.04em;
 }
 
-// ── Breadcrumb bar ──
+// ── Breadcrumb bar (full-width, HUD integrated) ──
 .finder-breadcrumb {
     position: absolute;
     top: var(--space-sm, 16px);
-    left: 260px;
+    left: var(--space-sm, 16px);
     right: var(--space-sm, 16px);
     z-index: 10;
     animation: fadeSlideUp 0.4s ease 0.15s both;
 }
+// Hide control panel in Finder mode (HUD is in breadcrumb bar)
+body.galaxy-surface .finder-breadcrumb ~ .control-panel { display: none; }
 .fb-bar {
     display: flex;
     align-items: center;
@@ -1343,12 +1345,12 @@ body.galaxy-surface {
     i { font-size: 10px; }
 }
 
-// ── Finder card grid ──
+// ── Finder card grid (full width, clears breadcrumb bar only) ──
 .finder-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 10px;
-    padding: 72px var(--space-sm, 16px) 80px 260px;
+    padding: 64px var(--space-sm, 16px) 80px var(--space-sm, 16px);
     min-height: 100vh;
     align-content: start;
 }
