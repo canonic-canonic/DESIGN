@@ -908,7 +908,9 @@ var GALAXY = (function () {
             '.fb-ring{flex-shrink:0}' +
             '.fb-coin{font-family:var(--mono);font-size:10px;font-weight:700;color:#ffd60a;text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:4px}' +
             '.fb-coin i{font-size:9px}' +
-            '.finder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:16px 16px 80px 260px;min-height:100vh;align-content:start}' +
+            '.finder-grid{display:flex;flex-wrap:wrap;gap:10px;padding:16px 16px 80px 16px;min-height:100vh;align-content:start}'
+            + '.finder-card{width:200px;flex-shrink:0}'
+            + '.fc-hud-float{float:left;position:sticky;top:16px;z-index:10;margin-right:10px;margin-bottom:10px;width:220px}' +
             '.fc-hud-crumb{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
             '.fc-hud-crumb span:hover{color:#00ff88}' +
             '.fc-hud-toggle{display:flex;gap:4px;margin-top:6px}' +
@@ -966,6 +968,37 @@ var GALAXY = (function () {
 
         var html = '<div class="finder-grid">';
 
+        // HUD card (floats left, cards flow around it)
+        var hudBits = galaxy.master ? galaxy.master.bits : 0;
+        var hudBalance = galaxy.stats ? galaxy.stats.total_coin : 0;
+        var hudTier = tierFor(hudBits);
+        var displayName = (_authUser && (_authUser.name || _authUser.login)) ? (_authUser.name || _authUser.login).split(' ')[0] : 'CANONIC';
+        html += '<div class="fc-hud-float">';
+        html += '<div class="finder-card fc-hud">';
+        if (_authUser && _authUser.avatar_url) {
+            html += '<div class="fc-header"><img class="fc-hud-avatar" src="' + _authUser.avatar_url + '" alt=""><div class="fc-ring">' + ringHTML(hudBits, 32, true) + '</div></div>';
+        } else {
+            html += '<div class="fc-header"><span style="color:#00ff88;font-size:18px">\u2229</span><div class="fc-ring">' + ringHTML(hudBits, 32, true) + '</div></div>';
+        }
+        html += '<div class="fc-label">' + displayName + '</div>';
+        html += '<div class="fc-meta"><span class="fc-bits" style="color:' + hudTier.color + '">' + hudTier.badge + ' ' + hudTier.name + '</span><span class="fc-coin">\u2229' + formatCoin(hudBalance) + '</span></div>';
+        // Breadcrumb
+        if (_finderPath.length > 0) {
+            html += '<div class="fc-hud-crumb">';
+            _finderPath.forEach(function (nid, i) {
+                var n = nodeMap[nid]; if (!n) return;
+                if (i > 0) html += ' / ';
+                html += '<span onclick="event.stopPropagation();GALAXY.navigateToBreadcrumb(' + i + ')" style="cursor:pointer">' + n.label + '</span>';
+            });
+            html += '</div>';
+        }
+        // View toggle
+        html += '<div class="fc-hud-toggle">';
+        html += '<span class="fc-toggle-btn active"><i class="fas fa-th-list"></i> Finder</span>';
+        html += '<span class="fc-toggle-btn" onclick="event.stopPropagation();GALAXY.setView(\'graph\')"><i class="fas fa-project-diagram"></i> Graph</span>';
+        html += '</div>';
+        html += '</div></div>';
+
         children.forEach(function (n, i) {
             var isFolder = (n.children || 0) > 0;
             var label = n.kind === 'USER' ? titleCase(n.label.toLowerCase()) : n.label;
@@ -996,13 +1029,16 @@ var GALAXY = (function () {
         container.innerHTML = html;
         renderBreadcrumb();
 
-        // Update control panel to reflect current scope
+        // Hide fixed control panel in Finder (HUD is in-flow)
+        var cp = document.getElementById('controlPanel');
+        if (cp) cp.style.display = 'none';
+
+        // Update scope
         if (_finderPath.length > 0) {
             _selectedNodeId = _finderPath[_finderPath.length - 1];
         } else {
             _selectedNodeId = null;
         }
-        renderControlPanel();
     }
 
     function navigateTo(nodeId) {
@@ -1050,6 +1086,9 @@ var GALAXY = (function () {
             _finderPath = [];
             renderBreadcrumb();
             container.innerHTML = '';
+            // Show fixed control panel for graph view
+            var cp = document.getElementById('controlPanel');
+            if (cp) cp.style.display = '';
             if (!_graphBuilt) {
                 buildGraph(container);
                 _graphBuilt = true;
