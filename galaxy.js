@@ -908,7 +908,7 @@ var GALAXY = (function () {
             '.fb-ring{flex-shrink:0}' +
             '.fb-coin{font-family:var(--mono);font-size:10px;font-weight:700;color:#ffd60a;text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:4px}' +
             '.fb-coin i{font-size:9px}' +
-            '.finder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:16px 16px 80px 16px;min-height:100vh;align-content:start}' +
+            '.finder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:16px 16px 80px 260px;min-height:100vh;align-content:start}' +
             '.fc-hud-crumb{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
             '.fc-hud-crumb span:hover{color:#00ff88}' +
             '.fc-hud-toggle{display:flex;gap:4px;margin-top:6px}' +
@@ -945,54 +945,9 @@ var GALAXY = (function () {
 
     // ── FINDER VIEW ──────────────────────────────────────
     function renderBreadcrumb() {
-        var el = document.getElementById('finderBreadcrumb');
-        if (!el) return;
-
-        // Breadcrumb bar hidden (navigation is in HUD)
+        // Breadcrumb bar is dead — HUD (control panel) handles everything
         var fb = document.getElementById('finderBreadcrumb');
         if (fb) fb.style.display = 'none';
-
-        var html = '<div class="fb-bar">';
-
-        // Inline HUD: avatar + ring + COIN (left side)
-        if (_authUser && _authUser.avatar_url) {
-            html += '<div class="fb-identity">';
-            html += '<img class="fb-avatar" src="' + _authUser.avatar_url + '" alt="">';
-            var scoped = _selectedNodeId ? nodeMap[_selectedNodeId] : null;
-            var bits = scoped ? (scoped.bits || 0) : (galaxy.master ? galaxy.master.bits : 0);
-            var balance = scoped && scoped.wallet ? scoped.wallet.balance : (galaxy.stats ? galaxy.stats.total_coin : 0);
-            html += '<div class="fb-ring">' + ringHTML(bits, 28, true) + '</div>';
-            html += '<a class="fb-coin" href="https://hadleylab.org/timeline/" target="_blank"><i class="fas fa-coins"></i> ' + formatCoin(balance) + '</a>';
-            html += '</div>';
-        }
-
-        // Breadcrumb segments (center)
-        html += '<div class="fb-segments">';
-        html += '<span class="fb-segment fb-root" onclick="GALAXY.navigateToRoot()"><i class="fas fa-home"></i></span>';
-        _finderPath.forEach(function (nid, i) {
-            var n = nodeMap[nid];
-            if (!n) return;
-            var label = n.kind === 'USER' ? titleCase(n.label.toLowerCase()) : n.label;
-            html += '<span class="fb-sep">/</span>';
-            if (i === _finderPath.length - 1) {
-                html += '<span class="fb-segment fb-current">' + label + '</span>';
-            } else {
-                html += '<span class="fb-segment" onclick="GALAXY.navigateToBreadcrumb(' + i + ')">' + label + '</span>';
-            }
-        });
-        html += '</div>';
-
-        // View toggle (right-aligned)
-        var finderActive = _viewMode === 'finder' ? ' active' : '';
-        var graphActive = _viewMode === 'graph' ? ' active' : '';
-        html += '<div class="fb-toggle">';
-        html += '<button class="fb-toggle-btn' + finderActive + '" onclick="GALAXY.setView(\'finder\')" title="Finder"><i class="fas fa-th-list"></i> Finder</button>';
-        html += '<button class="fb-toggle-btn' + graphActive + '" onclick="GALAXY.setView(\'graph\')" title="Graph"><i class="fas fa-project-diagram"></i> Graph</button>';
-        html += '</div>';
-
-        html += '</div>';
-        el.innerHTML = html;
-        el.style.display = _viewMode === 'finder' ? '' : 'none';
     }
 
     function renderFinder() {
@@ -1638,36 +1593,17 @@ var GALAXY = (function () {
 
         // Auto-hide search bar after idle
         var searchPeek = document.getElementById('searchPeek');
-        var _hideTimer = null;
-        function resetHideTimer() {
-            clearTimeout(_hideTimer);
-            showSearchBar();
-            _hideTimer = setTimeout(function () {
-                if (!_searchOpen && document.activeElement !== searchInput) {
-                    hideSearchBar();
-                }
-            }, 5000);
-        }
-        function hideSearchBar() {
-            if (searchBar) searchBar.classList.add('collapsed');
-            if (searchPeek) searchPeek.classList.add('visible');
-        }
+        // Search bar always visible (stable across views — no auto-hide)
         function showSearchBar() {
             if (searchBar) searchBar.classList.remove('collapsed');
             if (searchPeek) searchPeek.classList.remove('visible');
-            clearTimeout(_hideTimer);
         }
-        if (searchBar) {
-            searchBar.addEventListener('mouseenter', function () { clearTimeout(_hideTimer); showSearchBar(); });
-            searchBar.addEventListener('mouseleave', resetHideTimer);
-        }
-        // Expose for peek tab + Cmd+K
+        showSearchBar();
+        // Expose for Cmd+K
         GALAXY.showSearch = function () {
             showSearchBar();
             if (searchInput) searchInput.focus();
-            resetHideTimer();
         };
-        resetHideTimer();
     }
 
     return {
