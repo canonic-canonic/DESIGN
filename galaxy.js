@@ -514,6 +514,32 @@ var GALAXY = (function () {
         }
         html += '</div></div>';
 
+        // View toggle (stable across both views)
+        var finderActive = _viewMode === 'finder' ? ' active' : '';
+        var graphActive = _viewMode === 'graph' ? ' active' : '';
+        html += '<div class="cp-divider"></div>';
+        html += '<div class="cp-view-toggle">';
+        html += '<span class="fc-toggle-btn' + finderActive + '" onclick="GALAXY.setView(\'finder\')"><i class="fas fa-th-list"></i> Finder</span>';
+        html += '<span class="fc-toggle-btn' + graphActive + '" onclick="GALAXY.setView(\'graph\')"><i class="fas fa-project-diagram"></i> Graph</span>';
+        html += '</div>';
+
+        // Breadcrumb (Finder only)
+        if (_viewMode === 'finder' && _finderPath.length > 0) {
+            html += '<div class="cp-breadcrumb">';
+            html += '<span class="cp-crumb" onclick="GALAXY.navigateToRoot()"><i class="fas fa-home" style="font-size:9px"></i></span>';
+            _finderPath.forEach(function (nid, i) {
+                var n = nodeMap[nid];
+                if (!n) return;
+                html += ' <span style="opacity:.3">/</span> ';
+                if (i === _finderPath.length - 1) {
+                    html += '<span class="cp-crumb cp-crumb-current">' + n.label + '</span>';
+                } else {
+                    html += '<span class="cp-crumb" onclick="GALAXY.navigateToBreadcrumb(' + i + ')">' + n.label + '</span>';
+                }
+            });
+            html += '</div>';
+        }
+
         // Graph-only: fleet stats + tier pills (hidden in Finder)
         if (_viewMode === 'graph') {
             var st = galaxy.stats || {};
@@ -882,8 +908,17 @@ var GALAXY = (function () {
             '.fb-ring{flex-shrink:0}' +
             '.fb-coin{font-family:var(--mono);font-size:10px;font-weight:700;color:#ffd60a;text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:4px}' +
             '.fb-coin i{font-size:9px}' +
-            '.finder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:64px 16px 80px 16px;min-height:100vh;align-content:start}' +
-            '.finder-breadcrumb{position:absolute;top:16px;left:16px;right:16px;z-index:10}' +
+            '.finder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:16px 16px 80px 16px;min-height:100vh;align-content:start}' +
+            '.fc-hud-crumb{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+            '.fc-hud-crumb span:hover{color:#00ff88}' +
+            '.fc-hud-toggle{display:flex;gap:4px;margin-top:6px}' +
+            '.fc-toggle-btn{font-size:10px;padding:3px 6px;border-radius:4px;cursor:pointer;color:rgba(255,255,255,.3);transition:all .15s}' +
+            '.fc-toggle-btn:hover{color:#f5f5f7;background:rgba(255,255,255,.04)}' +
+            '.fc-toggle-btn.active{color:#00ff88}' +
+            '.cp-view-toggle{display:flex;gap:4px}' +
+            '.cp-breadcrumb{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+            '.cp-crumb{cursor:pointer;transition:color .15s}.cp-crumb:hover{color:#00ff88}' +
+            '.cp-crumb-current{color:#f5f5f7;cursor:default}' +
             '.fb-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.10);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);box-shadow:0 4px 24px rgba(0,0,0,.5)}' +
             '.fb-segments{display:flex;align-items:center;gap:2px;flex:1;min-width:0;overflow:hidden}' +
             '.fb-segment{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.4);cursor:pointer;padding:2px 6px;border-radius:4px;transition:all .15s;white-space:nowrap}' +
@@ -913,9 +948,9 @@ var GALAXY = (function () {
         var el = document.getElementById('finderBreadcrumb');
         if (!el) return;
 
-        // Hide control panel in Finder (HUD is inline here)
-        var cp = document.getElementById('controlPanel');
-        if (cp) cp.style.display = _viewMode === 'finder' ? 'none' : '';
+        // Breadcrumb bar hidden (navigation is in HUD)
+        var fb = document.getElementById('finderBreadcrumb');
+        if (fb) fb.style.display = 'none';
 
         var html = '<div class="fb-bar">';
 
@@ -975,21 +1010,6 @@ var GALAXY = (function () {
         });
 
         var html = '<div class="finder-grid">';
-
-        // HUD widget card (first in grid, iOS-style)
-        if (_authUser && _authUser.avatar_url) {
-            var hudBits = galaxy.master ? galaxy.master.bits : 0;
-            var hudBalance = galaxy.stats ? galaxy.stats.total_coin : 0;
-            var hudTier = tierFor(hudBits);
-            var displayName = _authUser.name || _authUser.login || 'Governor';
-            html += '<div class="finder-card fc-hud sc-card" style="--i:0">';
-            html += '<div class="fc-header"><img class="fc-hud-avatar" src="' + _authUser.avatar_url + '" alt=""><div class="fc-ring">' + ringHTML(hudBits, 28, true) + '</div></div>';
-            html += '<div class="fc-label">' + displayName.split(' ')[0] + '</div>';
-            html += '<div class="fc-meta">';
-            html += '<span class="fc-bits" style="color:' + hudTier.color + '">' + hudTier.badge + ' ' + hudTier.name + '</span>';
-            html += '<span class="fc-coin">\u2229' + formatCoin(hudBalance) + '</span>';
-            html += '</div></div>';
-        }
 
         children.forEach(function (n, i) {
             var isFolder = (n.children || 0) > 0;
