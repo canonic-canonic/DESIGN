@@ -870,6 +870,44 @@ var GALAXY = (function () {
         openRightDrawer();
     }
 
+    // ── FINDER CRITICAL STYLES (injected from JS — no remote_theme dependency) ──
+    (function injectFinderStyles() {
+        if (document.getElementById('finder-styles')) return;
+        var s = document.createElement('style');
+        s.id = 'finder-styles';
+        s.textContent = '.fc-hud-avatar{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.12);object-fit:cover}' +
+            '.fc-hud{background:rgba(255,255,255,.04);border-color:rgba(0,255,136,.15)}' +
+            '.fb-identity{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-right:8px;padding-right:10px;border-right:1px solid rgba(255,255,255,.08)}' +
+            '.fb-avatar{width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.12)}' +
+            '.fb-ring{flex-shrink:0}' +
+            '.fb-coin{font-family:var(--mono);font-size:10px;font-weight:700;color:#ffd60a;text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:4px}' +
+            '.fb-coin i{font-size:9px}' +
+            '.finder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:64px 16px 80px 16px;min-height:100vh;align-content:start}' +
+            '.finder-breadcrumb{position:absolute;top:16px;left:16px;right:16px;z-index:10}' +
+            '.fb-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.10);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);box-shadow:0 4px 24px rgba(0,0,0,.5)}' +
+            '.fb-segments{display:flex;align-items:center;gap:2px;flex:1;min-width:0;overflow:hidden}' +
+            '.fb-segment{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.4);cursor:pointer;padding:2px 6px;border-radius:4px;transition:all .15s;white-space:nowrap}' +
+            '.fb-segment:hover{background:rgba(255,255,255,.06);color:#f5f5f7}' +
+            '.fb-current{color:#f5f5f7;font-weight:600;cursor:default}.fb-current:hover{background:transparent}' +
+            '.fb-root{font-size:12px;color:#00ff88;opacity:.6}.fb-root:hover{opacity:1}' +
+            '.fb-sep{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.4);opacity:.3;margin:0 1px}' +
+            '.fb-toggle{display:flex;gap:2px;margin-left:auto;flex-shrink:0}' +
+            '.fb-toggle-btn{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:6px;border:1px solid transparent;background:transparent;color:rgba(255,255,255,.4);cursor:pointer;transition:all .2s;min-width:32px;display:flex;align-items:center;gap:5px}' +
+            '.fb-toggle-btn:hover{background:rgba(255,255,255,.04);color:#f5f5f7}' +
+            '.fb-toggle-btn.active{background:rgba(0,255,136,.08);color:#00ff88;border-color:rgba(0,255,136,.2)}' +
+            '.fb-toggle-btn i{font-size:10px}' +
+            '.finder-card{padding:14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1)}' +
+            '.finder-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.15);box-shadow:0 8px 24px rgba(0,0,0,.3)}' +
+            '.fc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}' +
+            '.fc-icon{font-size:18px;opacity:.8}' +
+            '.fc-label{font-family:var(--mono);font-size:11px;font-weight:600;color:#f5f5f7;letter-spacing:.06em;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+            '.fc-meta{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px}' +
+            '.fc-bits{font-weight:700}.fc-children{color:rgba(255,255,255,.4);opacity:.5}.fc-coin{color:#ffd60a;font-weight:600}' +
+            '.talk-mode-toggle.active{color:#00ff88;background:rgba(0,255,136,.1);border-radius:50%}' +
+            '@media(max-width:768px){.finder-breadcrumb{left:8px;right:8px;top:auto;bottom:60px}.finder-grid{padding:64px 8px 120px;grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.fb-segments .fb-segment:not(.fb-current):not(.fb-root){display:none}}';
+        document.head.appendChild(s);
+    })();
+
     // ── FINDER VIEW ──────────────────────────────────────
     function renderBreadcrumb() {
         var el = document.getElementById('finderBreadcrumb');
