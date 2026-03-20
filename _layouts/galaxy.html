@@ -47,6 +47,17 @@
     {% include GALAXY.html %}
   </div>
 
+  <!-- Finder critical styles (inline until remote_theme cache clears) -->
+  <style>
+    .fc-hud-avatar{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.12);object-fit:cover}
+    .fc-hud{background:rgba(255,255,255,.04);border-color:rgba(0,255,136,.15)}
+    .fb-identity{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-right:8px;padding-right:10px;border-right:1px solid rgba(255,255,255,.08)}
+    .fb-avatar{width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.12)}
+    .fb-ring{flex-shrink:0}
+    .fb-coin{font-family:var(--mono);font-size:10px;font-weight:700;color:#ffd60a;text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:4px}
+    .fb-coin i{font-size:9px}
+  </style>
+
   <!-- Scripts: auth + galaxy (no nav.js, no figures.js — chrome-free) -->
   <!-- FA + vis-network loaded by GALAXY.html include above -->
   <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
