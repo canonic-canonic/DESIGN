@@ -33,6 +33,7 @@ interface AuthContextType {
   loading: boolean;
   login: () => void;
   logout: () => void;
+  setRole: (role: string) => void;
   handleCallback: (code: string) => Promise<boolean>;
 }
 
@@ -42,6 +43,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   login: () => {},
   logout: () => {},
+  setRole: () => {},
   handleCallback: async () => false,
 });
 
@@ -98,10 +100,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Resolve RUNNER identity after auth
   const resolveIdentity = useCallback(async (authUser: AuthUser) => {
     try {
+      const savedRole = localStorage.getItem("runner_role") || "Requester";
       const data = await authLogin({
         name: authUser.name || authUser.user,
         github: authUser.user,
-        role: "Requester",
+        role: savedRole,
       });
       if (data.user) {
         const id: RunnerIdentity = {
@@ -110,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           principal: data.principal,
         };
         setIdentity(id);
+        localStorage.setItem("runner_role", data.user.role);
         localStorage.setItem("runner_user_id", data.user.id);
         if (data.principal)
           localStorage.setItem("runner_principal", data.principal);
@@ -191,6 +195,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [resolveIdentity]
   );
 
+  const setRole = useCallback(async (role: string) => {
+    localStorage.setItem("runner_role", role);
+    if (user) {
+      // Re-resolve identity with new role
+      try {
+        const data = await authLogin({
+          name: user.name || user.user,
+          github: user.user,
+          role,
+        });
+        if (data.user) {
+          const id: RunnerIdentity = {
+            userId: data.user.id,
+            role: data.user.role,
+            principal: data.principal,
+          };
+          setIdentity(id);
+          localStorage.setItem("runner_user_id", data.user.id);
+          if (data.principal)
+            localStorage.setItem("runner_principal", data.principal);
+        }
+      } catch {}
+    }
+  }, [user]);
+
   const logout = useCallback(() => {
     clearToken();
     setUser(null);
@@ -205,6 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         login: redirectToGitHub,
         logout,
+        setRole,
         handleCallback,
       }}
     >

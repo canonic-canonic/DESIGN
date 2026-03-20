@@ -53,6 +53,20 @@ function RunnerActiveView() {
   const [completing, setCompleting] = useState(false);
   const [proofUploaded, setProofUploaded] = useState(false);
 
+  if (!taskId) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="text-center space-y-3">
+          <div className="text-4xl">📋</div>
+          <p className="text-sm text-gray-500 font-medium">No active task selected</p>
+          <button onClick={() => router.push("/runner")} className="text-sm text-purple-600 underline">
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!task) {
     return (
       <div className="flex min-h-screen items-center justify-center">

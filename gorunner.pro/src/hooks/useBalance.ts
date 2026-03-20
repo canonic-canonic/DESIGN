@@ -14,7 +14,7 @@ export function useBalance(userId: string | undefined) {
     {
       revalidateOnFocus: true,
       dedupingInterval: 5_000,
-      refreshInterval: 15_000,
+      refreshInterval: 30_000,
     }
   );
 

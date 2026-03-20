@@ -32,13 +32,24 @@ function CallbackInner() {
     });
   }, [searchParams, handleCallback]);
 
-  // Step 2: Once identity resolves, redirect to role-appropriate dashboard
+  // Step 2: Once auth is done, redirect to role-appropriate dashboard
+  // New users (no principal) get the landing page to choose role
   useEffect(() => {
-    if (!authDone || !identity) return;
-    const role = identity.role;
-    if (role === "Runner") router.replace("/runner");
-    else if (role === "Ops") router.replace("/ops");
-    else router.replace("/pro");
+    if (!authDone) return;
+    if (identity) {
+      const role = identity.role;
+      if (role === "Runner") router.replace("/runner");
+      else if (role === "Ops") router.replace("/ops");
+      else router.replace("/pro");
+    } else {
+      // Identity resolved but no principal — still redirect to default
+      // The auth provider will have set identity from the /runner/auth response
+      const timer = setTimeout(() => {
+        // If identity still not resolved after 3s, go to pro as default
+        router.replace("/pro");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
   }, [authDone, identity, router]);
 
   if (error) {

@@ -128,14 +128,35 @@ export default function OpsDashboard() {
           </div>
         </div>
 
-        {/* Recent tasks */}
+        {/* Recent tasks with assign controls */}
         <div>
           <h2 className="text-sm font-semibold text-gray-500 mb-2">
             Recent Tasks
           </h2>
           <div className="space-y-3">
             {tasks.slice(0, 10).map((task) => (
-              <TaskCard key={task.id} task={task} canon={canon} />
+              <div key={task.id}>
+                <TaskCard task={task} canon={canon} />
+                {task.status === "posted" && runners.length > 0 && (
+                  <div className="mt-1 ml-2">
+                    <select
+                      title="Assign runner to task"
+                      className="text-xs border border-gray-300 dark:border-gray-700 rounded px-2 py-1 bg-white dark:bg-gray-900"
+                      defaultValue=""
+                      onChange={(e) => {
+                        if (e.target.value) handleAssign(task.id, e.target.value);
+                      }}
+                    >
+                      <option value="">Assign runner...</option>
+                      {runners.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.profile?.first_name || r.id.slice(0, 8)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>

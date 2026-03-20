@@ -8,7 +8,28 @@ import { json } from '../../kernel/http.js';
 export async function listRunners(kv) {
   const ids = JSON.parse(await kv.get('runner:role:runner') || '[]');
   const runners = [];
-  for (const id of ids) { const raw = await kv.get(`runner:user:${id}`); if (raw) runners.push(JSON.parse(raw)); }
+  for (const id of ids) {
+    const raw = await kv.get(`runner:user:${id}`);
+    if (raw) {
+      const user = JSON.parse(raw);
+      const allTasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
+      const completed = allTasks.filter(t => t.runner_id === id && ['completed', 'rated'].includes(t.status));
+      const ratings = completed.filter(t => t.rating).map(t => t.rating);
+      const avgRating = ratings.length ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length * 10) / 10 : 0;
+      runners.push({
+        id: user.id,
+        user_id: user.id,
+        name: user.name || user.github || `Runner ${id.slice(0,8)}`,
+        profile: { first_name: user.name || user.github || 'Runner', last_name: '' },
+        completed_tasks: completed.length,
+        rating_avg: avgRating,
+        total_ratings: ratings.length,
+        available: !allTasks.some(t => t.runner_id === id && ['assigned', 'accepted', 'in_progress'].includes(t.status)),
+        onboarding_completed: true,
+        onboarding_step: 5,
+      });
+    }
+  }
   return json({ runners });
 }
 
@@ -34,6 +55,7 @@ export async function stats(kv) {
   return json({
     total_tasks: allTasks.length, active_tasks: active.length, completed_tasks: done.length,
     total_coin: done.reduce((s, t) => s + (t.fee_coin || 0), 0),
+    coin_minted: done.reduce((s, t) => s + (t.fee_coin || 0), 0),
     total_users: reqIds.length + runIds.length, total_runners: runIds.length, total_requesters: reqIds.length,
   });
 }

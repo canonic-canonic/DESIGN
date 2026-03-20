@@ -62,7 +62,7 @@ function CreateTask() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-20">
       {/* Header */}
       <div className="bg-gradient-pro px-4 pt-12 pb-6 text-white">
         <div className="max-w-lg mx-auto">

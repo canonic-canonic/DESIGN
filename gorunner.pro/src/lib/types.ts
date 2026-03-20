@@ -35,6 +35,7 @@ export interface QuickAction {
   key: string;
   message: string;
   label: string;
+  icon?: string;
 }
 
 export interface CoinPhase {

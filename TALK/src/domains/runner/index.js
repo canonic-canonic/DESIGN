@@ -88,12 +88,23 @@ export async function handle(subpath, request, env) {
       }
     }
 
+    // Existing KV user by github (no VAULT principal yet)
+    if (github) {
+      const existing = await kv.get(`runner:github:${github}`);
+      if (existing) {
+        const user = JSON.parse(existing);
+        const bal = parseInt(await kv.get(`runner:balance:${user.id}`) || '0', 10);
+        return json({ success: true, user, balance: bal, source: 'kv' });
+      }
+    }
+
     // New anonymous user — KV-only until VAULT principal is bound
     const id = 'U' + uid();
     const startupCoin = intEnv(env, 'RUNNER_STARTUP_COIN', 50);
     const user = { id, name, email, role, created_at: new Date().toISOString(), status: 'active' };
     await kv.put(`runner:user:${id}`, JSON.stringify(user));
     if (email) await kv.put(`runner:email:${email.toLowerCase()}`, JSON.stringify(user));
+    if (github) await kv.put(`runner:github:${github}`, JSON.stringify(user));
     await kv.put(`runner:balance:${id}`, String(startupCoin));
     const roleKey = `runner:role:${role.toLowerCase()}`;
     const roleList = JSON.parse(await kv.get(roleKey) || '[]');

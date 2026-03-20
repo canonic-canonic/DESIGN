@@ -28,14 +28,15 @@ export function useTasks(userId?: string, role?: string) {
   if (userId) params.set("user_id", userId);
   if (role) params.set("role", role);
   const query = params.toString();
-  const url = userId
+  // Allow fetching without userId when role is provided (e.g. "available" tasks)
+  const url = (userId || role)
     ? `${API}/runner/tasks${query ? `?${query}` : ""}`
     : null;
 
   const { data, error, isLoading, mutate } = useSWR<{ tasks: Task[] }>(
     url,
     fetcher,
-    { refreshInterval: 10_000 }
+    { refreshInterval: 30_000 }
   );
 
   return {
@@ -52,7 +53,7 @@ export function useTask(taskId?: string) {
   const { data, error, isLoading, mutate } = useSWR<{ task: Task }>(
     url,
     fetcher,
-    { refreshInterval: 3_000 }
+    { refreshInterval: 10_000 }
   );
 
   return {

@@ -45,7 +45,7 @@ export default function ProDashboard() {
   const bal = balance ?? 0;
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[calc(100dvh-3.5rem)]">
       {/* Polished header — big bold balance */}
       <div className="bg-gradient-pro px-4 pt-10 pb-4 text-white flex-shrink-0">
         <div className="max-w-lg mx-auto">
@@ -156,7 +156,7 @@ export default function ProDashboard() {
       </div>
 
       {/* Chat input with quick action pills */}
-      <div className="flex-shrink-0 max-w-lg mx-auto w-full safe-area-pb pb-16">
+      <div className="flex-shrink-0 max-w-lg mx-auto w-full">
         <ChatInput
           onSend={sendMessage}
           sending={sending}

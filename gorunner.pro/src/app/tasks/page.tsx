@@ -71,6 +71,14 @@ function TaskChatThread() {
       principal: identity?.principal,
     },
     taskId: id,
+    taskContext: task ? {
+      id: task.id,
+      type: task.type,
+      title: task.title,
+      status: task.status,
+      address: task.location?.address,
+      notes: task.notes,
+    } : null,
   });
 
   // Auto-scroll on new messages
@@ -141,7 +149,7 @@ function TaskChatThread() {
   ];
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[calc(100dvh-3.5rem)]">
       {/* Sticky task header */}
       <div className="bg-gradient-pro px-4 pt-10 pb-3 text-white flex-shrink-0">
         <div className="max-w-lg mx-auto">
@@ -285,7 +293,7 @@ function TaskChatThread() {
       </div>
 
       {/* Chat input */}
-      <div className="flex-shrink-0 max-w-lg mx-auto w-full safe-area-pb pb-16">
+      <div className="flex-shrink-0 max-w-lg mx-auto w-full">
         <ChatInput
           onSend={sendMessage}
           sending={sending}

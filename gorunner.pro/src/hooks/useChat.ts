@@ -6,16 +6,26 @@ import { beforeSend, afterReceive } from "@/lib/chatEngine";
 import type { UserContext } from "@/lib/chatEngine";
 import { sendChat } from "@/lib/api";
 
+interface TaskContext {
+  id: string;
+  type: string;
+  title: string;
+  status: string;
+  address?: string;
+  notes?: string;
+}
+
 interface UseChatOptions {
   userContext: UserContext;
   taskId?: string | null;
+  taskContext?: TaskContext | null;
 }
 
 interface ChatThread {
   messages: ChatMessage[];
 }
 
-export function useChat({ userContext, taskId }: UseChatOptions) {
+export function useChat({ userContext, taskId, taskContext }: UseChatOptions) {
   const [threads, setThreads] = useState<Map<string, ChatThread>>(new Map());
   const [sending, setSending] = useState(false);
   const activeKey = taskId || "__home__";
@@ -68,6 +78,9 @@ export function useChat({ userContext, taskId }: UseChatOptions) {
           },
         };
         if (taskId) chatConfig.task_id = taskId;
+        if (taskContext) {
+          chatConfig.task_context = `Task: ${taskContext.title} (${taskContext.type}). Status: ${taskContext.status}. Address: ${taskContext.address || "N/A"}. Notes: ${taskContext.notes || "None"}.`;
+        }
 
         const res = await sendChat(
           result.enrichedText || text,

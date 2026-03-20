@@ -54,14 +54,14 @@ export default function RunnerDashboard() {
   const bal = balanceValue ?? 0;
 
   const runnerQuickActions = [
-    { key: "_tasks", label: "My Tasks", message: "show my tasks" },
-    { key: "_available", label: "Available", message: "show tasks" },
-    { key: "_earnings", label: "Earnings", message: "show earnings" },
-    { key: "_leaderboard", label: "Leaderboard", message: "show leaderboard" },
+    { key: "_tasks", label: "My Tasks", message: "show my tasks", icon: "📋" },
+    { key: "_available", label: "Available", message: "show tasks", icon: "🔍" },
+    { key: "_earnings", label: "Earnings", message: "show earnings", icon: "💰" },
+    { key: "_leaderboard", label: "Leaderboard", message: "show leaderboard", icon: "🏆" },
   ];
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[calc(100dvh-3.5rem)]">
       {/* Polished header — big bold balance */}
       <div className="bg-gradient-runner px-4 pt-10 pb-4 text-white flex-shrink-0">
         <div className="max-w-lg mx-auto">
@@ -110,8 +110,8 @@ export default function RunnerDashboard() {
               onClick={() => router.push("/runner/earnings")}
               className="flex-1 rounded-xl bg-green-500/20 px-3 py-2 text-center cursor-pointer hover:bg-white/20 transition-colors"
             >
-              <div className="text-lg font-bold">∩{formatCompact(totalEarned)}</div>
-              <div className="text-[9px] text-white/60 uppercase">Earned</div>
+              <div className="text-lg font-bold">{totalEarned === 0 ? "0" : `∩${formatCompact(totalEarned)}`}</div>
+              <div className="text-[9px] text-white/60 uppercase">{totalEarned === 0 ? "Credits" : "Earned"}</div>
             </div>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function RunnerDashboard() {
       </div>
 
       {/* Chat input */}
-      <div className="flex-shrink-0 max-w-lg mx-auto w-full safe-area-pb pb-16">
+      <div className="flex-shrink-0 max-w-lg mx-auto w-full">
         <ChatInput
           onSend={sendMessage}
           sending={sending}

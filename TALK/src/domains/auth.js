@@ -7,6 +7,7 @@ import { json } from '../kernel/http.js';
 import { fetchWithRetry } from '../kernel/http.js';
 import { appendToLedger } from '../kernel/ledger.js';
 import { extractSessionToken } from '../kernel/util.js';
+import { kvGet } from '../kernel/kv.js';
 
 export function authConfig(env) {
   if (!env.GITHUB_CLIENT_ID) return json({ error: 'GITHUB_CLIENT_ID not configured' }, 500);
@@ -147,6 +148,60 @@ export async function galaxyAuth(request, env) {
   const visEdges = data.edges.filter(e => visIds.has(e.from) || visIds.has(e.to));
 
   return json({ nodes: visible, edges: visEdges });
+}
+
+// ── Scoped galaxy endpoint ──────────────────────────────
+// Returns a principal-scoped galaxy from KV.
+// Resolution order:
+//   1. Explicit ?scope= parameter (direct KV lookup)
+//   2. Principal's org from grants (org principal sees their federated org)
+//   3. User-scoped galaxy (individual user sees their subtree)
+//   4. Fallback to public galaxy.json
+//
+// Each org is a federated user of the canonic platform.
+// Principals manage their org galaxy; users see their subtree within it.
+export async function galaxyScope(request, env) {
+  const { session, error } = await requireSession(request, env);
+  if (error) return error;
+
+  const url = new URL(request.url);
+  const scopeParam = url.searchParams.get('scope');
+  const user = session.user;
+
+  // Load grants to determine org membership
+  const grants = await kvGet(env.TALK_KV, `grants:${user}`, {});
+
+  // 1. Explicit scope requested
+  if (scopeParam) {
+    const kvKey = scopeParam.includes('-canonic')
+      ? `galaxy:scope:${scopeParam}`
+      : `galaxy:user:${scopeParam.toUpperCase()}`;
+    const raw = await env.TALK_KV.get(kvKey);
+    if (!raw) return json({ error: 'scope not found', scope: scopeParam }, 404);
+    const data = JSON.parse(raw);
+    return json({ ...data, user, tier: 'explicit' });
+  }
+
+  // 2. Principal's org galaxy (org principal sees their federated org with all users)
+  if (grants.org) {
+    const orgKey = `galaxy:scope:${grants.org}`;
+    const raw = await env.TALK_KV.get(orgKey);
+    if (raw) {
+      const data = JSON.parse(raw);
+      return json({ ...data, user, tier: 'principal', org: grants.org });
+    }
+  }
+
+  // 3. User-scoped galaxy (individual user subtree)
+  const userKey = `galaxy:user:${user.toUpperCase()}`;
+  const userRaw = await env.TALK_KV.get(userKey);
+  if (userRaw) {
+    const data = JSON.parse(userRaw);
+    return json({ ...data, user, tier: 'user' });
+  }
+
+  // 4. Fallback: redirect to public static galaxy
+  return json({ fallback: true, redirect: '/MAGIC/galaxy.json', user, tier: 'public' });
 }
 
 // Helper: validate session and return parsed session or error response

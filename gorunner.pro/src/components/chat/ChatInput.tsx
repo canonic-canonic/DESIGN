@@ -38,7 +38,7 @@ export function ChatInput({
               disabled={sending}
               className="flex-shrink-0 inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:border-purple-300 hover:text-purple-600 transition-colors disabled:opacity-50"
             >
-              <span>{TASK_ICONS[a.key] || "📋"}</span>
+              <span>{a.icon || TASK_ICONS[a.key] || "📋"}</span>
               {a.label}
             </button>
           ))}
