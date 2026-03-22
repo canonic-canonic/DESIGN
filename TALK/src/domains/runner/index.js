@@ -22,6 +22,27 @@ export function uid() {
     .map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
 }
 
+// Haversine distance in miles
+export function haversine(lat1, lng1, lat2, lng2) {
+  const R = 3959; // Earth radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Interpolate position between origin and destination
+export function interpolate(origin, destination, progress) {
+  const t = Math.max(0, Math.min(1, progress));
+  const curve = Math.sin(t * Math.PI) * 0.003; // slight curve for realism
+  return {
+    lat: origin.lat + (destination.lat - origin.lat) * t + curve,
+    lng: origin.lng + (destination.lng - origin.lng) * t - curve,
+  };
+}
+
 export async function handle(subpath, request, env) {
   const kv = env.TALK_KV;
   if (!kv) return json({ error: 'KV not configured' }, 500);
@@ -277,6 +298,21 @@ export async function handle(subpath, request, env) {
     return json({ success: true, user_id: userId, balance: startupCoin });
   }
 
+  // ── Runner Availability Toggle ─────────────────────────────────
+  if (subpath === 'available' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    const available = body.available !== false;
+    const raw = await kv.get(`runner:user:${userId}`);
+    if (!raw) return json({ error: 'user not found' }, 404);
+    const user = JSON.parse(raw);
+    user.available = available;
+    user.updated_at = new Date().toISOString();
+    await kv.put(`runner:user:${userId}`, JSON.stringify(user));
+    return json({ success: true, user_id: userId, available });
+  }
+
   // ── Phase 9: Location Tracking ──────────────────────────────────
   if (subpath === 'location' && method === 'POST') {
     const body = await request.json().catch(() => ({}));
@@ -298,8 +334,16 @@ export async function handle(subpath, request, env) {
     const locRaw = await kv.get(`runner:location:${task.runner_id}`);
     if (!locRaw) return json({ lat: null, lng: null, message: 'No recent location' });
     const loc = JSON.parse(locRaw);
-    // Straight-line distance estimate (Haversine simplified)
+    // Haversine distance + ETA (avg 25mph city driving)
     let distance_mi = null, eta_min = null;
+    if (loc.lat != null && task.location?.lat != null) {
+      distance_mi = Math.round(haversine(loc.lat, loc.lng, task.location.lat, task.location.lng) * 10) / 10;
+      eta_min = Math.max(1, Math.round((distance_mi / 25) * 60));
+    } else if (loc.lat != null && task.location?.address) {
+      // Fallback: no geocoded task location, report raw runner position
+      distance_mi = null;
+      eta_min = null;
+    }
     return json({ ...loc, distance_mi, eta_min, task_id: taskId, runner_id: task.runner_id });
   }
 

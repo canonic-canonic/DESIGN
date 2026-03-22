@@ -7,7 +7,7 @@ import { json } from '../../kernel/http.js';
 import { kvGet } from '../../kernel/kv.js';
 import { appendToLedger } from '../../kernel/ledger.js';
 import { sendEmail } from '../../kernel/email.js';
-import { TASK_PRICES, KYC_REQUIRED, uid } from './index.js';
+import { TASK_PRICES, KYC_REQUIRED, uid, haversine, interpolate } from './index.js';
 import { notifyVendors, notifyAgent } from './notify.js';
 
 export async function createTask(body, env, kv) {
@@ -145,6 +145,62 @@ export async function handleTaskAction(taskId, action, request, env, kv) {
     await kv.put('runner:tasks:all', JSON.stringify(allTasks));
     await appendToLedger(env, 'RUNNER', 'RUNNER', { event: 'DEAL_CLOSED', task_id: taskId, task_type: task.type, runner_id: task.runner_id, requester_id: task.requester_id, rating: task.rating, tip_coin: task.tip_coin, fee_coin: task.fee_coin });
     return json({ success: true, task });
+  }
+
+  // Mark en_route — runner starts driving
+  if (action === 'en_route' && method === 'POST') {
+    if (!['accepted', 'assigned'].includes(task.status)) return json({ error: `cannot mark en_route in status: ${task.status}` }, 400);
+    task.status = 'in_progress'; task.updated_at = new Date().toISOString();
+    task.en_route_at = new Date().toISOString();
+    await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+    return json({ success: true, task });
+  }
+
+  // Mark arrived — runner at location
+  if (action === 'arrived' && method === 'POST') {
+    if (task.status !== 'in_progress') return json({ error: `cannot mark arrived in status: ${task.status}` }, 400);
+    task.arrived_at = new Date().toISOString(); task.updated_at = new Date().toISOString();
+    await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+    return json({ success: true, task });
+  }
+
+  // Simulate movement — interpolate runner position for demo
+  if (action === 'simulate' && method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    const progress = parseFloat(body.progress) || 0;
+    const runnerId = task.runner_id || body.runner_id;
+    if (!runnerId) return json({ error: 'no runner on task' }, 400);
+
+    // Get runner origin (stored start position or default Orlando)
+    const originRaw = await kv.get(`runner:origin:${task.id}`);
+    let origin;
+    if (originRaw) {
+      origin = JSON.parse(originRaw);
+    } else {
+      // Use runner's current location as origin, or default
+      const locRaw = await kv.get(`runner:location:${runnerId}`);
+      origin = locRaw ? JSON.parse(locRaw) : { lat: 28.5383, lng: -81.3792 };
+      await kv.put(`runner:origin:${task.id}`, JSON.stringify(origin), { expirationTtl: 3600 });
+    }
+
+    const dest = task.location?.lat != null ? task.location : { lat: 28.5383 + (Math.random() - 0.5) * 0.02, lng: -81.3792 + (Math.random() - 0.5) * 0.02 };
+    const pos = interpolate(origin, dest, progress);
+    const dist = haversine(pos.lat, pos.lng, dest.lat, dest.lng);
+    const eta = Math.max(1, Math.round((dist / 25) * 60));
+    const arrived = progress >= 0.95;
+
+    // Update runner location in KV
+    await kv.put(`runner:location:${runnerId}`, JSON.stringify({ lat: pos.lat, lng: pos.lng, ts: new Date().toISOString() }), { expirationTtl: 300 });
+
+    // Store progress on task
+    task.runner_progress = progress;
+    task.runner_location = pos;
+    task.current_distance_miles = Math.round(dist * 10) / 10;
+    task.current_eta_minutes = eta;
+    task.updated_at = new Date().toISOString();
+    await kv.put('runner:tasks:all', JSON.stringify(allTasks));
+
+    return json({ success: true, lat: pos.lat, lng: pos.lng, distance_remaining: Math.round(dist * 10) / 10, eta_minutes: eta, arrived, progress });
   }
 
   if (action === 'cancel' && method === 'POST') {

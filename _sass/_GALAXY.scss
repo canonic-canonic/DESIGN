@@ -1350,7 +1350,7 @@ body.galaxy-surface .finder-breadcrumb ~ .control-panel { display: none; }
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 10px;
-    padding: 64px var(--space-sm, 16px) 80px var(--space-sm, 16px);
+    padding: 12px var(--space-sm, 16px) 80px var(--space-sm, 16px);
     min-height: 100vh;
     align-content: start;
 }
@@ -1462,17 +1462,26 @@ body.galaxy-surface .finder-breadcrumb ~ .control-panel { display: none; }
     border-radius: 50%;
 }
 
-// ── Mobile: breadcrumb collapse ──
+// ── Tablet ──
 @media (max-width: 768px) {
-    .finder-breadcrumb {
-        left: var(--space-sm, 16px);
-        top: auto;
-        bottom: 60px;
-    }
     .finder-grid {
-        padding: 72px var(--space-sm, 8px) 120px;
+        padding: 12px var(--space-sm, 8px) 80px;
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
-    .fb-segments .fb-segment:not(.fb-current):not(.fb-root) { display: none; }
+    .galaxy-surface-container .control-panel { display: none; }
+}
+
+// ── Mobile: single column, compact HUD ──
+@media (max-width: 480px) {
+    .finder-grid {
+        padding: 8px 8px 80px;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    .finder-card { padding: 10px; }
+    .fc-label { font-size: 10px; }
+    .fc-meta { font-size: 8px; }
+    .fc-hud { grid-column: 1 / -1; }
+    .finder-breadcrumb { display: none; }
     .galaxy-surface-container .control-panel { display: none; }
 }

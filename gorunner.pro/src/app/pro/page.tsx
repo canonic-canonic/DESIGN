@@ -10,6 +10,7 @@ import { useChat } from "@/hooks/useChat";
 import { formatCompact, formatNumber } from "@/lib/utils";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessageRenderer } from "@/components/chat/ChatMessageRenderer";
+import { TASK_ICONS } from "@/lib/types";
 import { Plus, CheckCircle, Clock, ArrowUpRight } from "lucide-react";
 
 export default function ProDashboard() {
@@ -94,8 +95,8 @@ export default function ProDashboard() {
         </div>
       </div>
 
-      {/* Post task CTA */}
-      <div className="max-w-lg mx-auto w-full px-4 py-2 flex-shrink-0">
+      {/* Post task CTA + active tasks */}
+      <div className="max-w-lg mx-auto w-full px-4 py-2 flex-shrink-0 space-y-2">
         <button
           type="button"
           onClick={() => router.push("/pro/create")}
@@ -104,6 +105,27 @@ export default function ProDashboard() {
           <Plus className="h-4 w-4" />
           Post a Task
         </button>
+
+        {/* Active task cards with Track action */}
+        {activeTasks.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {activeTasks.slice(0, 4).map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => router.push(`/pro/track?task=${t.id}`)}
+                className="flex-shrink-0 flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-3 py-2 text-left hover:border-blue-300 transition-colors"
+              >
+                <span className="text-lg">{TASK_ICONS[t.type] || "\u{1F4CB}"}</span>
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold truncate max-w-[120px]">{t.title}</div>
+                  <div className="text-[10px] text-gray-400 capitalize">{t.status.replace("_", " ")}</div>
+                </div>
+                <ArrowUpRight className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Chat messages */}

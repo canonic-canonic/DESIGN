@@ -192,6 +192,36 @@ export async function getRunnerLocation(taskId: string) {
   }>(`/runner/location?task_id=${taskId}`);
 }
 
+// ── Task Simulation ──────────────────────────────────────────────
+export async function simulateMovement(
+  taskId: string,
+  progress: number,
+  runnerId?: string
+) {
+  return request<{
+    lat: number;
+    lng: number;
+    distance_remaining: number;
+    eta_minutes: number;
+    arrived: boolean;
+    progress: number;
+  }>(`/runner/tasks/${taskId}/simulate`, {
+    method: "POST",
+    body: JSON.stringify({ progress, runner_id: runnerId }),
+  });
+}
+
+// ── Runner Availability ──────────────────────────────────────────
+export async function setAvailability(userId: string, available: boolean) {
+  return request<{ success: boolean; available: boolean }>(
+    "/runner/available",
+    {
+      method: "POST",
+      body: JSON.stringify({ user_id: userId, available }),
+    }
+  );
+}
+
 // ── Onboarding ────────────────────────────────────────────────────
 export async function onboardProfile(data: {
   user_id: string;

@@ -120,6 +120,7 @@ export interface RunnerProfile {
 export interface Task {
   id: string;
   requester_id: string;
+  runner_id?: string;
   assigned_runner_id?: string;
   type: string;
   title: string;
@@ -129,17 +130,22 @@ export interface Task {
     address: string;
   };
   scheduled_time?: string;
+  fee_coin?: number;
   offered_fee_usd: number;
   notes?: string;
   status: TaskStatus;
   runner_progress?: number;
   runner_location?: { lat: number; lng: number };
   proof_photos?: string[];
+  proof_hash?: string;
+  proof_note?: string;
   rating?: number;
   tip_usd?: number;
   tip_coin?: number;
   current_eta_minutes?: number;
   current_distance_miles?: number;
+  en_route_at?: string;
+  arrived_at?: string;
   created_at: string;
   completed_at?: string;
 }

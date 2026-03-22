@@ -1,16 +1,18 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useCanon } from "@/hooks/useCanon";
 import { useTasks } from "@/hooks/useTasks";
 import { useBalance } from "@/hooks/useBalance";
 import { useChat } from "@/hooks/useChat";
+import { setAvailability } from "@/lib/api";
 import { formatCompact, formatNumber } from "@/lib/utils";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessageRenderer } from "@/components/chat/ChatMessageRenderer";
 import { ArrowUpRight } from "lucide-react";
+import { toast } from "sonner";
 
 export default function RunnerDashboard() {
   const router = useRouter();
@@ -52,6 +54,19 @@ export default function RunnerDashboard() {
   }, 0);
 
   const bal = balanceValue ?? 0;
+  const [available, setAvailable] = useState(true);
+
+  const toggleAvailability = useCallback(async () => {
+    if (!identity?.userId) return;
+    const next = !available;
+    setAvailable(next);
+    try {
+      await setAvailability(identity.userId, next);
+      toast.success(next ? "You're online! Accepting tasks." : "You're offline.");
+    } catch {
+      setAvailable(!next); // revert
+    }
+  }, [identity?.userId, available]);
 
   const runnerQuickActions = [
     { key: "_tasks", label: "My Tasks", message: "show my tasks", icon: "📋" },
@@ -71,6 +86,23 @@ export default function RunnerDashboard() {
               <h1 className="text-lg font-bold leading-tight">
                 {user?.name || user?.user || "Runner"}
               </h1>
+              {/* Availability toggle */}
+              <button
+                type="button"
+                onClick={toggleAvailability}
+                className="mt-1 flex items-center gap-2"
+              >
+                <div
+                  className={`relative w-9 h-5 rounded-full transition-colors ${available ? "bg-green-400" : "bg-gray-500"}`}
+                >
+                  <div
+                    className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${available ? "translate-x-4" : "translate-x-0.5"}`}
+                  />
+                </div>
+                <span className="text-[10px] text-white/60">
+                  {available ? "Online" : "Offline"}
+                </span>
+              </button>
             </div>
             {/* Hero balance */}
             <div
