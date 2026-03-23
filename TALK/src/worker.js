@@ -20,6 +20,7 @@ import { oaiBakeoff } from './domains/gateway/bakeoff.js';
 import { chat } from './domains/chat.js';
 import { deepHealth } from './domains/health.js';
 import { authConfig, authGitHub, authSession, authLogout, authGrants, galaxyAuth, galaxyScope, requireSession } from './domains/auth.js';
+import { emailSend as authEmailSend, emailVerify as authEmailVerify, emailSession as authEmailSession } from './domains/auth-email.js';
 import { handle as emailSend } from './domains/email.js';
 import { shopCheckout, shopStripeWebhook, shopWallet } from './domains/shop.js';
 import { ledgerWrite, ledgerRead, send as talkSend, inbox as talkInbox, ack as talkAck } from './domains/talk.js';
@@ -109,6 +110,13 @@ export default {
       return authLogout(request, env);
     if (path === '/auth/grants' && method === 'GET')
       return authGrants(request, env);
+    // Email magic link auth
+    if (path === '/auth/email/send' && method === 'POST')
+      return authEmailSend(request, env);
+    if (path === '/auth/email/verify' && method === 'POST')
+      return authEmailVerify(request, env);
+    if (path === '/auth/email/session' && method === 'GET')
+      return authEmailSession(request, env);
     if (path === '/galaxy/auth' && method === 'GET')
       return galaxyAuth(request, env);
     if (path === '/galaxy/scope' && method === 'GET')
