@@ -661,3 +661,11 @@
     background: rgba(var(--accent-rgb, 96,165,250), 0.1);
     color: var(--accent, #60a5fa);
 }
+
+/* Series headers in blog index — era grouping */
+.blog-series-header {
+    padding: var(--space-md) 0 var(--space-xs);
+    margin-top: var(--space-md);
+    border-bottom: 1px solid var(--border);
+    .blog-eyebrow { font-size: var(--font-sm); color: var(--fg); }
+}
