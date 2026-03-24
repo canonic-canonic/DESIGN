@@ -173,12 +173,18 @@ export async function handle(subpath, request, env) {
     const amountCoin = parseInt(body.amount_coin, 10);
     if (!Number.isFinite(amountCoin) || amountCoin < 10 || amountCoin > 10000) return json({ error: 'amount_coin must be 10–10000' }, 400);
     const coinToCents = Math.max(1, intEnv(env, 'RUNNER_COIN_USD_CENTS', 100));
+    const creditsCents = amountCoin * coinToCents;
+    // Service fee covers Stripe processing (2.9% + $0.30) so net = credits value
+    const serviceFeeCents = Math.ceil((creditsCents + 30) / (1 - 0.029)) - creditsCents;
     const fields = {
       mode: 'payment', success_url: (body.success_url || 'https://gorunner.pro/?checkout=success').trim(),
       cancel_url: (body.cancel_url || 'https://gorunner.pro/?checkout=cancel').trim(),
       'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': 'usd',
-      'line_items[0][price_data][unit_amount]': String(amountCoin * coinToCents),
+      'line_items[0][price_data][unit_amount]': String(creditsCents),
       'line_items[0][price_data][product_data][name]': `GoRunner — ∩${amountCoin} Credits`,
+      'line_items[1][quantity]': '1', 'line_items[1][price_data][currency]': 'usd',
+      'line_items[1][price_data][unit_amount]': String(serviceFeeCents),
+      'line_items[1][price_data][product_data][name]': 'Service Fee',
       'metadata[service]': 'RUNNER', 'metadata[user_id]': userId, 'metadata[amount_coin]': String(amountCoin),
       'payment_intent_data[metadata][service]': 'RUNNER', 'payment_intent_data[metadata][user_id]': userId,
       'payment_intent_data[metadata][amount_coin]': String(amountCoin),

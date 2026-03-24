@@ -26,6 +26,7 @@ export async function emailSend(request, env) {
   const body = await request.json().catch(() => ({}));
   const email = (body.email || '').trim().toLowerCase();
   if (!email || !email.includes('@')) return json({ error: 'valid email required' }, 400);
+  const role = body.role === 'Runner' ? 'Runner' : 'Requester';
 
   // Rate limit: 3 magic links per email per 15 minutes
   const rateKey = `auth:rate:${email}`;
@@ -36,7 +37,7 @@ export async function emailSend(request, env) {
   // Generate magic token
   const token = generateToken();
   const magicKey = `auth:magic:${token}`;
-  await kv.put(magicKey, JSON.stringify({ email, created: Date.now() }), { expirationTtl: 900 }); // 15 min TTL
+  await kv.put(magicKey, JSON.stringify({ email, role, created: Date.now() }), { expirationTtl: 900 }); // 15 min TTL
 
   // Build magic link
   const baseUrl = body.redirect_url || 'https://gorunner.pro';
@@ -82,7 +83,7 @@ export async function emailVerify(request, env) {
   const raw = await kv.get(magicKey);
   if (!raw) return json({ error: 'invalid or expired token' }, 401);
 
-  const { email } = JSON.parse(raw);
+  const { email, role: tokenRole } = JSON.parse(raw);
 
   // Consume token (one-time use)
   await kv.delete(magicKey);
@@ -101,7 +102,8 @@ export async function emailVerify(request, env) {
     // New user — create with signup bonus
     const id = 'U' + Array.from(crypto.getRandomValues(new Uint8Array(6))).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
     const startupCoin = 50;
-    user = { id, name: email.split('@')[0], email, role: 'Requester', created_at: new Date().toISOString(), status: 'active' };
+    const role = tokenRole === 'Runner' ? 'Runner' : 'Requester';
+    user = { id, name: email.split('@')[0], email, role, created_at: new Date().toISOString(), status: 'active' };
     await kv.put(`runner:user:${id}`, JSON.stringify(user));
     await kv.put(`runner:email:${email}`, JSON.stringify(user));
     await kv.put(`runner:balance:${id}`, String(startupCoin));

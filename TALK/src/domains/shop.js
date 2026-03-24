@@ -233,13 +233,34 @@ export async function shopStripeWebhook(request, env) {
     } catch (e) { console.error('[TALK]', e.message || e); }
   }
 
+  // RUNNER fiat lane: credit buyer's COIN balance on successful checkout
+  let runnerMinted = false;
+  if (mapped && typ === 'checkout.session.completed') {
+    const md = obj.metadata || {};
+    if (md.service === 'RUNNER' && md.user_id && md.amount_coin) {
+      const userId = md.user_id;
+      const coinAmount = parseInt(md.amount_coin, 10);
+      if (coinAmount > 0) {
+        const balKey = `runner:balance:${userId}`;
+        const currentBal = parseInt(await env.TALK_KV.get(balKey) || '0', 10);
+        await env.TALK_KV.put(balKey, String(currentBal + coinAmount));
+        await appendToLedger(env, 'RUNNER', 'RUNNER', {
+          event: 'FIAT_MINT', user_id: userId, amount_coin: coinAmount,
+          stripe_session_id: obj.id || '', stripe_event_id: evt.id || '',
+          usd_cents: obj.amount_total || 0,
+        });
+        runnerMinted = true;
+      }
+    }
+  }
+
   const ledgerResult = await appendToLedger(env, 'SHOP', 'SHOP', {
     stripe_event_id: evt && evt.id ? evt.id : '', stripe_type: typ,
     session_id: obj.id || '', status: obj.status || '', payment_status: obj.payment_status || '',
     wallet_event: mapped, work_ref: evt && evt.id ? evt.id : '',
   });
 
-  return json({ ok: true, stripe_event_id: evt && evt.id ? evt.id : '', stripe_type: typ, wallet_event: mapped, relayed, ledger: ledgerResult });
+  return json({ ok: true, stripe_event_id: evt && evt.id ? evt.id : '', stripe_type: typ, wallet_event: mapped, relayed, runner_minted: runnerMinted, ledger: ledgerResult });
 }
 
 export async function shopWallet(request, env) {
