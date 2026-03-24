@@ -1,26 +1,50 @@
 <!-- LEARNING-FLEET | Auto-rendered from _data/learning_stats.json | DESIGN.md 255 Map -->
+<!-- Sorted by sessions descending. Scopes with 0 sessions are hidden. -->
 {% assign ls = site.data.learning_stats %}
 {% if ls %}
-<div class="card-grid" style="grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;">
-  {% for scope in ls %}
-  {% unless scope[0] == 'fleet_total' %}
+{% assign active_scopes = "" %}
+{% for scope in ls %}
+  {% unless scope[0] == 'fleet_total' or scope[0] == '_generated' %}
   {% assign info = scope[1] %}
-  <div class="card">
-    <div class="status-badge">{{ info.status }}</div>
-    <div class="card-title">{{ info.label }} Learning</div>
-    <div class="card-text">
-      {{ info.sessions }} community sessions. {{ info.patterns }} governed patterns.
-      {% if info.domain and info.domain != "" %}{{ info.domain }}.{% endif %}
-    </div>
-    <a href="https://{{ scope[0] }}.ai" class="card-link">See community learning &rarr;</a>
-  </div>
+  {% if info.sessions and info.sessions > 0 %}
+    {% if active_scopes == "" %}{% assign active_scopes = scope[0] %}{% else %}{% assign active_scopes = active_scopes | append: "," | append: scope[0] %}{% endif %}
+  {% endif %}
   {% endunless %}
+{% endfor %}
+{% assign scope_list = active_scopes | split: "," | sort %}
+<div class="card-grid" style="grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;">
+  {% comment %}Render highest-session scopes first by iterating thresholds{% endcomment %}
+  {% assign thresholds = "50,10,1" | split: "," %}
+  {% for threshold in thresholds %}
+  {% assign t = threshold | plus: 0 %}
+  {% for sname in scope_list %}
+    {% assign info = ls[sname] %}
+    {% if info.sessions >= t %}
+      {% comment %}Only render at the highest matching threshold{% endcomment %}
+      {% assign render = true %}
+      {% for higher in thresholds %}
+        {% assign h = higher | plus: 0 %}
+        {% if h > t and info.sessions >= h %}{% assign render = false %}{% endif %}
+      {% endfor %}
+      {% if render %}
+      <div class="card">
+        <div class="status-badge">{{ info.status }}</div>
+        <div class="card-title">{{ info.label }}</div>
+        <div class="card-text">
+          {{ info.sessions }} community sessions. {{ info.patterns }} governed patterns.
+          {% if info.domain and info.domain != "" %}{{ info.domain }}.{% endif %}
+        </div>
+        <a href="https://{{ sname }}.ai" class="card-link">See community learning &rarr;</a>
+      </div>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
   {% endfor %}
 </div>
 {% assign ft = ls.fleet_total %}
 {% if ft %}
 <div class="muted text-center" style="margin-top:var(--space-sm);font-size:var(--font-sm);">
-  {{ ft.sessions }} total community sessions across the fleet
+  {{ ft.sessions }} total community sessions across {{ scope_list.size }} active products
 </div>
 {% endif %}
 {% endif %}
