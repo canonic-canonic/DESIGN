@@ -104,6 +104,27 @@
     {% if page.proof %}
     {% include PROOF.html type="closing" quote=page.proof.quote sig=page.proof.sig cta=page.proof.cta %}
     {% endif %}
+
+    {% if page.prev_post or page.next_post %}
+    <nav class="post-nav">
+      {% if page.prev_post %}
+      <a href="{{ page.prev_post.href }}" class="post-nav-link post-nav-prev">
+        <span class="post-nav-label">&larr; Previous</span>
+        <span class="post-nav-title">{{ page.prev_post.title }}</span>
+      </a>
+      {% else %}
+      <span></span>
+      {% endif %}
+      {% if page.next_post %}
+      <a href="{{ page.next_post.href }}" class="post-nav-link post-nav-next">
+        <span class="post-nav-label">Next &rarr;</span>
+        <span class="post-nav-title">{{ page.next_post.title }}</span>
+      </a>
+      {% else %}
+      <span></span>
+      {% endif %}
+    </nav>
+    {% endif %}
   </article>
 
   <footer id="footer">{% include FOOTER.html %}</footer>
