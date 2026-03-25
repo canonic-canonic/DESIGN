@@ -150,6 +150,19 @@ body > header:not(.nav),
     display: none;
 }
 
+/* TALK INSTANCE = product surface (app.*.ai, *.ai)
+   No cross-branding: hide fleet tabs, breadcrumbs, TALK button.
+   Only ∩ mark + atomic controls (GOV/WEB, A−/A+, theme) remain.
+   ∩ is the CANONIC brand — subtle, not competing with the product. */
+[data-layout="talk"] .nav-talk,
+[data-layout="talk"] .nav-fleet,
+[data-layout="talk"] .nav-fleet-tabs,
+[data-layout="talk"] .nav-center,
+[data-layout="talk"] .nav-sub,
+[data-layout="talk"] .nav-fleet-label {
+    display: none;
+}
+
 [data-layout="custom"] > * {
     flex-shrink: 0;
 }
