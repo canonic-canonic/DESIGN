@@ -436,6 +436,38 @@ main:not(.with-sidebar) #talkMessages {
     min-height: 0;
 }
 
+/* ── Keyboard visibility — copy button visible on focus-within, not just hover ── */
+.message:focus-within .msg-controls {
+    opacity: 1;
+}
+
+/* ── Mobile sidebar FAB — visible only when sidebar is hidden ── */
+.mcode-fab {
+    display: none;
+    position: fixed;
+    bottom: var(--space-md);
+    right: var(--space-md);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: var(--z-modal, 9000);
+    box-shadow: var(--shadow);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    line-height: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.mcode-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
 /* ── Chat — responsive ── */
 @media (max-width: 768px) {
     [data-layout="custom"] {
@@ -478,6 +510,10 @@ main:not(.with-sidebar) #talkMessages {
         background: var(--bg);
     }
 
+    .mcode-fab {
+        display: flex;
+    }
+
     .input-area {
         padding: var(--space-xs) var(--space-sm);
     }
@@ -485,6 +521,26 @@ main:not(.with-sidebar) #talkMessages {
     .header-controls {
         width: 100%;
         justify-content: flex-end;
+    }
+}
+
+/* ── Touch targets — clinical users include elderly patients on mobile ── */
+@media (pointer: coarse) {
+    .fleet-pill,
+    .mcode-toggle,
+    .mcode-export,
+    .copy-btn,
+    #talkSend,
+    .nav-theme,
+    .nav-talk,
+    .talk-overlay-close,
+    .header-controls select,
+    .input-area button,
+    .input-area input,
+    .talk-input-row button,
+    .talk-input-row input {
+        min-height: 44px;
+        min-width: 44px;
     }
 }
 
@@ -784,6 +840,8 @@ a.magic-badge:hover {
     .fleet-nav {
         padding: var(--space-2xs) var(--space-sm);
         gap: var(--space-2xs);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
+        mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
     }
 
     .fleet-pill-name {

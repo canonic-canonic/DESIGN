@@ -378,7 +378,7 @@ const TALK = {
                 var route = (typeof FLEET !== 'undefined' && FLEET.EVIDENCE_ROUTES) ? FLEET.EVIDENCE_ROUTES[key] : null;
                 if (route) {
                     var tierClass = 'tier-' + route.tier;
-                    return '<a href="' + route.url + '" target="_blank" rel="noopener" class="evidence-badge ' + tierClass + '" title="' + route.tier.toUpperCase() + ' — ' + route.scope + '">' + cite + '</a>';
+                    return '<a href="' + route.url + '" target="_blank" rel="noopener" class="evidence-badge ' + tierClass + '" title="' + route.tier.toUpperCase() + ' — ' + route.scope + '"><span class="sr-only">' + route.tier.toUpperCase() + ': </span>' + cite + '</a>';
                 }
                 return '<span class="evidence-badge">' + cite + '</span>';
             });
@@ -557,7 +557,9 @@ const TALK = {
         if (!el) return null;
         var div = document.createElement('div');
         div.className = 'message assistant typing-msg';
-        div.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+        div.setAttribute('role', 'status');
+        div.setAttribute('aria-label', 'Thinking...');
+        div.innerHTML = '<div class="typing-indicator" aria-hidden="true"><span></span><span></span><span></span></div>';
         el.appendChild(div);
         el.scrollTop = el.scrollHeight;
         return div;
@@ -890,3 +892,21 @@ const TALK = {
         catch (e) { return []; }
     }
 };
+
+// ── MCODE — Clinical data sidebar (stub + a11y wiring) ──────────────
+// Full implementation lives in plugins/mcode.js. This stub ensures
+// toggleSidebar and aria-expanded work even before plugin loads.
+var MCODE = window.MCODE || {
+    toggleSidebar() {
+        var sidebar = document.getElementById('mcode-sidebar');
+        if (!sidebar) return;
+        var isOpen = sidebar.classList.toggle('open');
+        // Update all toggle buttons (header toggle + mobile FAB)
+        document.querySelectorAll('[aria-controls="mcode-content"], .mcode-fab').forEach(function(btn) {
+            btn.setAttribute('aria-expanded', String(isOpen));
+        });
+    },
+    setPhase(v) {},
+    export() {}
+};
+window.MCODE = MCODE;

@@ -7,6 +7,8 @@
 </head>
 <body data-layout="talk">
 
+  <a class="skip-link" href="#talkMessages">Skip to chat</a>
+
   {% unless page.nav == false %}{% include NAV-UNIFIED.html %}{% endunless %}
 
   {% include VIEW-GOV.html %}
@@ -26,12 +28,14 @@
       </div>
       <div class="header-controls">
         {% if page.phases %}
+        <label for="phase" class="sr-only">Treatment phase</label>
         <select id="phase" onchange="MCODE.setPhase(this.value)">
           {% for p in page.phases %}<option value="{{ p.value }}">{{ p.label }}</option>
           {% endfor %}
         </select>
         {% endif %}
         {% if page.locations %}
+        <label for="caribLocation" class="sr-only">Location</label>
         <select id="caribLocation" onchange="TRIALS.init('cancer', this.options[this.selectedIndex].dataset.query)">
           {% for loc in page.locations %}<option value="{{ loc.value }}" data-query="{{ loc.query }}">{{ loc.label }}</option>
           {% endfor %}
@@ -69,21 +73,22 @@
     <!-- ═══ MAIN — chat + optional sidebar ═══ -->
     <main{% if page.sidebar %} class="with-sidebar"{% endif %}>
       <div class="chat-column">
-        <div id="talkMessages"></div>
+        <div id="talkMessages" role="log" aria-live="polite" aria-atomic="false"></div>
         <div class="input-area">
+          <label for="talkChatInput" class="sr-only">{{ page.placeholder | default: 'Ask a question' }}</label>
           <input type="text" id="talkChatInput" placeholder="{{ page.placeholder | default: 'Ask a question...' }}" autocomplete="off">
-          <button type="button" id="talkSend">Send</button>
+          <button type="button" id="talkSend" aria-label="Send message">Send</button>
         </div>
       </div>
 
       {% if page.sidebar %}
-      <aside class="mcode-sidebar" id="mcode-sidebar">
+      <aside class="mcode-sidebar" id="mcode-sidebar" aria-label="{{ page.sidebar.title | default: 'Clinical data panel' }}">
         <div class="mcode-header">
-          <div class="mcode-header-icon">&#129516;</div>
+          <div class="mcode-header-icon" aria-hidden="true">&#129516;</div>
           <span class="mcode-header-text">{{ page.sidebar.title }}</span>
-          <span class="mcode-header-badge" id="mcode-status">{{ page.sidebar.status | default: "Listening..." }}</span>
-          <button class="mcode-toggle" onclick="MCODE.toggleSidebar()" title="Toggle">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          <span class="mcode-header-badge" id="mcode-status" role="status">{{ page.sidebar.status | default: "Listening..." }}</span>
+          <button class="mcode-toggle" onclick="MCODE.toggleSidebar()" aria-expanded="true" aria-controls="mcode-content" aria-label="Toggle {{ page.sidebar.title | default: 'clinical data panel' }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
           </button>
         </div>
         <div class="mcode-content" id="mcode-content"></div>
@@ -95,6 +100,10 @@
       </aside>
       {% endif %}
     </main>
+
+    {% if page.sidebar %}
+    <button class="mcode-fab" type="button" onclick="MCODE.toggleSidebar()" aria-label="Open {{ page.sidebar.title | default: 'clinical data panel' }}">&#129516;</button>
+    {% endif %}
 
     <!-- ═══ DISCLAIMER ═══ -->
     <div class="disclaimer">{{ page.disclaimer | default: "For informational purposes only." }} | <a href="/">{{ site.title | default: "Hadley Lab" }}</a></div>

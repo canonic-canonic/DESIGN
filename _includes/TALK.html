@@ -1,12 +1,13 @@
 <!-- TALK | DESIGN.md 255 Map | Anthropic only -->
-<div class="talk-overlay" id="talkOverlay" data-position="{{ page.talk | default: 'side' }}">
+<div class="talk-overlay" id="talkOverlay" data-position="{{ page.talk | default: 'side' }}" role="dialog" aria-label="Chat" aria-modal="true">
   <div class="talk-overlay-header">
     <span class="talk-scope">{{ site.talk_label | default: "TALK" }}</span>
-    <button type="button" class="talk-overlay-close" onclick="TALK.close()">ESC</button>
+    <button type="button" class="talk-overlay-close" onclick="TALK.close()" aria-label="Close chat (Escape)">ESC</button>
   </div>
-  <div class="talk-messages" id="talkMessages"></div>
+  <div class="talk-messages" id="talkMessages" role="log" aria-live="polite" aria-atomic="false"></div>
   <div class="talk-input-row">
+    <label for="talkChatInput" class="sr-only">{{ page.talk_placeholder | default: 'Ask anything' }}</label>
     <input type="text" id="talkChatInput" placeholder="{{ page.talk_placeholder | default: 'Ask anything...' }}" autocomplete="off">
-    <button type="button" id="talkSend" onclick="TALK.send()">SEND</button>
+    <button type="button" id="talkSend" onclick="TALK.send()" aria-label="Send message">SEND</button>
   </div>
 </div>
