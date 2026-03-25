@@ -54,6 +54,27 @@ var CONTROLS = (function() {
         if (deckTimer) deckTimer.style.display = (target === 'web') ? '' : 'none';
     }
 
+    // ── Font sizer ──────────────────────────────────────────────────
+    // Scale range: 80% → 150%, step 10%. Persisted in localStorage.
+    var FONT_KEY = 'canonic_font_scale';
+    var FONT_MIN = 80;
+    var FONT_MAX = 150;
+    var FONT_STEP = 10;
+
+    function getFontScale() {
+        try { return parseInt(localStorage.getItem(FONT_KEY)) || 100; }
+        catch (e) { return 100; }
+    }
+
+    function applyFontScale(scale) {
+        scale = Math.max(FONT_MIN, Math.min(FONT_MAX, scale));
+        document.documentElement.style.fontSize = scale + '%';
+        try { localStorage.setItem(FONT_KEY, String(scale)); } catch (e) {}
+    }
+
+    function fontUp() { applyFontScale(getFontScale() + FONT_STEP); }
+    function fontDown() { applyFontScale(getFontScale() - FONT_STEP); }
+
     // On load: detect default view and apply contract-view if GOV is active
     document.addEventListener('DOMContentLoaded', function() {
         var govView = document.querySelector('.view-gov');
@@ -61,7 +82,10 @@ var CONTROLS = (function() {
         if (govView && webView && webView.style.display === 'none') {
             viewTo('gov');
         }
+        // Restore persisted font scale
+        var saved = getFontScale();
+        if (saved !== 100) applyFontScale(saved);
     });
 
-    return { talk: talk, viewTo: viewTo };
+    return { talk: talk, viewTo: viewTo, fontUp: fontUp, fontDown: fontDown };
 })();

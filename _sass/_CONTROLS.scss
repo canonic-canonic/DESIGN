@@ -82,6 +82,76 @@
 // ── VIEW TOGGLE BAR ──────────────────────────────
 // Universal tri-view toggle (GOV → WEB → TEX). Data-driven from page.views.
 
+/* ── Unified nav switcher (view + font + theme) ── */
+.nav-switcher {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    background: var(--glass-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2px;
+}
+
+.nav-sw-btn {
+    padding: 4px 10px;
+    font-size: var(--font-xs);
+    font-family: var(--mono);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--fg-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    line-height: 1;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-sw-btn:hover {
+    color: var(--fg);
+    background: var(--glass);
+    border-color: var(--glass-strong);
+}
+
+.nav-sw-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.nav-sw-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--border);
+    flex-shrink: 0;
+    margin: 0 2px;
+}
+
+@media (pointer: coarse) {
+    .nav-sw-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 4px 12px;
+    }
+}
+
+@media (max-width: 640px) {
+    .nav-switcher {
+        gap: 1px;
+        padding: 1px;
+    }
+    .nav-sw-btn {
+        padding: 4px 6px;
+        font-size: var(--font-2xs);
+    }
+}
+
+/* Legacy compat — old view-toggle still used in some layouts */
 .view-toggle {
     display: flex;
     gap: 2px;
@@ -123,5 +193,6 @@
 // Print: hide controls
 @media print {
     .controls-bar,
-    .view-toggle { display: none !important; }
+    .view-toggle,
+    .nav-switcher { display: none !important; }
 }
