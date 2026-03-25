@@ -43,17 +43,27 @@ export async function emailSend(request, env) {
   const baseUrl = body.redirect_url || 'https://gorunner.pro';
   const magicUrl = `${baseUrl}?auth_token=${token}`;
 
+  // Role branding from CANON.json roles[].color + gradient
+  const ROLE_BRAND = {
+    Runner:    { color: '#22C55E', gradient: ['#22C55E', '#10B981'], label: 'Runner' },
+    Requester: { color: '#EF4444', gradient: ['#EF4444', '#F97316'], label: 'Pro' },
+  };
+  const brand = ROLE_BRAND[role] || ROLE_BRAND.Requester;
+  const brandColor = brand.color;
+  const brandGradient = `background: linear-gradient(to right, ${brand.gradient[0]}, ${brand.gradient[1]})`;
+  const roleLabel = brand.label;
+
   // Send email
   const result = await sendEmail(env, {
     from: 'GoRunner <runner@canonic.org>',
     to: email,
-    subject: 'Sign in to GoRunner',
+    subject: `Sign in to GoRunner as ${roleLabel}`,
     html: `
       <div style="font-family: -apple-system, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-        <h2 style="color: #EF4444; margin-bottom: 8px;">GoRunner</h2>
+        <h2 style="color: ${brandColor}; margin-bottom: 8px;">GoRunner</h2>
         <p style="color: #666; margin-bottom: 32px;">Real Estate Task Marketplace</p>
-        <p>Click below to sign in:</p>
-        <a href="${magicUrl}" style="display: inline-block; background: linear-gradient(to right, #EF4444, #F97316); color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 16px 0;">Sign In to GoRunner</a>
+        <p>Click below to sign in as <strong>${roleLabel}</strong>:</p>
+        <a href="${magicUrl}" style="display: inline-block; ${brandGradient}; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 16px 0;">Sign In to GoRunner</a>
         <p style="color: #999; font-size: 13px; margin-top: 32px;">This link expires in 15 minutes. If you didn't request this, ignore this email.</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
         <p style="color: #ccc; font-size: 11px;">Powered by CANONIC INTL — every session governed, every grant audited.</p>
@@ -91,19 +101,36 @@ export async function emailVerify(request, env) {
   // Create session token
   const sessionToken = generateToken(48);
   const sessionKey = `auth:session:${sessionToken}`;
-  await kv.put(sessionKey, JSON.stringify({ email, created: Date.now() }), { expirationTtl: 604800 }); // 7 day session
+  const activeRole = tokenRole === 'Runner' ? 'Runner' : 'Requester';
+  await kv.put(sessionKey, JSON.stringify({ email, activeRole, created: Date.now() }), { expirationTtl: 604800 }); // 7 day session
 
-  // Resolve or create runner user
+  // Resolve or create user — dual-role: same email can be both Pro and Runner
+  const requestedRole = tokenRole === 'Runner' ? 'Runner' : 'Requester';
   let user = null;
+  let updated = false;
   const existingRaw = await kv.get(`runner:email:${email}`);
   if (existingRaw) {
     user = JSON.parse(existingRaw);
+    // Migrate legacy single-role to roles array
+    if (!user.roles) {
+      user.roles = [user.role || 'Requester'];
+    }
+    // Add new role if not already present
+    if (!user.roles.includes(requestedRole)) {
+      user.roles.push(requestedRole);
+      updated = true;
+    }
+    // Set active role to what they selected at login
+    user.role = requestedRole;
+    if (updated) {
+      await kv.put(`runner:user:${user.id}`, JSON.stringify(user));
+      await kv.put(`runner:email:${email}`, JSON.stringify(user));
+    }
   } else {
     // New user — create with signup bonus
     const id = 'U' + Array.from(crypto.getRandomValues(new Uint8Array(6))).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
     const startupCoin = 50;
-    const role = tokenRole === 'Runner' ? 'Runner' : 'Requester';
-    user = { id, name: email.split('@')[0], email, role, created_at: new Date().toISOString(), status: 'active' };
+    user = { id, name: email.split('@')[0], email, role: requestedRole, roles: [requestedRole], created_at: new Date().toISOString(), status: 'active' };
     await kv.put(`runner:user:${id}`, JSON.stringify(user));
     await kv.put(`runner:email:${email}`, JSON.stringify(user));
     await kv.put(`runner:balance:${id}`, String(startupCoin));
@@ -130,10 +157,14 @@ export async function emailSession(request, env) {
   const raw = await kv.get(sessionKey);
   if (!raw) return json({ error: 'invalid session' }, 401);
 
-  const { email } = JSON.parse(raw);
+  const { email, activeRole } = JSON.parse(raw);
   const userRaw = await kv.get(`runner:email:${email}`);
   if (!userRaw) return json({ error: 'user not found' }, 404);
 
   const user = JSON.parse(userRaw);
+  // Restore the active role from session so the frontend shows the right view
+  if (activeRole) user.role = activeRole;
+  // Migrate legacy users missing roles array
+  if (!user.roles) user.roles = [user.role || 'Requester'];
   return json({ ok: true, user, email });
 }
