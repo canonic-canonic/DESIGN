@@ -66,9 +66,19 @@ var CONTROLS = (function() {
         catch (e) { return 100; }
     }
 
+    // Base sizes from TOKENS.scss (px) — scale proportionally
+    var FONT_BASES = {
+        '--font-2xs': 10, '--font-xs': 11, '--font-sm': 13,
+        '--font-base': 15, '--font-lg': 18, '--font-xl': 24
+    };
+
     function applyFontScale(scale) {
         scale = Math.max(FONT_MIN, Math.min(FONT_MAX, scale));
-        document.documentElement.style.fontSize = scale + '%';
+        var r = document.documentElement.style;
+        var factor = scale / 100;
+        for (var k in FONT_BASES) {
+            r.setProperty(k, Math.round(FONT_BASES[k] * factor) + 'px');
+        }
         try { localStorage.setItem(FONT_KEY, String(scale)); } catch (e) {}
     }
 
