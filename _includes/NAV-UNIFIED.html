@@ -45,7 +45,7 @@
     {% endif %}
   </div>
 
-  <!-- RIGHT: TALK + Downloads + Unified switcher (view + font + theme) -->
+  <!-- RIGHT: GOV/WEB | A−/A+ | Theme — three atomic pill groups -->
   <div class="nav-right">
     {% if page.talk %}
     <button class="nav-talk" type="button" onclick="TALK.open()" aria-label="Open TALK">
@@ -58,21 +58,21 @@
     <a href="{{ dl.href | relative_url }}" class="nav-ctrl nav-dl" download title="Download {{ dl.label }}">&#8615; {{ dl.label }}</a>
     {% endfor %}
     {% endif %}
-    <div class="nav-switcher" role="toolbar" aria-label="Page controls">
-      {% if page.views and page.views.size > 1 %}
+    {% if page.views and page.views.size > 1 %}
+    <div class="nav-pill-group" aria-label="View">
       {% for v in page.views %}
       <button class="nav-sw-btn{% if page.view == v %} active{% endif %}"
         type="button" data-target="{{ v }}" onclick="CONTROLS.viewTo('{{ v }}')"
         {% if v == 'tex' and page.pdf == nil %}style="opacity:0.3;pointer-events:none"{% endif %}
         aria-label="{{ v | upcase }} view">{{ v | upcase }}</button>
       {% endfor %}
-      <span class="nav-sw-sep" aria-hidden="true"></span>
-      {% endif %}
+    </div>
+    {% endif %}
+    <div class="nav-pill-group" aria-label="Font size">
       <button class="nav-sw-btn" type="button" onclick="CONTROLS.fontDown()" aria-label="Decrease font size">A&minus;</button>
       <button class="nav-sw-btn" type="button" onclick="CONTROLS.fontUp()" aria-label="Increase font size">A+</button>
-      <span class="nav-sw-sep" aria-hidden="true"></span>
-      <button class="nav-sw-btn" type="button" onclick="toggleTheme()" id="theme-btn" aria-label="Toggle light/dark">&#9790;</button>
     </div>
+    <button class="nav-theme" type="button" onclick="toggleTheme()" id="theme-btn" aria-label="Toggle light/dark">&#9790;</button>
   </div>
 
   <!-- SUB-ROW: Breadcrumbs + Scope-local links -->

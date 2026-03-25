@@ -82,10 +82,10 @@
 // ── VIEW TOGGLE BAR ──────────────────────────────
 // Universal tri-view toggle (GOV → WEB → TEX). Data-driven from page.views.
 
-/* ── Unified nav switcher (view + font + theme) ── */
-.nav-switcher {
-    display: flex;
-    gap: 2px;
+/* ── Atomic pill groups (GOV/WEB, A−/A+) ── */
+.nav-pill-group {
+    display: inline-flex;
+    gap: 1px;
     align-items: center;
     background: var(--glass-subtle);
     border: 1px solid var(--border);
@@ -124,14 +124,6 @@
     border-color: var(--accent);
 }
 
-.nav-sw-sep {
-    width: 1px;
-    height: 16px;
-    background: var(--border);
-    flex-shrink: 0;
-    margin: 0 2px;
-}
-
 @media (pointer: coarse) {
     .nav-sw-btn {
         min-height: 44px;
@@ -141,8 +133,7 @@
 }
 
 @media (max-width: 640px) {
-    .nav-switcher {
-        gap: 1px;
+    .nav-pill-group {
         padding: 1px;
     }
     .nav-sw-btn {
@@ -194,5 +185,5 @@
 @media print {
     .controls-bar,
     .view-toggle,
-    .nav-switcher { display: none !important; }
+    .nav-pill-group { display: none !important; }
 }
