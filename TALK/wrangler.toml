@@ -16,7 +16,7 @@ binding = "STAR_KV"
 id = "f770e3f28f7b44979b92c610eb34025f"
 
 [vars]
-CORS_ALLOWED_ORIGINS = "https://hadleylab.org,https://www.hadleylab.org,https://*.hadleylab.org,https://canonic.org,https://www.canonic.org,https://canonic-canonic.github.io,https://hadleylab-canonic.github.io,https://hadleylab-dexter.github.io,https://api.canonic.org,https://*.canonic.org,https://mammochat.ai,https://www.mammochat.ai,https://mammochat.com,https://www.mammochat.com,https://mammo.chat,https://www.mammo.chat,https://carib.chat,https://www.carib.chat,https://caribchat.org,https://www.caribchat.org,https://caribchat.ai,https://www.caribchat.ai,https://atulisms.com,https://www.atulisms.com,https://gorunner.pro,https://www.gorunner.pro,http://localhost:3000"
+CORS_ALLOWED_ORIGINS = "https://hadleylab.org,https://www.hadleylab.org,https://*.hadleylab.org,https://canonic.org,https://www.canonic.org,https://canonic-canonic.github.io,https://hadleylab-canonic.github.io,https://hadleylab-dexter.github.io,https://api.canonic.org,https://*.canonic.org,https://mammochat.ai,https://www.mammochat.ai,https://*.mammochat.ai,https://mammochat.com,https://www.mammochat.com,https://mammo.chat,https://www.mammo.chat,https://carib.chat,https://www.carib.chat,https://caribchat.org,https://www.caribchat.org,https://caribchat.ai,https://www.caribchat.ai,https://*.caribchat.ai,https://omicschat.ai,https://www.omicschat.ai,https://*.omicschat.ai,https://onconex.ai,https://www.onconex.ai,https://*.onconex.ai,https://atulisms.com,https://www.atulisms.com,https://gorunner.pro,https://www.gorunner.pro,http://localhost:3000"
 # ── Provider: Anthropic only. No fallbacks. No chain. Strict. ──
 PROVIDER = "anthropic"
 MODEL = "claude-sonnet-4-20250514"

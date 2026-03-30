@@ -11,6 +11,22 @@
 
   {% unless page.nav == false %}{% include NAV-UNIFIED.html %}{% endunless %}
 
+  {% if page.auth %}
+  <!-- ═══ AUTH GATE — GitHub OAuth required ═══ -->
+  <div id="authGate" data-mode="{{ page.auth }}" class="auth-gate" style="display:flex;align-items:center;justify-content:center;min-height:80vh;flex-direction:column;"></div>
+  <style>
+    body.auth-gated .view-web,
+    body.auth-gated .view-gov,
+    body.auth-gated main { display: none !important; }
+    .auth-box { text-align:center; padding:48px; max-width:400px; }
+    .auth-box h2 { font-family:var(--mono); font-size:14px; letter-spacing:0.1em; color:var(--dim); margin-bottom:12px; }
+    .auth-box p { color:var(--fg-secondary); font-size:14px; margin-bottom:24px; }
+    .auth-error { color:#ff453a !important; font-size:13px !important; }
+    .auth-btn { display:inline-block; background:#fff; color:#000; padding:10px 24px; border-radius:8px; font-weight:600; font-size:14px; text-decoration:none; }
+    .auth-btn:hover { background:#e5e5e5; }
+  </style>
+  {% endif %}
+
   {% include VIEW-GOV.html %}
 
   <!-- ═══ VIEW: WEB — The hand-crafted custom surface ═══ -->
@@ -20,5 +36,9 @@
   </div>
 
   {% include SCRIPTS.html %}
+  {% if page.auth %}
+  <script src="/assets/js/auth.js"></script>
+  <script>AUTH.init();</script>
+  {% endif %}
 </body>
 </html>

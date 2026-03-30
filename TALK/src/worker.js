@@ -32,6 +32,7 @@ import { digestWrite, digestRead, witnessWrite, witnessRead, verify as federatio
 import { inbound as guidepointInbound, complete as guidepointComplete, ledger as guidepointLedger } from './domains/guidepoint.js';
 import { mintRead } from './domains/mint.js';
 import { scopeCreate, intelUpdate, learningAdd, triggerRebuild, mutationsList } from './domains/admin.js';
+import { submit as redditSubmit, status as redditStatus } from './domains/reddit.js';
 
 // ── Helpers ──
 
@@ -157,6 +158,19 @@ export default {
       return shopStripeWebhook(request, env);
     if (path === '/shop/wallet' && method === 'GET')
       return shopWallet(request, env);
+
+    // ── Reddit (governed posting) ──
+    if (path === '/reddit/submit' && method === 'POST') {
+      if (await rateGuard(env, 'reddit', request, 10)) return json({ error: 'Rate limited' }, 429);
+      const { error, session: sess } = await requireSession(request, env);
+      if (error) return error;
+      return redditSubmit(request, env, sess);
+    }
+    if (path === '/reddit/status' && method === 'GET') {
+      const { error, session: sess } = await requireSession(request, env);
+      if (error) return error;
+      return redditStatus(request, env, sess);
+    }
 
     // ── MINT:READ (attention → COIN) ──
     if (path === '/mint/read' && method === 'POST') {

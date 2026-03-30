@@ -56,7 +56,7 @@ export async function listTasks(url, kv) {
   const userId = url.searchParams.get('user_id') || '';
   let tasks = JSON.parse(await kv.get('runner:tasks:all') || '[]');
   if (role === 'Requester' && userId) tasks = tasks.filter(t => t.requester_id === userId);
-  else if (role === 'Runner' && userId) tasks = tasks.filter(t => t.status === 'posted' || t.runner_id === userId);
+  else if (role === 'Runner' && userId) tasks = tasks.filter(t => (t.status === 'posted' && t.requester_id !== userId) || t.runner_id === userId);
   tasks.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
   return json({ tasks });
 }
@@ -70,6 +70,7 @@ export async function handleTaskAction(taskId, action, request, env, kv) {
   if (action === 'accept' && method === 'POST') {
     const body = await request.json().catch(() => ({}));
     if (!body.runner_id) return json({ error: 'runner_id required' }, 400);
+    if (body.runner_id === task.requester_id) return json({ error: 'cannot accept your own task' }, 403);
     if (!['posted', 'assigned'].includes(task.status)) return json({ error: `cannot accept in status: ${task.status}` }, 400);
     const kycReq = KYC_REQUIRED[task.type];
     if (kycReq) {

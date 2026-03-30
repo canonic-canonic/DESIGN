@@ -14,7 +14,10 @@ var CAL = (function () {
   // ── Lane config ─────────────────────────────────────────
   var LANE_CONFIG = {
     CALENDAR:  { color: '#2997ff',  icon: '\u25f7', label: 'Calendar' },
+    CAMPAIGN:  { color: '#ff453a',  icon: '\u25b6', label: 'Campaign' },
     COIN:      { color: '#ff9f0a',  icon: '\u26c1', label: 'Coin' },
+    GRANT:     { color: '#30d158',  icon: '\u2316', label: 'Grant' },
+    DEAL:      { color: '#ff9f0a',  icon: '\u2194', label: 'Deal' },
     LEDGER:    { color: '#00ff88',  icon: '\u2693', label: 'Ledger' },
     LEARNING:  { color: '#bf5af2',  icon: '\u2605', label: 'Learning' },
     TRANSCRIPT:{ color: '#ec4899',  icon: '\u2709', label: 'Transcript' },
@@ -56,7 +59,7 @@ var CAL = (function () {
     events = [];
 
     lanes.forEach(function (lane) {
-      var url = dataPath + '/lanes/' + lane + '.json';
+      var url = dataPath + '/TIMELINE-' + lane + '.json';
       fetch(url).then(function (r) {
         if (!r.ok) { loaded++; checkReady(loaded, lanes.length); return; }
         return r.text();
@@ -353,6 +356,30 @@ var CAL = (function () {
         if (meta.gradient !== undefined) {
           html += '<div class="cal-day-event-meta">Governance: ' + meta.from_bits + '\u2192' + meta.to_bits + '</div>';
         }
+        // Campaign-specific metadata
+        if (meta.completion_pct !== undefined) {
+          html += '<div class="cal-day-event-meta">\u25b6 Cascade: '
+               + meta.posted + '/' + meta.total + ' posted (' + meta.completion_pct + '%)'
+               + (meta.passed > 0 ? ', ' + meta.passed + ' PASSED' : '')
+               + '</div>';
+        }
+        if (meta.platform) {
+          var statusClass = meta.status === 'POSTED' ? 'cal-status-posted'
+                          : meta.status === 'PASSED' ? 'cal-status-passed'
+                          : meta.status === 'SCHEDULED' ? 'cal-status-scheduled'
+                          : 'cal-status-draft';
+          html += '<div class="cal-day-event-meta ' + statusClass + '">'
+               + escHtml(meta.platform) + ' \u2014 ' + escHtml(meta.status || 'DRAFT');
+          if (meta.url) html += ' <a href="' + escHtml(meta.url) + '" target="_blank">\u{1F517}</a>';
+          html += '</div>';
+        }
+        // Grant deadline
+        if (meta.grant && ev.event === 'DEADLINE') {
+          html += '<div class="cal-day-event-meta cal-deadline">\u{1F6A8} DEADLINE: ' + escHtml(meta.call || '') + '</div>';
+        }
+
+        // Action button
+        html += renderAction(ev);
 
         html += '</div>';
       });
@@ -421,6 +448,26 @@ var CAL = (function () {
           var sign = meta.delta >= 0 ? '+' : '';
           html += '<div class="cal-detail-meta">' + sign + meta.delta + ' COIN</div>';
         }
+        // Campaign cascade
+        if (meta.completion_pct !== undefined) {
+          html += '<div class="cal-detail-meta">\u25b6 Cascade: '
+               + meta.posted + '/' + meta.total + ' posted (' + meta.completion_pct + '%)'
+               + (meta.passed > 0 ? ', ' + meta.passed + ' PASSED' : '')
+               + '</div>';
+        }
+        // Campaign emission
+        if (meta.platform) {
+          html += '<div class="cal-detail-meta">'
+               + escHtml(meta.platform) + ' (' + escHtml(meta.role || '') + ') \u2014 ' + escHtml(meta.status || 'DRAFT');
+          if (meta.url) html += ' <a href="' + escHtml(meta.url) + '" target="_blank">\u{1F517}</a>';
+          html += '</div>';
+        }
+        // Grant deadline
+        if (meta.grant && ev.event === 'DEADLINE') {
+          html += '<div class="cal-detail-meta cal-deadline">\u{1F6A8} DEADLINE: ' + escHtml(meta.call || '') + '</div>';
+        }
+        // Action button
+        html += renderAction(ev);
         html += '</div>';
       });
     }
@@ -432,6 +479,158 @@ var CAL = (function () {
   function closeDetail() {
     var panel = document.getElementById('calDetail');
     if (panel) panel.style.display = 'none';
+  }
+
+  // ── Action resolution ───────────────────────────────────
+
+  var GOV_BASE = 'https://github.com/hadleylab-canonic/hadleylab-canonic/edit/main/';
+  var PLATFORM_URLS = {
+    'LinkedIn':  'https://www.linkedin.com/feed/',
+    'Twitter/X': 'https://x.com/compose/post',
+    'Reddit':    'https://www.reddit.com/submit',
+    'HackerNews':'https://news.ycombinator.com/submit',
+  };
+
+  function actionFor(ev) {
+    var meta = ev.meta || {};
+    var lane = ev._lane;
+    var event = ev.event;
+
+    // CAMPAIGN emissions — resolve by posting
+    if (lane === 'CAMPAIGN' && event === 'EMIT') {
+      if (meta.status === 'POSTED' || meta.status === 'REPOSTED') {
+        return meta.url ? { label: 'View', url: meta.url, cls: 'cal-action--done' } : null;
+      }
+      if (meta.status === 'PASSED') {
+        var src = meta.source || ('SERVICES/CAMPAIGN/EVENTS/' + (meta.campaign || '') + '.md');
+        return { label: 'Acknowledge', url: GOV_BASE + src, cls: 'cal-action--warn' };
+      }
+      // DRAFT or SCHEDULED — governed post or manual link
+      var plat = meta.platform || '';
+      if (plat.indexOf('Reddit') === 0) {
+        // Reddit: governed submission via API
+        return { label: 'Post Now', cls: 'cal-action--go', api: true, meta: meta };
+      }
+      var platKey = Object.keys(PLATFORM_URLS).find(function (k) { return plat.indexOf(k) === 0; });
+      var postUrl = platKey ? PLATFORM_URLS[platKey] : '#';
+      return { label: 'Post Now', url: postUrl, cls: 'cal-action--go' };
+    }
+
+    // CAMPAIGN cascade — review the event file
+    if (lane === 'CAMPAIGN' && event === 'CASCADE') {
+      var src2 = meta.source || ('SERVICES/CAMPAIGN/EVENTS/' + (meta.campaign || '') + '.md');
+      var pct = meta.completion_pct || 0;
+      if (pct >= 100) return { label: 'Complete', url: GOV_BASE + src2, cls: 'cal-action--done' };
+      return { label: 'Review Cascade', url: GOV_BASE + src2, cls: 'cal-action--go' };
+    }
+
+    // CAMPAIGN event — open the event governance file
+    if (lane === 'CAMPAIGN' && event === 'EVENT') {
+      var src3 = meta.source || ('SERVICES/CAMPAIGN/EVENTS/' + (meta.campaign || '') + '.md');
+      return { label: 'Open Event', url: GOV_BASE + src3, cls: 'cal-action--go' };
+    }
+
+    // GRANT deadline — work on it
+    if (lane === 'GRANT' && event === 'DEADLINE') {
+      var src4 = meta.source || 'GRANTS/ROADMAP.md';
+      return { label: 'Work', url: GOV_BASE + src4, cls: 'cal-action--urgent' };
+    }
+    if (lane === 'GRANT' && event === 'MILESTONE') {
+      if (meta.status === 'DONE') return { label: 'Done', url: '#', cls: 'cal-action--done' };
+      var src5 = meta.source || 'GRANTS/ROADMAP.md';
+      return { label: 'Resolve', url: GOV_BASE + src5, cls: 'cal-action--go' };
+    }
+
+    // DEAL milestone — follow up
+    if (lane === 'DEAL') {
+      var src6 = meta.source || 'SERVICES/DEAL/INTEL.md';
+      return { label: 'Follow Up', url: GOV_BASE + src6, cls: 'cal-action--go' };
+    }
+
+    return null;
+  }
+
+  var ACTION_STYLES = {
+    'cal-action--go':     'background:#30d158;color:#000;',
+    'cal-action--done':   'background:rgba(255,255,255,0.1);color:#86868b;',
+    'cal-action--warn':   'background:#ff9f0a;color:#000;',
+    'cal-action--urgent': 'background:#ff453a;color:#fff;',
+  };
+
+  var API_BASE = 'https://api.canonic.org';
+
+  function renderAction(ev) {
+    var action = actionFor(ev);
+    if (!action) return '';
+    var style = ACTION_STYLES[action.cls] || '';
+    var btnStyle = 'display:inline-block;padding:4px 12px;border-radius:6px;'
+         + 'font-size:11px;font-weight:600;font-family:var(--mono);text-decoration:none;'
+         + 'margin-top:6px;letter-spacing:0.03em;cursor:pointer;border:none;' + style;
+
+    if (action.api) {
+      // Governed API action (e.g., Reddit submit)
+      var meta = action.meta || {};
+      var payload = JSON.stringify({
+        campaign: meta.campaign || '',
+        subreddit: (meta.platform || '').replace(/^Reddit\s*\(/, '').replace(/\)$/, '').replace(/^r\//, ''),
+        kind: 'self',
+        title: '', // Will be filled from campaign event data
+      });
+      return '<button class="cal-action ' + action.cls + '" style="' + btnStyle + '" '
+           + 'onclick="CAL.govPost(\'' + escHtml(meta.campaign || '') + '\',\'' + escHtml(meta.platform || '') + '\')">'
+           + escHtml(action.label) + '</button>';
+    }
+
+    return '<a class="cal-action ' + action.cls + '" href="' + escHtml(action.url || '#')
+         + '" target="_blank" style="' + btnStyle + '">'
+         + escHtml(action.label) + '</a>';
+  }
+
+  // ── Governed post submission ─────────────────────────────
+
+  async function govPost(campaign, platform) {
+    var token = null;
+    try { token = localStorage.getItem('canonic_session_token'); } catch (_) {}
+    if (!token) {
+      alert('Not authenticated. Sign in with GitHub first.');
+      return;
+    }
+
+    // Extract subreddit from platform string like "Reddit (r/MachineLearning)"
+    var srMatch = platform.match(/r\/(\w+)/);
+    var subreddit = srMatch ? srMatch[1] : '';
+    if (!subreddit) {
+      alert('Could not determine subreddit from: ' + platform);
+      return;
+    }
+
+    if (!confirm('Post to r/' + subreddit + ' for campaign ' + campaign + '?')) return;
+
+    try {
+      var res = await fetch(API_BASE + '/reddit/submit', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          campaign: campaign,
+          subreddit: subreddit,
+          kind: 'self',
+          title: '[D] ' + campaign.replace(/-/g, ' '),
+          text: 'Governed submission via CANONIC TIMELINE. Content pending.',
+        }),
+      });
+      var data = await res.json();
+      if (data.success) {
+        alert('Posted to r/' + subreddit + '!\n\n' + data.url);
+        loadEvents(); // Reload to reflect status change
+      } else {
+        alert('Reddit post failed: ' + (data.error || JSON.stringify(data.reddit_errors || '')));
+      }
+    } catch (e) {
+      alert('Network error: ' + e.message);
+    }
   }
 
   // ── Helpers ─────────────────────────────────────────────
@@ -483,5 +682,6 @@ var CAL = (function () {
     toggleLane: toggleLane,
     showDetail: showDetail,
     closeDetail: closeDetail,
+    govPost: govPost,
   };
 })();

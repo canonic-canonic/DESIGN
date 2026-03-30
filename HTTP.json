@@ -65,92 +65,146 @@
     {
       "domain": "mammo.chat",
       "target": "hadleylab.org/talks/mammochat/",
-      "serve": "proxy"
+      "serve": "proxy",
+      "surface": "instance (legacy alias)"
     },
     {
       "domain": "mammochat.ai",
-      "target": "hadleylab.org/services/talk/mammochat/",
-      "serve": "proxy"
+      "target": "hadleylab.org/talks/mammochat/community/",
+      "serve": "proxy",
+      "surface": "community (SEO sink)"
+    },
+    {
+      "domain": "app.mammochat.ai",
+      "target": "hadleylab.org/talks/mammochat/",
+      "serve": "instance",
+      "surface": "instance (noindex)"
     },
     {
       "domain": "mammochat.com",
       "target": "hadleylab.org/talks/mammochat/",
-      "serve": "proxy"
+      "serve": "proxy",
+      "surface": "instance (legacy alias)"
     },
     {
       "domain": "carib.chat",
       "target": "hadleylab.org/talks/caribchat/",
-      "serve": "proxy"
+      "serve": "proxy",
+      "surface": "instance (legacy alias)"
     },
     {
       "domain": "caribchat.ai",
-      "target": "hadleylab.org/services/talk/caribchat/",
-      "serve": "proxy"
+      "target": "hadleylab.org/talks/caribchat/community/",
+      "serve": "proxy",
+      "surface": "community (SEO sink)"
+    },
+    {
+      "domain": "app.caribchat.ai",
+      "target": "hadleylab.org/talks/caribchat/",
+      "serve": "instance",
+      "surface": "instance (noindex)"
     },
     {
       "domain": "caribchat.org",
       "target": "hadleylab.org/talks/caribchat/",
-      "serve": "proxy"
+      "serve": "proxy",
+      "surface": "instance (legacy alias)"
+    },
+    {
+      "domain": "omicschat.ai",
+      "target": "hadleylab.org/talks/omicschat/community/",
+      "serve": "proxy",
+      "surface": "community (SEO sink)"
+    },
+    {
+      "domain": "app.omicschat.ai",
+      "target": "hadleylab.org/talks/omicschat/",
+      "serve": "instance",
+      "surface": "instance (noindex)"
+    },
+    {
+      "domain": "onconex.ai",
+      "target": "hadleylab.org/talks/oncochat/community/",
+      "serve": "proxy",
+      "surface": "community (SEO sink)"
+    },
+    {
+      "domain": "app.onconex.ai",
+      "target": "hadleylab.org/talks/oncochat/",
+      "serve": "instance",
+      "surface": "instance (noindex)"
     },
     {
       "domain": "atulisms.com",
       "target": "hadleylab.org/books/atulisms/",
-      "serve": "proxy"
+      "serve": "proxy",
+      "surface": "book"
     },
     {
       "domain": "omicschat.hadleylab.org",
       "target": "hadleylab.org/talks/omicschat/",
-      "serve": "subdomain"
+      "serve": "subdomain",
+      "surface": "instance"
     },
     {
       "domain": "oncochat.hadleylab.org",
       "target": "hadleylab.org/talks/oncochat/",
-      "serve": "subdomain"
+      "serve": "subdomain",
+      "surface": "instance"
     },
     {
       "domain": "medchat.hadleylab.org",
       "target": "hadleylab.org/talks/medchat/",
-      "serve": "subdomain"
+      "serve": "subdomain",
+      "surface": null
     },
     {
       "domain": "finchat.hadleylab.org",
       "target": "hadleylab.org/talks/finchat/",
-      "serve": "subdomain"
+      "serve": "subdomain",
+      "surface": null
     },
     {
       "domain": "lawchat.hadleylab.org",
       "target": "hadleylab.org/talks/lawchat/",
-      "serve": "subdomain"
+      "serve": "subdomain",
+      "surface": null
     },
     {
       "domain": "nona.hadleylab.org",
       "target": "hadleylab.org/talks/nona/",
-      "serve": "subdomain"
+      "serve": "subdomain",
+      "surface": null
     },
     {
       "domain": "realty.hadleylab.org",
       "target": "hadleylab.org/talks/realty/",
-      "serve": "subdomain"
+      "serve": "subdomain",
+      "surface": null
     },
     {
       "domain": "vitae.hadleylab.org",
       "target": "hadleylab.org/talks/vitae/",
-      "serve": "subdomain"
+      "serve": "subdomain",
+      "surface": null
     },
     {
       "domain": "dev.hadleylab.org",
       "target": "hadleylab.org/talks/dev/",
-      "serve": "subdomain"
+      "serve": "subdomain",
+      "surface": null
     },
     {
       "domain": "star.hadleylab.org",
       "target": "hadleylab.org/services/star/",
-      "serve": "subdomain"
+      "serve": "subdomain",
+      "surface": null
     },
     {
       "domain": "shop.hadleylab.org",
       "target": "hadleylab.org/services/shop/",
-      "serve": "subdomain"
+      "serve": "subdomain",
+      "surface": null
     }
   ],
   "fleets": [
@@ -215,6 +269,7 @@
   "repos": {
     "canonic.org": "https://github.com/canonic-canonic/canonic-canonic.github.io.git",
     "hadleylab.org": "https://github.com/hadleylab-canonic/hadleylab-canonic.github.io.git",
+    "gorunner.pro": "https://github.com/RunnerMVP/Runner-MVP.git",
     "DESIGN": "https://github.com/canonic-canonic/DESIGN.git"
   },
   "api": {
@@ -268,57 +323,57 @@
     "hadleylab.org": [
       {
         "label": "VITAE",
-        "path": "vitae",
+        "path": "VITAE",
         "gov": "hadleylab-canonic/VITAE"
       },
       {
         "label": "TALKS",
-        "path": "talks",
+        "path": "TALKS",
         "gov": "hadleylab-canonic/TALKS"
       },
       {
         "label": "BLOGS",
-        "path": "blogs",
+        "path": "BLOGS",
         "gov": "hadleylab-canonic/BLOGS"
       },
       {
         "label": "PAPERS",
-        "path": "papers",
+        "path": "PAPERS",
         "gov": "hadleylab-canonic/PAPERS"
       },
       {
         "label": "BOOKS",
-        "path": "books",
+        "path": "BOOKS",
         "gov": "hadleylab-canonic/BOOKS"
       },
       {
         "label": "DECKS",
-        "path": "decks",
+        "path": "DECKS",
         "gov": "hadleylab-canonic/DECKS"
       },
       {
         "label": "DEALS",
-        "path": "deals",
+        "path": "DEALS",
         "gov": "hadleylab-canonic/DEALS"
       },
       {
         "label": "GRANTS",
-        "path": "grants",
+        "path": "GRANTS",
         "gov": "hadleylab-canonic/GRANTS"
       },
       {
         "label": "CHARTER",
-        "path": "charter",
+        "path": "CHARTER",
         "gov": "hadleylab-canonic/CHARTER"
       },
       {
         "label": "SERVICES",
-        "path": "services",
+        "path": "SERVICES",
         "gov": "hadleylab-canonic/SERVICES"
       },
       {
         "label": "USERS",
-        "path": "users",
+        "path": "USERS",
         "gov": "hadleylab-canonic/USERS"
       }
     ]

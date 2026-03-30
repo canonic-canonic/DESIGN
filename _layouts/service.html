@@ -53,6 +53,22 @@
 </head>
 <body class="post-page paper-page service-page">
 
+  {% if page.auth %}
+  <!-- ═══ AUTH GATE — GitHub OAuth required ═══ -->
+  <div id="authGate" data-mode="{{ page.auth }}" class="auth-gate" style="display:flex;align-items:center;justify-content:center;min-height:80vh;flex-direction:column;"></div>
+  <style>
+    body.auth-gated .view-web, body.auth-gated .view-gov, body.auth-gated .view-tex,
+    body.auth-gated main, body.auth-gated .hero, body.auth-gated .container,
+    body.auth-gated footer { display: none !important; }
+    .auth-box { text-align:center; padding:48px; max-width:400px; }
+    .auth-box h2 { font-family:var(--mono); font-size:14px; letter-spacing:0.1em; color:var(--muted); margin-bottom:12px; }
+    .auth-box p { color:var(--fg-secondary,#b0b0b5); font-size:14px; margin-bottom:24px; }
+    .auth-error { color:#ff453a !important; font-size:13px !important; }
+    .auth-btn { display:inline-block; background:#fff; color:#000; padding:10px 24px; border-radius:8px; font-weight:600; font-size:14px; text-decoration:none; }
+    .auth-btn:hover { background:#e5e5e5; }
+  </style>
+  {% endif %}
+
   <!-- NAV (inlined, post mode) -->
   <header class="nav" id="nav" role="navigation">
     <div class="nav-left">
@@ -190,6 +206,11 @@
   <script>pdfjsLib.GlobalWorkerOptions.workerSrc='{{ deps.pdfjs.worker }}';</script>
   <script src="{{ '/assets/js/pdf-viewer.js' | relative_url }}"></script>
   <script>PDFVIEWER.init('{{ page.pdf | relative_url }}');</script>
+  {% endif %}
+
+  {% if page.auth %}
+  <script src="{{ '/assets/js/auth.js' | relative_url }}"></script>
+  <script>AUTH.init();</script>
   {% endif %}
 
 </body>
