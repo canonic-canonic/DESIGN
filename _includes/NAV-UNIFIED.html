@@ -21,8 +21,18 @@
   <!-- CENTER: Double-fleet scope tabs (primary) / post-back / deck controls -->
   <div class="nav-center">
     {% if mode == "post" %}
-      {% if include.back_href %}<a href="{{ include.back_href | relative_url }}" class="nav-back">&larr; {{ include.back_label | default: "Back" }}</a>{% endif %}
-      {% if include.scope_label %}<span class="nav-scope">{{ include.scope_label }}</span>{% endif %}
+      {% if fleet.sites %}
+      <ul class="nav-fleet-tabs">
+        {% assign prev_fleet = "" %}
+        {% for s in fleet.sites %}
+        {% if s.fleet != prev_fleet and prev_fleet != "" %}
+        <li class="nav-fleet-sep" aria-hidden="true"></li>
+        {% endif %}
+        <li><a href="{{ s.url }}"{% if s.scope == scope_up %} class="active"{% endif %}{% if s.accent %} style="--tab-accent: {{ s.accent }}"{% endif %}{% if s.tagline %} title="{{ s.tagline }}"{% endif %}>{{ s.label | default: s.scope }}</a></li>
+        {% assign prev_fleet = s.fleet %}
+        {% endfor %}
+      </ul>
+      {% endif %}
     {% elsif mode == "deck" %}
       <span class="nav-deck-title">{{ page.brand | default: page.title | default: site.title }}</span>
       <span class="nav-deck-counter"><span id="deckCurr">1</span> / {{ include.slide_count | default: "?" }}</span>
@@ -76,7 +86,7 @@
   </div>
 
   <!-- SUB-ROW: Breadcrumbs + Scope-local links -->
-  {% if mode == "default" %}
+  {% unless mode == "deck" %}
   <div class="nav-sub" id="navSub">
     <nav class="nav-breadcrumbs" id="navBreadcrumbs" aria-label="Breadcrumb"></nav>
     {% if nav_items %}
@@ -87,6 +97,6 @@
     </ul>
     {% endif %}
   </div>
-  {% endif %}
+  {% endunless %}
 
 </header>
