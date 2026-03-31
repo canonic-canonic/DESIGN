@@ -623,14 +623,23 @@ const TALK = {
     // ── INTEL Ledger ────────────────────────────────────────────────
     async loadIntel() {
         // Static LEARNING.json — the governed source
+        var badge = document.getElementById('learning-status');
         try {
             var res = await fetch('./LEARNING.json');
             if (res.ok) {
                 var data = await res.json();
                 this.intelLedger = data.ledger || [];
                 this.renderIntel();
+                if (badge) {
+                    var count = this.intelLedger.length;
+                    badge.textContent = count ? ('INTEL: ' + count + ' governed') : 'INTEL: governed';
+                }
+            } else {
+                if (badge) badge.textContent = 'INTEL: ' + (this.governed ? 'governed' : 'none');
             }
-        } catch(e) { /* LEARNING.json unavailable */ }
+        } catch(e) {
+            if (badge) badge.textContent = 'INTEL: ' + (this.governed ? 'governed' : 'unavailable');
+        }
     },
 
     // ── Escape text for safe HTML insertion ─────────────────────────

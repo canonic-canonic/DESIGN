@@ -21,7 +21,7 @@
       <div class="header-left">
         <span class="logo">{{ page.logo }}</span>
         <div>
-          <h1>{{ page.name }}</h1>
+          <h1>{{ page.display_name | default: page.name }}</h1>
           {% if page.subtitle %}<div class="subtitle">{{ page.subtitle }}</div>{% endif %}
           {% if page.tagline %}<div class="tagline">{{ page.tagline }}</div>{% endif %}
         </div>
@@ -106,7 +106,7 @@
     {% endif %}
 
     <!-- ═══ DISCLAIMER ═══ -->
-    <div class="disclaimer">{{ page.disclaimer | default: "For informational purposes only." }} | <a href="/">{{ site.title | default: "Hadley Lab" }}</a></div>
+    <div class="disclaimer">{{ page.disclaimer | default: "For informational purposes only." }} | <a href="{{ site.url | default: '/' }}">{{ site.title | default: "Hadley Lab" }}</a></div>
 
     <!-- ═══ PLUGINS — from frontmatter array ═══ -->
     {% if page.plugins %}
