@@ -111,7 +111,7 @@
     <!-- ═══ PLUGINS — from frontmatter array ═══ -->
     {% if page.plugins %}
       {% for plugin in page.plugins %}
-    <script src="{{ '/plugins/' | append: plugin | append: '.js' | relative_url }}"></script>
+    <script src="/plugins/{{ plugin }}.js"></script>
       {% endfor %}
     {% endif %}
 
