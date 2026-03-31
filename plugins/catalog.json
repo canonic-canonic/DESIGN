@@ -1,0 +1,13 @@
+{
+  "plugins": [
+    { "plugin": "mcode", "api": "api.canonic.org" },
+    { "plugin": "trials", "api": "clinicaltrials.gov/api/v2" },
+    { "plugin": "omics", "api": "api.canonic.org/omics" },
+    { "plugin": "clinvar", "api": "ncbi.nlm.nih.gov/clinvar" },
+    { "plugin": "geo", "api": "ncbi.nlm.nih.gov/geo" },
+    { "plugin": "dbsnp", "api": "ncbi.nlm.nih.gov/snp" },
+    { "plugin": "pharmgkb", "api": "api.pharmgkb.org" },
+    { "plugin": "fleet", "api": "api.canonic.org" },
+    { "plugin": "runner", "api": "api.canonic.org" }
+  ]
+}
