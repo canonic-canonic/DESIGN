@@ -1,6 +1,6 @@
 <!-- VIEW-GOV | Full service contract view | DESIGN.md 255 Map -->
 <!-- Renders full governance tree from site.data[scope].canon -->
-{% assign _scope_key = page.scope | default: site.scope | downcase %}
+{% assign _scope_key = page.scope | default: site.scope %}
 {% assign _sd = site.data[_scope_key] %}
 {% assign _canon = _sd.canon %}
 {% assign _badge = include.badge | default: page.badge | default: page.scope | default: site.scope | upcase %}
