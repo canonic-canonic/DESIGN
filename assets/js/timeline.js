@@ -505,15 +505,19 @@ var CAL = (function () {
         var src = meta.source || ('SERVICES/CAMPAIGN/EVENTS/' + (meta.campaign || '') + '.md');
         return { label: 'Acknowledge', url: GOV_BASE + src, cls: 'cal-action--warn' };
       }
-      // DRAFT or SCHEDULED — governed post or manual link
+      // DRAFT or SCHEDULED — edit draft + post to platform
       var plat = meta.platform || '';
+      var draftSrc = meta.source || '';
       if (plat.indexOf('Reddit') === 0) {
         // Reddit: governed submission via API
         return { label: 'Post Now', cls: 'cal-action--go', api: true, meta: meta };
       }
       var platKey = Object.keys(PLATFORM_URLS).find(function (k) { return plat.indexOf(k) === 0; });
       var postUrl = platKey ? PLATFORM_URLS[platKey] : '#';
-      return { label: 'Post Now', url: postUrl, cls: 'cal-action--go' };
+      return {
+        label: 'Post Now', url: postUrl, cls: 'cal-action--go',
+        draft: draftSrc ? (GOV_BASE.replace('/edit/', '/blob/') + draftSrc) : null
+      };
     }
 
     // CAMPAIGN cascade — review the event file
@@ -581,9 +585,18 @@ var CAL = (function () {
            + escHtml(action.label) + '</button>';
     }
 
-    return '<a class="cal-action ' + action.cls + '" href="' + escHtml(action.url || '#')
+    var html = '<a class="cal-action ' + action.cls + '" href="' + escHtml(action.url || '#')
          + '" target="_blank" style="' + btnStyle + '">'
          + escHtml(action.label) + '</a>';
+    if (action.draft) {
+      var draftStyle = 'display:inline-block;padding:4px 12px;border-radius:6px;'
+           + 'font-size:11px;font-weight:600;font-family:var(--mono);text-decoration:none;'
+           + 'margin-top:6px;margin-left:6px;letter-spacing:0.03em;cursor:pointer;border:none;'
+           + 'background:rgba(255,255,255,0.1);color:#60a5fa;';
+      html += '<a class="cal-action" href="' + escHtml(action.draft)
+           + '" target="_blank" style="' + draftStyle + '">View Draft</a>';
+    }
+    return html;
   }
 
   // ── Governed post submission ─────────────────────────────

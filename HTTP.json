@@ -56,6 +56,11 @@
       "account": "73a7cdd5a8be98f45816da1c87b7518a"
     },
     {
+      "zone": "darioisms.com",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    },
+    {
       "zone": "gorunner.pro",
       "provider": "cloudflare",
       "account": "73a7cdd5a8be98f45816da1c87b7518a"
@@ -137,6 +142,12 @@
     {
       "domain": "atulisms.com",
       "target": "hadleylab.org/books/atulisms/",
+      "serve": "proxy",
+      "surface": "book"
+    },
+    {
+      "domain": "darioisms.com",
+      "target": "hadleylab.org/books/darioisms/",
       "serve": "proxy",
       "surface": "book"
     },
@@ -300,6 +311,8 @@
     "https://www.caribchat.ai",
     "https://atulisms.com",
     "https://www.atulisms.com",
+    "https://darioisms.com",
+    "https://www.darioisms.com",
     "https://gorunner.pro",
     "https://www.gorunner.pro"
   ],
@@ -370,6 +383,11 @@
         "label": "SERVICES",
         "path": "SERVICES",
         "gov": "hadleylab-canonic/SERVICES"
+      },
+      {
+        "label": "TIMELINE",
+        "path": "timeline",
+        "gov": "hadleylab-canonic/SERVICES/TIMELINE"
       },
       {
         "label": "USERS",
