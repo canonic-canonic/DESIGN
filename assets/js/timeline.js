@@ -489,7 +489,26 @@ var CAL = (function () {
     'Twitter/X': 'https://x.com/compose/post',
     'Reddit':    'https://www.reddit.com/submit',
     'HackerNews':'https://news.ycombinator.com/submit',
+    'Substack':  'https://idrdex.substack.com/publish',
   };
+
+  function platformShareUrl(plat, meta) {
+    var blogUrl = meta.blog_url || '';
+    var postText = meta.post_text || '';
+    if (plat.indexOf('LinkedIn') === 0 && blogUrl) {
+      return 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(blogUrl);
+    }
+    if (plat.indexOf('Twitter') === 0 && postText) {
+      var tweet = postText.length > 250 ? postText.substring(0, 247) + '...' : postText;
+      if (blogUrl) tweet += '\n' + blogUrl;
+      return 'https://x.com/intent/tweet?text=' + encodeURIComponent(tweet);
+    }
+    if (plat.indexOf('HackerNews') === 0 && blogUrl) {
+      return 'https://news.ycombinator.com/submitlink?u=' + encodeURIComponent(blogUrl)
+           + '&t=' + encodeURIComponent(meta.campaign || '');
+    }
+    return null;
+  }
 
   function actionFor(ev) {
     var meta = ev.meta || {};
@@ -512,8 +531,9 @@ var CAL = (function () {
         // Reddit: governed submission via API
         return { label: 'Post Now', cls: 'cal-action--go', api: true, meta: meta };
       }
+      var shareUrl = platformShareUrl(plat, meta);
       var platKey = Object.keys(PLATFORM_URLS).find(function (k) { return plat.indexOf(k) === 0; });
-      var postUrl = platKey ? PLATFORM_URLS[platKey] : '#';
+      var postUrl = shareUrl || (platKey ? PLATFORM_URLS[platKey] : '#');
       return {
         label: 'Post Now', url: postUrl, cls: 'cal-action--go',
         draft: draftSrc ? (GOV_BASE.replace('/edit/', '/blob/') + draftSrc) : null
