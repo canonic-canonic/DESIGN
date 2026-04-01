@@ -13,7 +13,7 @@
   <!-- LEFT: Fleet identity (home link) -->
   <div class="nav-left">
     <a class="nav-brand" href="{{ fleet.brand.url | default: '/' | relative_url }}" aria-label="Home">
-      <span class="nav-mark">{{ fleet.brand.mark | default: "∩" }}</span>
+      <span class="nav-mark"{% if fleet.brand.markRotate %} style="display:inline-block;transform:rotate({{ fleet.brand.markRotate }})"{% endif %}>{{ fleet.brand.mark | default: "∩" }}</span>
       <span class="nav-fleet">{{ fleet.brand.label | default: "CANONIC" }}</span>
     </a>
   </div>
