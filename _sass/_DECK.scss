@@ -8,6 +8,9 @@
 .deck-mode {
     overflow: hidden;
     background: #000;
+    color: #fff;
+    --fg: #ffffff;
+    --dim: rgba(255, 255, 255, 0.5);
     --accent: #f59e0b;
     --accent-rgb: 245, 158, 11;
 
@@ -940,21 +943,20 @@ main.deck-main {
     .slide-figure svg { max-width: 360px; }
 }
 
-/* ── Light theme — deck stays dark ────────────────────────────────── */
-/* data-theme lives on <html>, .deck-mode on <body> — ancestor selector */
-[data-theme="light"] .deck-mode {
-    background: #000;
-    color: #fff;
-}
-
-[data-theme="light"] .deck-mode .slide-heading { color: #fff; }
-[data-theme="light"] .deck-mode .slide-story { color: rgba(255, 255, 255, 0.6); }
-[data-theme="light"] .deck-mode .slide-widget table td { color: #fff; border-bottom-color: rgba(255, 255, 255, 0.04); }
-[data-theme="light"] .deck-mode .slide-widget table th { color: rgba(255, 255, 255, 0.5); }
-[data-theme="light"] .deck-mode .slide-card { background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.06); }
-[data-theme="light"] .deck-mode .slide-card strong { color: #fff; }
-[data-theme="light"] .deck-mode .slide-card p { color: rgba(255, 255, 255, 0.6); }
-[data-theme="light"] .deck-mode .tl-node { border-left-color: rgba(var(--accent-rgb), 0.3); }
+/* ── Deck is ALWAYS dark — no theme can override ────────────────── */
+/* .deck-mode sets --fg and --dim at line 12-13. Decks are always black   */
+/* background with white text regardless of data-theme or system pref.    */
+/* These explicit overrides are defense-in-depth against theme leakage.   */
+.deck-mode .slide-heading { color: var(--fg); }
+.deck-mode .slide-story { color: var(--dim); }
+.deck-mode .slide-widget table td { color: var(--fg); border-bottom-color: rgba(255, 255, 255, 0.04); }
+.deck-mode .slide-widget table th { color: var(--dim); }
+.deck-mode .slide-card { background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.06); }
+.deck-mode .slide-card strong { color: var(--fg); }
+.deck-mode .slide-card p { color: var(--dim); }
+.deck-mode .tl-node { border-left-color: rgba(var(--accent-rgb), 0.3); }
+.deck-mode .tl-event { color: var(--fg); }
+.deck-mode .tl-detail { color: var(--dim); }
 
 /* ── Contract view override for deck-mode ──────────────────────── */
 /* GOV view shows governance contract prose — needs scrollable light background */
