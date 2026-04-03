@@ -196,3 +196,20 @@
     :root:not([data-theme="dark"])[data-scope="canonic"]    { --accent: #059669; --accent-rgb: 5,150,105; }
 }
 
+/* ── Deck is ALWAYS dark — override light theme at any specificity ─── */
+/* Light-mode variables set on :root cascade into .deck-mode children.   */
+/* Re-assert dark tokens on .deck-mode so no light leak reaches slides.  */
+.deck-mode {
+    --bg: #000000;
+    --fg: #ffffff;
+    --fg-secondary: rgba(255, 255, 255, 0.6);
+    --dim: rgba(255, 255, 255, 0.5);
+    --card: rgba(255, 255, 255, 0.03);
+    --border: rgba(255, 255, 255, 0.06);
+    --panel: rgba(0, 0, 0, 0.95);
+    --glass: rgba(255, 255, 255, 0.02);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-hover: rgba(255, 255, 255, 0.04);
+    --glass-strong: rgba(255, 255, 255, 0.08);
+}
+
