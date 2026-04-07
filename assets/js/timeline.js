@@ -11,18 +11,8 @@
 var CAL = (function () {
   'use strict';
 
-  // ── Lane config ─────────────────────────────────────────
-  var LANE_CONFIG = {
-    CALENDAR:  { color: '#2997ff',  icon: '\u25f7', label: 'Calendar' },
-    CAMPAIGN:  { color: '#ff453a',  icon: '\u25b6', label: 'Campaign' },
-    COIN:      { color: '#ff9f0a',  icon: '\u26c1', label: 'Coin' },
-    GRANT:     { color: '#30d158',  icon: '\u2316', label: 'Grant' },
-    DEAL:      { color: '#ff9f0a',  icon: '\u2194', label: 'Deal' },
-    LEDGER:    { color: '#00ff88',  icon: '\u2693', label: 'Ledger' },
-    LEARNING:  { color: '#bf5af2',  icon: '\u2605', label: 'Learning' },
-    TRANSCRIPT:{ color: '#ec4899',  icon: '\u2709', label: 'Transcript' },
-    CONTACTS:  { color: '#ffd60a',  icon: '\u2302', label: 'Contacts' },
-  };
+  // ── Lane config (discovered from compiled TIMELINE-INDEX.json) ──
+  var LANE_CONFIG = {};
 
   var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   var MONTHS = ['January','February','March','April','May','June',
@@ -43,11 +33,26 @@ var CAL = (function () {
     dataPath = opts.dataPath || '/SERVICES/TIMELINE';
     cursor = new Date();
 
-    // Initialize all lanes as active
-    Object.keys(LANE_CONFIG).forEach(function (k) { activeLanes[k] = true; });
-
-    renderLaneToggles();
-    loadEvents();
+    // Discover lanes from compiled TIMELINE-INDEX.json
+    fetch(dataPath + '/TIMELINE-INDEX.json')
+      .then(function (r) { return r.json(); })
+      .then(function (index) {
+        var lanes = index.lanes || {};
+        Object.keys(lanes).forEach(function (lane) {
+          LANE_CONFIG[lane] = {
+            color: lanes[lane].color || '#666666',
+            icon: lanes[lane].icon || '',
+            label: lanes[lane].label || lane
+          };
+          activeLanes[lane] = true;
+        });
+        renderLaneToggles();
+        loadEvents();
+      })
+      .catch(function () {
+        console.warn('TIMELINE-INDEX.json not found, loading without lane config');
+        loadEvents();
+      });
   }
 
   // ── Data loading ────────────────────────────────────────

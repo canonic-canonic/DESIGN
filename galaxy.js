@@ -12,6 +12,28 @@
 var GALAXY = (function () {
     'use strict';
 
+    // ── DESIGN TOKENS (computed from CSS custom properties — no hardcoding) ──
+    function _css(prop, fallback) {
+        return getComputedStyle(document.documentElement).getPropertyValue(prop).trim() || fallback;
+    }
+    function _tokens() {
+        return {
+            bg: _css('--bg', '#0a0a0f'),
+            fg: _css('--fg', '#f5f5f7'),
+            fgSec: _css('--fg-secondary', '#b0b0b5'),
+            dim: _css('--dim', '#a1a1a6'),
+            card: _css('--card', '#1c1c1e'),
+            border: _css('--border', 'rgba(255,255,255,0.16)'),
+            panel: _css('--panel', 'rgba(28,28,30,0.95)'),
+            glass: _css('--glass', 'rgba(255,255,255,0.07)'),
+            glassBorder: _css('--glass-border', 'rgba(255,255,255,0.06)'),
+            glassStrong: _css('--glass-strong', 'rgba(255,255,255,0.18)'),
+            glow: _css('--glow', '#00ff88'),
+            shadow: _css('--shadow', '0 4px 24px rgba(0,0,0,0.6)')
+        };
+    }
+
+
     var network = null;
     var galaxy = null;
     var nodeMap = {};
@@ -228,7 +250,7 @@ var GALAXY = (function () {
         var svg = '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 ' + sz + ' ' + sz + '">';
         // Background track
         [{ r: sz * 0.47, w: 4 }, { r: sz * 0.40, w: 5 }, { r: sz * 0.33, w: 6 }].forEach(function (t) {
-            svg += '<circle cx="' + cx + '" cy="' + cx + '" r="' + t.r + '" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="' + t.w + '"/>';
+            svg += '<circle cx="' + cx + '" cy="' + cx + '" r="' + t.r + '" fill="none" stroke="var(--glass-border)" stroke-width="' + t.w + '"/>';
         });
         // Filled arcs
         [{ r: sz * 0.47, w: 4, o: 0.2 }, { r: sz * 0.40, w: 5, o: 0.45 }, { r: sz * 0.33, w: 6, o: 0.85 }].forEach(function (t) {
@@ -245,7 +267,7 @@ var GALAXY = (function () {
     // ── DETAIL (renders into tab content) ─────
     function renderDetailHTML(node) {
         var name = node.kind === 'USER' ? titleCase(node.label.toLowerCase()) : node.label;
-        var html = '<div class="dp-header"><span class="dp-name" style="color:' + (node.color || '#f5f5f7') + '">' + name + '</span></div>';
+        var html = '<div class="dp-header"><span class="dp-name" style="color:' + (node.color || 'var(--fg)') + '">' + name + '</span></div>';
 
         if (node.kind !== 'USER' || node.principal) {
             var nodeBits = (typeof node.bits === 'number') ? node.bits : 0;
@@ -316,9 +338,9 @@ var GALAXY = (function () {
                 html += '<div class="dp-intel"><div class="dp-intel-label" style="color:#ffd60a">ECONOMY</div>';
                 html += '<div class="dp-intel-value" style="font-size:18px;font-weight:700;color:#ffd60a;text-shadow:0 0 12px rgba(255,214,10,0.3)">' + formatCoin(node.wallet.balance) + ' <span style="opacity:0.4;font-size:10px;font-weight:400">COIN</span></div>';
                 html += '<div style="display:flex;gap:12px;margin-top:4px">';
-                html += '<span style="font-family:var(--mono);font-size:10px;color:#86868b">' + node.wallet.events + ' events</span>';
+                html += '<span style="font-family:var(--mono);font-size:10px;color:var(--dim)">' + node.wallet.events + ' events</span>';
                 if (node.wallet.last_close) {
-                    html += '<span style="font-family:var(--mono);font-size:10px;color:#86868b">close ' + node.wallet.last_close + '</span>';
+                    html += '<span style="font-family:var(--mono);font-size:10px;color:var(--dim)">close ' + node.wallet.last_close + '</span>';
                 }
                 html += '</div></div>';
             }
@@ -344,7 +366,7 @@ var GALAXY = (function () {
         }
 
         html += '<div class="dp-meta">';
-        html += '<div class="dp-row"><span class="dp-label">Kind</span><span class="dp-value" style="color:' + (node.color || '#f5f5f7') + '">' + node.kind + '</span></div>';
+        html += '<div class="dp-row"><span class="dp-label">Kind</span><span class="dp-value" style="color:' + (node.color || 'var(--fg)') + '">' + node.kind + '</span></div>';
         html += '<div class="dp-row"><span class="dp-label">Category</span><span class="dp-value">' + (node.category || '') + '</span></div>';
         if (node.children > 0) html += '<div class="dp-row"><span class="dp-label">Children</span><span class="dp-value">' + node.children + '</span></div>';
         if (node.kind === 'USER') {
@@ -367,7 +389,7 @@ var GALAXY = (function () {
             if (members.length) {
                 html += '<div class="dp-section"><div class="dp-section-title">Members (' + members.length + ')</div><div class="dp-inheritors">';
                 members.forEach(function (m) {
-                    html += '<span class="dp-child" style="border-color:' + (node.color || '#f5f5f7') + ';color:' + (node.color || '#f5f5f7') + '" onclick="GALAXY.focusScope(\'' + m.id + '\')">' + titleCase(m.label.toLowerCase()) + '</span>';
+                    html += '<span class="dp-child" style="border-color:' + (node.color || 'var(--fg)') + ';color:' + (node.color || 'var(--fg)') + '" onclick="GALAXY.focusScope(\'' + m.id + '\')">' + titleCase(m.label.toLowerCase()) + '</span>';
                 });
                 html += '</div></div>';
             }
@@ -380,7 +402,7 @@ var GALAXY = (function () {
                 var cname = c.kind === 'USER' ? titleCase(c.label.toLowerCase()) : c.label;
                 html += '<span class="dp-child" style="border-color:' + c.color + ';color:' + c.color + '" onclick="GALAXY.focusScope(\'' + c.id + '\')">' + cname + '</span>';
             });
-            if (kids.length > 20) html += '<span class="dp-child" style="border-color:#86868b;color:#86868b">+' + (kids.length - 20) + ' more</span>';
+            if (kids.length > 20) html += '<span class="dp-child" style="border-color:var(--dim);color:var(--dim)">+' + (kids.length - 20) + ' more</span>';
             html += '</div></div>';
         }
         return html;
@@ -431,7 +453,7 @@ var GALAXY = (function () {
         if (_selectedNodeId && nodeMap[_selectedNodeId]) {
             el.innerHTML = renderDetailHTML(nodeMap[_selectedNodeId]);
         } else {
-            el.innerHTML = '<div style="padding:24px;text-align:center;color:#86868b;font-size:11px;font-family:var(--mono)">Click a node to view details</div>';
+            el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--dim);font-size:11px;font-family:var(--mono)">Click a node to view details</div>';
         }
         el.classList.add('open');
         _rightOpen = true;
@@ -646,7 +668,7 @@ var GALAXY = (function () {
         html += '<div style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:0.12em;padding:8px 16px 4px">INTEL \u00b7 ' + tasks.length + ' tasks</div>';
         html += '<div class="intel-tasks">';
         if (tasks.length === 0) {
-            html += '<div style="padding:12px 16px;text-align:center;color:#86868b;font-size:10px">All scopes at MAGIC 255</div>';
+            html += '<div style="padding:12px 16px;text-align:center;color:var(--dim);font-size:10px">All scopes at MAGIC 255</div>';
         } else {
             tasks.forEach(function (n) {
                 var tier = tierFor(n.bits);
@@ -654,7 +676,7 @@ var GALAXY = (function () {
                 var gapLabel = n.next_tier ? '+' + n.next_tier_gap + ' \u2192 ' + n.next_tier : '';
                 html += '<div class="intel-task" data-node="' + n.id + '" onclick="event.stopPropagation(); GALAXY.fixFromIntel(\'' + n.id + '\')">';
                 html += '<span class="intel-task-bits" style="color:' + tier.color + '">' + n.bits + '</span>';
-                html += '<div class="intel-task-info"><div class="intel-task-name" style="color:' + (n.color || '#f5f5f7') + '">' + n.label + '</div>';
+                html += '<div class="intel-task-info"><div class="intel-task-name" style="color:' + (n.color || 'var(--fg)') + '">' + n.label + '</div>';
                 html += '<div class="intel-task-action">' + action + '</div></div>';
                 if (gapLabel) html += '<span class="intel-task-gap">' + gapLabel + '</span>';
                 html += '<button type="button" class="intel-task-fix" onclick="event.stopPropagation(); GALAXY.fixScope(\'' + n.id + '\')" title="Fix"><i class="fas fa-wrench"></i></button>';
@@ -782,7 +804,7 @@ var GALAXY = (function () {
             var lUrl = launchUrl(n);
 
             html += '<div class="lp-row" onclick="GALAXY.launchpadSelect(\'' + n.id + '\')">';
-            html += '<span class="lp-row-icon" style="color:' + (n.color || '#64748b') + '">\u25C6</span>';
+            html += '<span class="lp-row-icon" style="color:' + (n.color || 'var(--dim)') + '">\u25C6</span>';
             html += '<span class="lp-row-label">' + n.label + '</span>';
             html += '<span class="lp-row-kind">' + n.kind + '</span>';
             html += '<span class="lp-row-bits" style="color:' + tierInfo.color + '">' + (n.bits || 0) + '</span>';
@@ -807,7 +829,7 @@ var GALAXY = (function () {
             html += '<div class="lp-section">LEARNING</div>';
             learningMatches.forEach(function (m) {
                 html += '<div class="lp-row lp-learning" onclick="GALAXY.launchpadSelect(\'' + m.node.id + '\')">';
-                html += '<span class="lp-row-icon" style="color:#00ff88">\uf19d</span>';
+                html += '<span class="lp-row-icon" style="color:var(--glow)">\uf19d</span>';
                 html += '<span class="lp-pattern">' + m.pattern.pattern + '</span>';
                 html += '<span class="lp-source">' + m.node.label + ' \u00b7 ' + m.pattern.date + '</span>';
                 html += '</div>';
@@ -848,7 +870,7 @@ var GALAXY = (function () {
             groups[cat].forEach(function (n) {
                 var lUrl = launchUrl(n);
                 html += '<div class="lp-item" onclick="GALAXY.launchpadSelect(\'' + n.id + '\')">';
-                html += '<div class="lp-icon" style="color:' + (n.color || '#64748b') + ';border-color:' + hexToRgba(n.color || '#64748b', 0.15) + '"><span style="font-family:\'Font Awesome 5 Free\';font-weight:900;font-size:13px">' + iconFor(n) + '</span></div>';
+                html += '<div class="lp-icon" style="color:' + (n.color || 'var(--dim)') + ';border-color:' + hexToRgba(n.color || '#64748b', 0.15) + '"><span style="font-family:\'Font Awesome 5 Free\';font-weight:900;font-size:13px">' + iconFor(n) + '</span></div>';
                 html += '<div class="lp-info"><div class="lp-name">' + n.label + '</div>';
                 html += '<div class="lp-meta">' + n.talk.sessions + ' sessions</div></div>';
                 if (lUrl) html += '<a class="lp-launch" href="' + lUrl + '" target="_blank" onclick="event.stopPropagation()">\ud83d\ude80</a>';
@@ -870,7 +892,7 @@ var GALAXY = (function () {
             topScopes.forEach(function (n) {
                 var tierInfo = tierFor(n.bits || 0);
                 html += '<div class="lp-item" onclick="GALAXY.launchpadSelect(\'' + n.id + '\')">';
-                html += '<div class="lp-icon" style="color:' + (n.color || '#64748b') + ';border-color:' + hexToRgba(n.color || '#64748b', 0.15) + '"><span style="font-family:\'Font Awesome 5 Free\';font-weight:900;font-size:13px">' + iconFor(n) + '</span></div>';
+                html += '<div class="lp-icon" style="color:' + (n.color || 'var(--dim)') + ';border-color:' + hexToRgba(n.color || '#64748b', 0.15) + '"><span style="font-family:\'Font Awesome 5 Free\';font-weight:900;font-size:13px">' + iconFor(n) + '</span></div>';
                 html += '<div class="lp-info"><div class="lp-name">' + n.label + '</div>';
                 html += '<div class="lp-meta" style="color:' + tierInfo.color + '">' + (n.bits || 0) + '/255</div></div>';
                 html += '</div>';
@@ -896,54 +918,9 @@ var GALAXY = (function () {
         openRightDrawer();
     }
 
-    // ── FINDER CRITICAL STYLES (injected from JS — no remote_theme dependency) ──
-    (function injectFinderStyles() {
-        if (document.getElementById('finder-styles')) return;
-        var s = document.createElement('style');
-        s.id = 'finder-styles';
-        s.textContent = '.fc-hud-avatar{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.12);object-fit:cover}' +
-            '.fc-hud{background:rgba(255,255,255,.04);border-color:rgba(0,255,136,.15)}' +
-            '.fb-identity{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-right:8px;padding-right:10px;border-right:1px solid rgba(255,255,255,.08)}' +
-            '.fb-avatar{width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.12)}' +
-            '.fb-ring{flex-shrink:0}' +
-            '.fb-coin{font-family:var(--mono);font-size:10px;font-weight:700;color:#ffd60a;text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:4px}' +
-            '.fb-coin i{font-size:9px}' +
-            '.finder-grid{display:flex;flex-wrap:wrap;gap:10px;padding:16px 16px 80px 16px;min-height:100vh;align-content:start}'
-            + '.finder-card{width:200px;flex-shrink:0}'
-            + '.fc-hud-float{float:left;position:sticky;top:16px;z-index:10;margin-right:10px;margin-bottom:10px;width:220px}' +
-            '.fc-hud-crumb{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
-            '.fc-hud-crumb span:hover{color:#00ff88}' +
-            '.fc-hud-toggle{display:flex;gap:4px;margin-top:6px}' +
-            '.fc-toggle-btn{font-size:10px;padding:3px 6px;border-radius:4px;cursor:pointer;color:rgba(255,255,255,.3);transition:all .15s}' +
-            '.fc-toggle-btn:hover{color:#f5f5f7;background:rgba(255,255,255,.04)}' +
-            '.fc-toggle-btn.active{color:#00ff88}' +
-            '.cp-view-toggle{display:flex;gap:4px}' +
-            '.cp-breadcrumb{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
-            '.cp-crumb{cursor:pointer;transition:color .15s}.cp-crumb:hover{color:#00ff88}' +
-            '.cp-crumb-current{color:#f5f5f7;cursor:default}' +
-            '.fb-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.10);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);box-shadow:0 4px 24px rgba(0,0,0,.5)}' +
-            '.fb-segments{display:flex;align-items:center;gap:2px;flex:1;min-width:0;overflow:hidden}' +
-            '.fb-segment{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.4);cursor:pointer;padding:2px 6px;border-radius:4px;transition:all .15s;white-space:nowrap}' +
-            '.fb-segment:hover{background:rgba(255,255,255,.06);color:#f5f5f7}' +
-            '.fb-current{color:#f5f5f7;font-weight:600;cursor:default}.fb-current:hover{background:transparent}' +
-            '.fb-root{font-size:12px;color:#00ff88;opacity:.6}.fb-root:hover{opacity:1}' +
-            '.fb-sep{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.4);opacity:.3;margin:0 1px}' +
-            '.fb-toggle{display:flex;gap:2px;margin-left:auto;flex-shrink:0}' +
-            '.fb-toggle-btn{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:6px;border:1px solid transparent;background:transparent;color:rgba(255,255,255,.4);cursor:pointer;transition:all .2s;min-width:32px;display:flex;align-items:center;gap:5px}' +
-            '.fb-toggle-btn:hover{background:rgba(255,255,255,.04);color:#f5f5f7}' +
-            '.fb-toggle-btn.active{background:rgba(0,255,136,.08);color:#00ff88;border-color:rgba(0,255,136,.2)}' +
-            '.fb-toggle-btn i{font-size:10px}' +
-            '.finder-card{padding:14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1)}' +
-            '.finder-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.15);box-shadow:0 8px 24px rgba(0,0,0,.3)}' +
-            '.fc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}' +
-            '.fc-icon{font-size:18px;opacity:.8}' +
-            '.fc-label{font-family:var(--mono);font-size:11px;font-weight:600;color:#f5f5f7;letter-spacing:.06em;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
-            '.fc-meta{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px}' +
-            '.fc-bits{font-weight:700}.fc-children{color:rgba(255,255,255,.4);opacity:.5}.fc-coin{color:#ffd60a;font-weight:600}' +
-            '.talk-mode-toggle.active{color:#00ff88;background:rgba(0,255,136,.1);border-radius:50%}' +
-            '@media(max-width:768px){.finder-breadcrumb{left:8px;right:8px;top:auto;bottom:60px}.finder-grid{padding:64px 8px 120px;grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.fb-segments .fb-segment:not(.fb-current):not(.fb-root){display:none}}';
-        document.head.appendChild(s);
-    })();
+    // ── FINDER STYLES: governed by _GALAXY.scss (no JS injection) ──
+    // All finder styles live in the SCSS design layer. No hardcoded rgba.
+    // Light/dark computed from CSS custom properties (--bg, --fg, --panel, etc.).
 
     // ── FINDER VIEW ──────────────────────────────────────
     function renderBreadcrumb() {
@@ -978,7 +955,7 @@ var GALAXY = (function () {
         if (_authUser && _authUser.avatar_url) {
             html += '<div class="fc-header"><img class="fc-hud-avatar" src="' + _authUser.avatar_url + '" alt=""><div class="fc-ring">' + ringHTML(hudBits, 32, true) + '</div></div>';
         } else {
-            html += '<div class="fc-header"><span style="color:#00ff88;font-size:18px">\u2229</span><div class="fc-ring">' + ringHTML(hudBits, 32, true) + '</div></div>';
+            html += '<div class="fc-header"><span style="color:var(--glow);font-size:18px">\u2229</span><div class="fc-ring">' + ringHTML(hudBits, 32, true) + '</div></div>';
         }
         html += '<div class="fc-label">' + displayName + '</div>';
         html += '<div class="fc-meta"><span class="fc-bits" style="color:' + hudTier.color + '">' + hudTier.badge + ' ' + hudTier.name + '</span><span class="fc-coin">\u2229' + formatCoin(hudBalance) + '</span></div>';
@@ -1011,7 +988,7 @@ var GALAXY = (function () {
 
             html += '<div class="finder-card sc-card" onclick="' + onclick + '" style="--i:' + i + '">';
             html += '<div class="fc-header">';
-            html += '<span class="fc-icon" style="color:' + (n.color || '#64748b') + '"><i class="fas" style="font-family:\'Font Awesome 5 Free\';font-weight:900">' + iconFor(n) + '</i></span>';
+            html += '<span class="fc-icon" style="color:' + (n.color || 'var(--dim)') + '"><i class="fas" style="font-family:\'Font Awesome 5 Free\';font-weight:900">' + iconFor(n) + '</i></span>';
             html += '<div class="fc-ring">' + ringHTML(bits, 28, true) + '</div>';
             html += '</div>';
             html += '<div class="fc-label">' + label + '</div>';
@@ -1023,7 +1000,7 @@ var GALAXY = (function () {
             html += '</div>';
         });
         if (children.length === 0) {
-            html += '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#86868b;font-family:var(--mono);font-size:11px">No children at this scope</div>';
+            html += '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--dim);font-family:var(--mono);font-size:11px">No children at this scope</div>';
         }
         html += '</div>';
         container.innerHTML = html;
@@ -1200,7 +1177,7 @@ var GALAXY = (function () {
             // Score-aware sizing: use score if available, fall back to bits
             var scoreVal = (typeof n.score === 'number') ? n.score : nodeBits;
             var size = 16 + (scoreVal / 255) * 28;
-            var nodeColor = isPrivateVisible ? '#ffd60a' : (n.color || '#64748b');
+            var nodeColor = isPrivateVisible ? '#ffd60a' : (n.color || 'var(--dim)');
 
             return {
                 id: n.id, label: label, shape: 'icon',
@@ -1213,13 +1190,14 @@ var GALAXY = (function () {
 
         var nodes = branches.map(makeBranchNode).filter(function (n) { return n !== null; });
 
+        var t = _tokens();
         users.forEach(function (n) {
             nodes.push({
                 id: n.id, label: titleCase(n.label.toLowerCase()), shape: 'box',
                 margin: { top: 5, bottom: 5, left: 8, right: 8 },
-                color: { background: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.1)',
-                         highlight: { background: 'rgba(255,255,255,0.08)', border: '#00ff88' } },
-                font: { color: 'rgba(255,255,255,0.65)', size: 9, face: 'SF Mono, Menlo, monospace' },
+                color: { background: t.glass, border: t.glassStrong,
+                         highlight: { background: t.glassStrong, border: t.glow } },
+                font: { color: t.fgSec, size: 9, face: 'SF Mono, Menlo, monospace' },
                 borderWidth: 1, mass: 0.3
             });
         });
@@ -1236,7 +1214,7 @@ var GALAXY = (function () {
             }
             if (!pid || !branchSet.has(pid)) return;
             var parent = nodeMap[pid];
-            var c = parent ? (parent.color || '#64748b') : '#64748b';
+            var c = parent ? (parent.color || t.dim) : t.dim;
             edges.push({
                 id: 'e' + (eid++), from: pid, to: n.id,
                 color: { color: hexToRgba(c, 0.12), highlight: hexToRgba(c, 0.5), hover: hexToRgba(c, 0.3) },
@@ -1251,7 +1229,7 @@ var GALAXY = (function () {
             if (!orgId) return;
             edges.push({
                 id: 'u' + (eid++), from: orgId, to: n.id,
-                color: { color: 'rgba(255,255,255,0.06)', highlight: 'rgba(255,255,255,0.25)' },
+                color: { color: t.glassBorder, highlight: t.glassStrong },
                 width: 0.5, smooth: { type: 'continuous' }
             });
         });
@@ -1298,8 +1276,8 @@ var GALAXY = (function () {
                 edges.push({
                     id: 'bridge' + i + j, from: orgs[i].id, to: orgs[j].id,
                     label: 'DISTRIBUTED COMPUTE',
-                    font: { color: 'rgba(255,255,255,0.12)', size: 8, face: 'SF Mono, Menlo, monospace', strokeWidth: 0 },
-                    color: { color: 'rgba(255,255,255,0.05)', highlight: 'rgba(255,255,255,0.25)' },
+                    font: { color: t.glassBorder, size: 8, face: 'SF Mono, Menlo, monospace', strokeWidth: 0 },
+                    color: { color: t.glassBorder, highlight: t.glassStrong },
                     width: 2, dashes: [8, 12], smooth: { type: 'curvedCW', roundness: 0.15 }
                 });
             }
@@ -1353,22 +1331,22 @@ var GALAXY = (function () {
                 return {
                     id: leaf.id, label: titleCase(leaf.label.toLowerCase()), shape: 'box',
                     margin: { top: 5, bottom: 5, left: 8, right: 8 },
-                    color: { background: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.1)',
-                             highlight: { background: 'rgba(255,255,255,0.08)', border: '#00ff88' } },
-                    font: { color: 'rgba(255,255,255,0.65)', size: 9, face: 'SF Mono, Menlo, monospace' },
+                    color: { background: t.glass, border: t.glassStrong,
+                             highlight: { background: t.glassStrong, border: t.glow } },
+                    font: { color: t.fgSec, size: 9, face: 'SF Mono, Menlo, monospace' },
                     borderWidth: 1, mass: 0.3
                 };
             }
             if (leaf.kind === 'SERVICE') {
                 return {
                     id: leaf.id, label: leaf.label, shape: 'icon',
-                    icon: { face: FA, weight: '900', code: iconFor(leaf), size: 20, color: leaf.color || '#64748b' },
-                    font: { color: '#86868b', size: 8, vadjust: 3, face: 'SF Mono, Menlo, monospace' }, mass: 0.5
+                    icon: { face: FA, weight: '900', code: iconFor(leaf), size: 20, color: leaf.color || t.dim },
+                    font: { color: t.dim, size: 8, vadjust: 3, face: 'SF Mono, Menlo, monospace' }, mass: 0.5
                 };
             }
             return {
                 id: leaf.id, label: leaf.label, shape: 'text',
-                font: { color: hexToRgba(leaf.color || '#64748b', 0.5), size: 9, face: 'SF Mono, Menlo, monospace' }, mass: 0.3
+                font: { color: hexToRgba(leaf.color || t.dim, 0.5), size: 9, face: 'SF Mono, Menlo, monospace' }, mass: 0.3
             };
         }
 
@@ -1381,7 +1359,7 @@ var GALAXY = (function () {
                 nodeDS.add(makeLeafVis(leaf));
                 edgeDS.add({
                     id: 'leaf:' + leaf.id, from: branchId, to: leaf.id,
-                    color: { color: hexToRgba(leaf.color || '#64748b', 0.08) },
+                    color: { color: hexToRgba(leaf.color || t.dim, 0.08) },
                     width: 0.5, smooth: { type: 'continuous' }
                 });
             });

@@ -251,6 +251,121 @@ export async function handle(subpath, request, env) {
   // Listings
   if (subpath === 'listings' && method === 'GET') return listings(url, kv);
 
+  // ── Payout: Stripe Connect (GOV: VAULT/VAULT.md, COIN/CANON.md) ──
+
+  // POST /runner/payout/setup — Create Stripe Connect Express account
+  if (subpath === 'payout/setup' && method === 'POST') {
+    if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe not configured' }, 500);
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    // Check if already connected
+    const existing = await kv.get(`runner:stripe_account:${userId}`);
+    if (existing) {
+      const acct = JSON.parse(existing);
+      // Return fresh onboarding link if not yet verified
+      const link = await stripeApiRequest(env, 'POST', '/v1/account_links', {
+        account: acct.acct_id,
+        type: 'account_onboarding',
+        return_url: (env.STRIPE_CONNECT_RETURN_URL || 'https://gorunner.pro/runner/earnings?payout=complete'),
+        refresh_url: (env.STRIPE_CONNECT_REFRESH_URL || 'https://gorunner.pro/runner/earnings?payout=refresh'),
+      });
+      if (!link.ok) return json({ error: link.error || 'Stripe account link failed' }, link.status || 502);
+      return json({ ok: true, url: link.data.url, acct_id: acct.acct_id, existing: true });
+    }
+    // Create Express connected account
+    const account = await stripeApiRequest(env, 'POST', '/v1/accounts', {
+      type: 'express',
+      'metadata[user_id]': userId,
+      'metadata[service]': 'RUNNER',
+    });
+    if (!account.ok) return json({ error: account.error || 'Stripe account creation failed' }, account.status || 502);
+    const acctId = account.data.id;
+    await kv.put(`runner:stripe_account:${userId}`, JSON.stringify({ acct_id: acctId, created_at: new Date().toISOString() }));
+    // Create onboarding link
+    const link = await stripeApiRequest(env, 'POST', '/v1/account_links', {
+      account: acctId,
+      type: 'account_onboarding',
+      return_url: (env.STRIPE_CONNECT_RETURN_URL || 'https://gorunner.pro/runner/earnings?payout=complete'),
+      refresh_url: (env.STRIPE_CONNECT_REFRESH_URL || 'https://gorunner.pro/runner/earnings?payout=refresh'),
+    });
+    if (!link.ok) return json({ error: link.error || 'Stripe account link failed' }, link.status || 502);
+    await appendToLedger(env, 'RUNNER', 'RUNNER', { event: 'PAYOUT_SETUP', user_id: userId, acct_id: acctId });
+    return json({ ok: true, url: link.data.url, acct_id: acctId });
+  }
+
+  // POST /runner/payout/status — Check Connect account readiness
+  if (subpath === 'payout/status' && method === 'POST') {
+    if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe not configured' }, 500);
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    const raw = await kv.get(`runner:stripe_account:${userId}`);
+    if (!raw) return json({ connected: false });
+    const { acct_id } = JSON.parse(raw);
+    const acct = await stripeApiRequest(env, 'GET', `/v1/accounts/${acct_id}`);
+    if (!acct.ok) return json({ connected: false, error: acct.error });
+    const d = acct.data;
+    return json({
+      connected: true, acct_id,
+      payouts_enabled: d.payouts_enabled || false,
+      charges_enabled: d.charges_enabled || false,
+      details_submitted: d.details_submitted || false,
+    });
+  }
+
+  // POST /runner/payout/cashout — SETTLE: exit COIN to fiat (GOV: WALLET/WALLET.md SETTLE Constraints)
+  if (subpath === 'payout/cashout' && method === 'POST') {
+    if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe not configured' }, 500);
+    const body = await request.json().catch(() => ({}));
+    const userId = (body.user_id || '').trim();
+    const amountCoin = parseInt(body.amount_coin, 10);
+    if (!userId) return json({ error: 'user_id required' }, 400);
+    if (!Number.isFinite(amountCoin) || amountCoin < 10) return json({ error: 'amount_coin must be >= 10' }, 400);
+    // Verify Connect account
+    const acctRaw = await kv.get(`runner:stripe_account:${userId}`);
+    if (!acctRaw) return json({ error: 'No payout account. Complete payout setup first.' }, 400);
+    const { acct_id } = JSON.parse(acctRaw);
+    const acct = await stripeApiRequest(env, 'GET', `/v1/accounts/${acct_id}`);
+    if (!acct.ok || !acct.data.payouts_enabled) return json({ error: 'Payout account not verified. Complete Stripe onboarding.' }, 400);
+    // Calculate fee (5% treasury) and verify balance
+    const feeCoin = Math.ceil(amountCoin * 0.05);
+    const totalDebit = amountCoin + feeCoin;
+    const bal = parseInt(await kv.get(`runner:balance:${userId}`) || '0', 10);
+    if (bal < totalDebit) return json({ error: `Insufficient balance. Need ${totalDebit} (${amountCoin} + ${feeCoin} fee), have ${bal}.` }, 400);
+    // Convert to USD cents
+    const coinToCents = Math.max(1, intEnv(env, 'RUNNER_COIN_USD_CENTS', 100));
+    const amountCents = amountCoin * coinToCents;
+    // Create Stripe transfer to connected account
+    const transfer = await stripeApiRequest(env, 'POST', '/v1/transfers', {
+      amount: String(amountCents),
+      currency: 'usd',
+      destination: acct_id,
+      'metadata[user_id]': userId,
+      'metadata[amount_coin]': String(amountCoin),
+      'metadata[fee_coin]': String(feeCoin),
+      'metadata[service]': 'RUNNER',
+      'metadata[event]': 'SETTLE',
+    });
+    if (!transfer.ok) return json({ error: transfer.error || 'Stripe transfer failed' }, transfer.status || 502);
+    // Debit balance and credit treasury fee
+    await kv.put(`runner:balance:${userId}`, String(bal - totalDebit));
+    const treasuryBal = parseInt(await kv.get('runner:balance:TREASURY') || '0', 10);
+    await kv.put('runner:balance:TREASURY', String(treasuryBal + feeCoin));
+    // Ledger SETTLE event (GOV: SURFACE/COIN.md SETTLE Event Shape)
+    await appendToLedger(env, 'RUNNER', 'RUNNER', {
+      event: 'SETTLE', user_id: userId, amount: amountCoin, delta: -amountCoin,
+      fee: feeCoin, counterparty: 'STRIPE', stripe_transfer_id: transfer.data.id,
+      channel: 'STRIPE', product: 'SETTLE', service: 'WALLET',
+      usd_cents: amountCents,
+    });
+    return json({
+      ok: true, amount_coin: amountCoin, fee_coin: feeCoin,
+      net_usd_cents: amountCents, transfer_id: transfer.data.id,
+      balance: bal - totalDebit,
+    });
+  }
+
   // ── Phase 8: Onboarding ─────────────────────────────────────────
   if (subpath === 'onboard/profile' && method === 'POST') {
     const body = await request.json().catch(() => ({}));

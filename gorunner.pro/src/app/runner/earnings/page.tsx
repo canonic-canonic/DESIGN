@@ -6,9 +6,10 @@ import { useCanon } from "@/hooks/useCanon";
 import { useTasks } from "@/hooks/useTasks";
 import { CoinBadge, CoinBalance } from "@/components/CoinBadge";
 import { useBalance, refreshBalance } from "@/hooks/useBalance";
-import { checkout } from "@/lib/api";
+import { checkout, payoutSetup, payoutStatus, payoutCashout } from "@/lib/api";
 import { toast } from "sonner";
-import { ArrowLeft, TrendingUp, ShoppingCart } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, TrendingUp, ShoppingCart, Banknote } from "lucide-react";
 
 export default function EarningsPage() {
   const router = useRouter();
@@ -16,6 +17,50 @@ export default function EarningsPage() {
   const { canon } = useCanon();
   const { tasks } = useTasks(identity?.userId, "Runner");
   const { balance: balanceValue } = useBalance(identity?.userId);
+
+  const [connectStatus, setConnectStatus] = useState<{
+    connected: boolean;
+    payouts_enabled?: boolean;
+    details_submitted?: boolean;
+  }>({ connected: false });
+  const [cashoutAmount, setCashoutAmount] = useState("");
+  const [cashoutLoading, setCashoutLoading] = useState(false);
+
+  useEffect(() => {
+    if (identity?.userId) {
+      payoutStatus(identity.userId).then(setConnectStatus).catch(() => {});
+    }
+  }, [identity?.userId]);
+
+  async function handlePayoutSetup() {
+    if (!identity) return;
+    try {
+      const { url } = await payoutSetup(identity.userId);
+      window.location.href = url;
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Payout setup failed");
+    }
+  }
+
+  async function handleCashout() {
+    if (!identity) return;
+    const amount = parseInt(cashoutAmount, 10);
+    if (!amount || amount < 10) {
+      toast.error("Minimum cashout is 10 credits");
+      return;
+    }
+    setCashoutLoading(true);
+    try {
+      const result = await payoutCashout(identity.userId, amount);
+      toast.success(`Cashed out ∩${result.amount_coin} (fee ∩${result.fee_coin})`);
+      setCashoutAmount("");
+      refreshBalance(identity.userId);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Cashout failed");
+    } finally {
+      setCashoutLoading(false);
+    }
+  }
 
   const completed = tasks.filter(
     (t) =>
@@ -132,6 +177,62 @@ export default function EarningsPage() {
           <ShoppingCart className="h-5 w-5" />
           Purchase Credits via Stripe
         </button>
+
+        {/* Cashout — GOV: COIN/CANON.md Cashout, WALLET/WALLET.md SETTLE Constraints */}
+        <div className="rounded-xl border-2 border-green-400 p-4 space-y-3">
+          <h2 className="text-sm font-semibold text-green-700 flex items-center gap-1">
+            <Banknote className="h-4 w-4" /> Cash Out to Bank
+          </h2>
+          {!connectStatus.connected ? (
+            <button
+              onClick={handlePayoutSetup}
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-green-600 text-white font-semibold py-3"
+            >
+              Set Up Cashout via Stripe
+            </button>
+          ) : !connectStatus.payouts_enabled ? (
+            <div className="text-center py-3">
+              <p className="text-sm text-gray-500">
+                {connectStatus.details_submitted
+                  ? "Stripe is verifying your account. Check back soon."
+                  : "Stripe onboarding incomplete."}
+              </p>
+              <button
+                onClick={handlePayoutSetup}
+                className="mt-2 text-sm text-green-600 underline"
+              >
+                {connectStatus.details_submitted ? "Check Status" : "Continue Setup"}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min={10}
+                  placeholder="Amount (min 10)"
+                  value={cashoutAmount}
+                  onChange={(e) => setCashoutAmount(e.target.value)}
+                  className="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm"
+                />
+                <button
+                  onClick={handleCashout}
+                  disabled={cashoutLoading}
+                  className="rounded-lg bg-green-600 text-white font-semibold px-4 py-2 text-sm disabled:opacity-50"
+                >
+                  {cashoutLoading ? "..." : "Cash Out"}
+                </button>
+              </div>
+              {cashoutAmount && parseInt(cashoutAmount, 10) >= 10 && (
+                <p className="text-xs text-gray-500">
+                  ∩{parseInt(cashoutAmount, 10)} − 5% fee (∩
+                  {Math.ceil(parseInt(cashoutAmount, 10) * 0.05)}) = $
+                  {((parseInt(cashoutAmount, 10)) / 100).toFixed(2)} to your bank
+                </p>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

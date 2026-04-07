@@ -267,6 +267,47 @@ export async function submitCredential(data: {
   });
 }
 
+// ── Payout (Stripe Connect) ──────────────────────────────────────
+export async function payoutSetup(userId: string) {
+  return request<{ ok: boolean; url: string; acct_id: string }>(
+    "/runner/payout/setup",
+    {
+      method: "POST",
+      body: JSON.stringify({ user_id: userId }),
+    }
+  );
+}
+
+export async function payoutStatus(userId: string) {
+  return request<{
+    connected: boolean;
+    acct_id?: string;
+    payouts_enabled?: boolean;
+    charges_enabled?: boolean;
+    details_submitted?: boolean;
+  }>("/runner/payout/status", {
+    method: "POST",
+    body: JSON.stringify({ user_id: userId }),
+  });
+}
+
+export async function payoutCashout(
+  userId: string,
+  amountCoin: number
+) {
+  return request<{
+    ok: boolean;
+    amount_coin: number;
+    fee_coin: number;
+    net_usd_cents: number;
+    transfer_id: string;
+    balance: number;
+  }>("/runner/payout/cashout", {
+    method: "POST",
+    body: JSON.stringify({ user_id: userId, amount_coin: amountCoin }),
+  });
+}
+
 // ── Checkout ──────────────────────────────────────────────────────
 export async function checkout(userId: string, amountCoin: number) {
   return request<{ session_id: string; url: string }>(

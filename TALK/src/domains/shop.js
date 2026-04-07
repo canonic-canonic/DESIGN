@@ -254,6 +254,42 @@ export async function shopStripeWebhook(request, env) {
     }
   }
 
+  // RUNNER Connect: handle transfer failures — credit COIN back (GOV: COIN/CANON.md Cashout)
+  if (typ === 'transfer.failed') {
+    const md = obj.metadata || {};
+    if (md.service === 'RUNNER' && md.event === 'SETTLE' && md.user_id && md.amount_coin) {
+      const userId = md.user_id;
+      const coinAmount = parseInt(md.amount_coin, 10);
+      const feeCoin = parseInt(md.fee_coin || '0', 10);
+      if (coinAmount > 0) {
+        const balKey = `runner:balance:${userId}`;
+        const currentBal = parseInt(await env.TALK_KV.get(balKey) || '0', 10);
+        await env.TALK_KV.put(balKey, String(currentBal + coinAmount + feeCoin));
+        // Debit treasury fee back
+        const treasuryBal = parseInt(await env.TALK_KV.get('runner:balance:TREASURY') || '0', 10);
+        await env.TALK_KV.put('runner:balance:TREASURY', String(Math.max(0, treasuryBal - feeCoin)));
+        await appendToLedger(env, 'RUNNER', 'RUNNER', {
+          event: 'SETTLE_FAILED', user_id: userId, amount_coin: coinAmount, fee_reversed: feeCoin,
+          stripe_transfer_id: obj.id || '', stripe_event_id: evt.id || '',
+        });
+      }
+    }
+  }
+
+  // RUNNER Connect: track account verification status
+  if (typ === 'account.updated' && obj.metadata && obj.metadata.user_id && obj.metadata.service === 'RUNNER') {
+    const userId = obj.metadata.user_id;
+    const acctRaw = await env.TALK_KV.get(`runner:stripe_account:${userId}`);
+    if (acctRaw) {
+      const acctData = JSON.parse(acctRaw);
+      acctData.payouts_enabled = obj.payouts_enabled || false;
+      acctData.charges_enabled = obj.charges_enabled || false;
+      acctData.details_submitted = obj.details_submitted || false;
+      acctData.updated_at = new Date().toISOString();
+      await env.TALK_KV.put(`runner:stripe_account:${userId}`, JSON.stringify(acctData));
+    }
+  }
+
   const ledgerResult = await appendToLedger(env, 'SHOP', 'SHOP', {
     stripe_event_id: evt && evt.id ? evt.id : '', stripe_type: typ,
     session_id: obj.id || '', status: obj.status || '', payment_status: obj.payment_status || '',
