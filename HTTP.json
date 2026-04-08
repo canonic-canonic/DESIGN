@@ -216,6 +216,18 @@
       "target": "hadleylab.org/services/shop/",
       "serve": "subdomain",
       "surface": null
+    },
+    {
+      "domain": "health.hadleylab.org",
+      "target": "hadleylab.org",
+      "serve": "health",
+      "surface": "proof fleet dashboard"
+    },
+    {
+      "domain": "health.canonic.org",
+      "target": "canonic.org",
+      "serve": "health",
+      "surface": "federation dashboard"
     }
   ],
   "fleets": [
