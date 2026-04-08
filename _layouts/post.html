@@ -130,16 +130,6 @@
   <footer id="footer">{% include FOOTER.html %}</footer>
 
   {% include SCRIPTS.html %}
-  <script type="module">
-    import mermaid from '{{ site.data.deps.mermaid.esm }}';
-    document.querySelectorAll('code.language-mermaid').forEach(c=>{
-      const d=document.createElement('div');
-      d.classList.add('mermaid');
-      d.textContent=c.textContent;
-      c.parentElement.replaceWith(d);
-    });
-    mermaid.initialize({startOnLoad:true,theme:document.documentElement.classList.contains('dark')?'dark':'default'});
-  </script>
   {% if page.gate == "contribute" %}
   <script>
   (function(){
