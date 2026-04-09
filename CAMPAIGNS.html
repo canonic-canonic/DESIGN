@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAMPAIGNS — CANONIC</title>
+    <meta name="description" content="Campaign command center. Every emission governed. Every metric captured.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #000; --fg: #f5f5f7; --dim: #86868b;
+            --panel: rgba(28,28,30,0.92); --card: #1c1c1e; --border: rgba(255,255,255,0.08);
+            --glass: rgba(255,255,255,0.04); --glass-hover: rgba(255,255,255,0.08);
+            --mono: 'SF Mono', 'Menlo', 'Monaco', monospace;
+            --glow: #00ff88; --coin: #ffd60a; --talk: #2997ff; --intel: #00ff88;
+        }
+        body { background: var(--bg); color: var(--fg); font-family: -apple-system, system-ui, sans-serif; min-height: 100vh; }
+
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ═══ HEADER ═══ */
+        .header {
+            padding: 32px 40px 24px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: baseline; gap: 16px;
+        }
+        .header h1 { font-size: 13px; font-family: var(--mono); letter-spacing: 0.15em; color: var(--intel); font-weight: 600; }
+        .header .sub { font-size: 11px; color: var(--dim); font-family: var(--mono); }
+
+        /* ═══ STATS BAR ═══ */
+        .stats-bar {
+            display: flex; gap: 32px; padding: 20px 40px; border-bottom: 1px solid var(--border);
+            animation: fadeSlideUp 0.4s ease;
+        }
+        .stat { display: flex; flex-direction: column; gap: 2px; }
+        .stat-num { font-size: 28px; font-weight: 700; font-family: var(--mono); color: var(--fg); }
+        .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--dim); }
+
+        /* ═══ GRID ═══ */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); }
+        .grid-full { grid-column: 1 / -1; }
+
+        /* ═══ SECTION ═══ */
+        .section { background: var(--bg); padding: 28px 40px; animation: fadeSlideUp 0.5s ease; }
+        .section-title {
+            font-size: 10px; font-family: var(--mono); letter-spacing: 0.15em;
+            text-transform: uppercase; color: var(--dim); margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title i { color: var(--intel); font-size: 10px; }
+
+        /* ═══ CAMPAIGN CARDS ═══ */
+        .campaign-card {
+            background: var(--glass); border: 1px solid var(--border); border-radius: 8px;
+            padding: 16px; margin-bottom: 8px; transition: background 0.2s;
+        }
+        .campaign-card:hover { background: var(--glass-hover); }
+        .campaign-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+        .campaign-meta { font-size: 10px; color: var(--dim); font-family: var(--mono); display: flex; gap: 12px; flex-wrap: wrap; }
+        .campaign-status { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-family: var(--mono); font-weight: 600; letter-spacing: 0.5px; }
+        .status-active { background: rgba(0,255,136,0.1); color: var(--intel); border: 1px solid rgba(0,255,136,0.2); }
+        .status-posted { background: rgba(41,151,255,0.1); color: var(--talk); border: 1px solid rgba(41,151,255,0.2); }
+        .status-draft { background: rgba(255,214,10,0.1); color: var(--coin); border: 1px solid rgba(255,214,10,0.2); }
+
+        /* ═══ EMISSION TABLE ═══ */
+        .emission-table { width: 100%; border-collapse: collapse; }
+        .emission-table th {
+            text-align: left; font-size: 9px; font-family: var(--mono);
+            text-transform: uppercase; letter-spacing: 1px; color: var(--dim);
+            padding: 8px 12px; border-bottom: 1px solid var(--border);
+        }
+        .emission-table td {
+            padding: 10px 12px; font-size: 12px; border-bottom: 1px solid var(--border);
+            font-family: var(--mono);
+        }
+        .emission-table tr:hover td { background: var(--glass-hover); }
+        .emission-table a { color: var(--talk); text-decoration: none; }
+        .emission-table a:hover { text-decoration: underline; }
+
+        /* ═══ PLATFORM PILLS ═══ */
+        .platform-pill {
+            display: inline-block; padding: 2px 8px; border-radius: 4px;
+            font-size: 9px; font-family: var(--mono); font-weight: 600;
+        }
+        .p-linkedin { background: rgba(0,119,181,0.15); color: #0077b5; }
+        .p-twitter { background: rgba(29,161,242,0.15); color: #1da1f2; }
+        .p-hackernews { background: rgba(255,102,0,0.15); color: #ff6600; }
+        .p-substack { background: rgba(255,106,0,0.15); color: #ff6a00; }
+        .p-reddit { background: rgba(255,69,0,0.15); color: #ff4500; }
+
+        /* ═══ TIMELINE ═══ */
+        .timeline { position: relative; padding-left: 24px; }
+        .timeline::before {
+            content: ''; position: absolute; left: 6px; top: 0; bottom: 0;
+            width: 1px; background: var(--border);
+        }
+        .timeline-item { position: relative; margin-bottom: 16px; }
+        .timeline-dot {
+            position: absolute; left: -21px; top: 4px; width: 9px; height: 9px;
+            border-radius: 50%; border: 2px solid var(--intel); background: var(--bg);
+        }
+        .timeline-dot.future { border-color: var(--dim); }
+        .timeline-date { font-size: 10px; color: var(--dim); font-family: var(--mono); margin-bottom: 2px; }
+        .timeline-content { font-size: 12px; }
+
+        /* ═══ LOADING ═══ */
+        .loading { text-align: center; padding: 40px; color: var(--dim); font-family: var(--mono); font-size: 11px; }
+
+        /* ═══ RESPONSIVE ═══ */
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            .stats-bar { flex-wrap: wrap; gap: 20px; padding: 16px 20px; }
+            .section { padding: 20px; }
+            .header { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CAMPAIGNS</h1>
+        <span class="sub">COMMAND CENTER</span>
+    </div>
+    <div class="stats-bar" id="statsBar"><div class="loading">Loading...</div></div>
+    <div class="grid" id="mainGrid"><div class="loading grid-full">Loading campaign data...</div></div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var emissions = null;
+        var metrics = null;
+        var campaigns = {};
+
+        async function init() {
+            try {
+                var [eRes, mRes] = await Promise.all([
+                    fetch('../_data/EMISSIONS.json'),
+                    fetch('../_data/METRICS.json')
+                ]);
+                emissions = await eRes.json();
+                metrics = await mRes.json();
+            } catch(e) {
+                document.getElementById('mainGrid').innerHTML = '<div class="section grid-full">Failed to load data: ' + e.message + '</div>';
+                return;
+            }
+
+            // Group emissions by campaign
+            (emissions.ledger || []).forEach(function(em) {
+                if (!campaigns[em.campaign]) campaigns[em.campaign] = { name: em.campaign, emissions: [], platforms: new Set() };
+                campaigns[em.campaign].emissions.push(em);
+                campaigns[em.campaign].platforms.add(em.platform);
+            });
+
+            renderStats();
+            renderGrid();
+        }
+
+        function renderStats() {
+            var ledger = emissions.ledger || [];
+            var total = ledger.length;
+            var posted = ledger.filter(function(e) { return e.status === 'POSTED'; }).length;
+            var campaignCount = Object.keys(campaigns).length;
+
+            var platforms = {};
+            ledger.forEach(function(e) { platforms[e.platform] = (platforms[e.platform] || 0) + 1; });
+
+            var html = '';
+            html += '<div class="stat"><span class="stat-num">' + total + '</span><span class="stat-label">Emissions</span></div>';
+            html += '<div class="stat"><span class="stat-num">' + posted + '</span><span class="stat-label">Posted</span></div>';
+            html += '<div class="stat"><span class="stat-num">' + campaignCount + '</span><span class="stat-label">Campaigns</span></div>';
+            html += '<div class="stat"><span class="stat-num">' + Object.keys(platforms).length + '</span><span class="stat-label">Platforms</span></div>';
+
+            // Platform breakdown
+            Object.keys(platforms).sort().forEach(function(p) {
+                html += '<div class="stat"><span class="stat-num" style="font-size:20px">' + platforms[p] + '</span><span class="stat-label">' + p.toUpperCase() + '</span></div>';
+            });
+
+            document.getElementById('statsBar').innerHTML = html;
+        }
+
+        function platformClass(p) {
+            return 'platform-pill p-' + (p || '').toLowerCase();
+        }
+
+        function renderGrid() {
+            var html = '';
+
+            // Left: Active campaigns
+            html += '<div class="section">';
+            html += '<div class="section-title"><i class="fas fa-bullhorn"></i> Campaigns</div>';
+            var sorted = Object.values(campaigns).sort(function(a, b) {
+                var aDate = a.emissions[a.emissions.length - 1].date;
+                var bDate = b.emissions[b.emissions.length - 1].date;
+                return bDate.localeCompare(aDate);
+            });
+            sorted.forEach(function(c) {
+                var latest = c.emissions[c.emissions.length - 1];
+                var count = c.emissions.length;
+                html += '<div class="campaign-card">';
+                html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+                html += '<span class="campaign-name">' + c.name.replace(/-/g, ' ') + '</span>';
+                html += '<span class="campaign-status status-posted">POSTED</span>';
+                html += '</div>';
+                html += '<div class="campaign-meta">';
+                html += '<span>' + count + ' emission' + (count > 1 ? 's' : '') + '</span>';
+                html += '<span>' + latest.date + '</span>';
+                c.platforms.forEach(function(p) {
+                    html += '<span class="' + platformClass(p) + '">' + p.toUpperCase() + '</span>';
+                });
+                html += '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+
+            // Right: Emission timeline
+            html += '<div class="section">';
+            html += '<div class="section-title"><i class="fas fa-stream"></i> Emission Timeline</div>';
+            html += '<div class="timeline">';
+            var allEmissions = (emissions.ledger || []).slice().reverse();
+            allEmissions.forEach(function(em) {
+                html += '<div class="timeline-item">';
+                html += '<div class="timeline-dot"></div>';
+                html += '<div class="timeline-date">' + em.date + ' · ' + em.platform.toUpperCase() + '</div>';
+                html += '<div class="timeline-content">';
+                html += '<strong>' + em.title + '</strong>';
+                if (em.url) html += ' <a href="' + em.url + '" target="_blank" style="color:var(--talk);font-size:10px"><i class="fas fa-external-link-alt"></i></a>';
+                html += '<div style="font-size:10px;color:var(--dim);margin-top:2px">' + em.campaign + ' · ' + em.source + '</div>';
+                html += '</div></div>';
+            });
+            html += '</div></div>';
+
+            // Full width: Emission ledger table
+            html += '<div class="section grid-full">';
+            html += '<div class="section-title"><i class="fas fa-receipt"></i> Emission Ledger</div>';
+            html += '<table class="emission-table">';
+            html += '<thead><tr><th>ID</th><th>Date</th><th>Campaign</th><th>Platform</th><th>Title</th><th>Status</th><th>Link</th></tr></thead>';
+            html += '<tbody>';
+            (emissions.ledger || []).slice().reverse().forEach(function(em) {
+                html += '<tr>';
+                html += '<td style="color:var(--dim)">' + em.id + '</td>';
+                html += '<td>' + em.date + '</td>';
+                html += '<td style="font-size:10px">' + em.campaign + '</td>';
+                html += '<td><span class="' + platformClass(em.platform) + '">' + em.platform.toUpperCase() + '</span></td>';
+                html += '<td style="font-family:-apple-system,system-ui,sans-serif">' + em.title + '</td>';
+                html += '<td><span class="campaign-status status-' + em.status.toLowerCase() + '">' + em.status + '</span></td>';
+                html += '<td>' + (em.url ? '<a href="' + em.url + '" target="_blank"><i class="fas fa-external-link-alt"></i></a>' : '—') + '</td>';
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            html += '</div>';
+
+            // Metrics section (if HN data exists)
+            var hnMetrics = [];
+            Object.keys(metrics.emissions || {}).forEach(function(url) {
+                var d = metrics.emissions[url];
+                if (d.platform === 'hackernews' && d.latest) {
+                    hnMetrics.push({ url: url, campaign: d.campaign, latest: d.latest, posted: d.posted_at });
+                }
+            });
+            if (hnMetrics.length > 0) {
+                html += '<div class="section grid-full">';
+                html += '<div class="section-title"><i class="fas fa-chart-bar"></i> HackerNews Metrics</div>';
+                html += '<table class="emission-table">';
+                html += '<thead><tr><th>Campaign</th><th>Points</th><th>Comments</th><th>Status</th><th>Link</th></tr></thead>';
+                html += '<tbody>';
+                hnMetrics.forEach(function(m) {
+                    html += '<tr>';
+                    html += '<td>' + m.campaign + '</td>';
+                    html += '<td style="color:var(--coin)">' + (m.latest.points || '—') + '</td>';
+                    html += '<td>' + (m.latest.comments || '—') + '</td>';
+                    html += '<td>' + (m.latest.status || '—') + '</td>';
+                    html += '<td><a href="' + m.url + '" target="_blank"><i class="fas fa-external-link-alt"></i></a></td>';
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+                html += '</div>';
+            }
+
+            document.getElementById('mainGrid').innerHTML = html;
+        }
+
+        init();
+    })();
+    </script>
+</body>
+</html>

@@ -45,10 +45,11 @@ var GALAXY = (function () {
     var _rightOpen = false;
     var _searchOpen = false;
     var _selectedNodeId = null;
-    var _viewMode = 'finder';  // 'finder' | 'graph'
+    var _viewMode = 'finder';  // 'finder' | 'graph' | 'explore'
     var _finderPath = [];       // breadcrumb stack of node IDs
     var _graphBuilt = false;
     var _talkMode = false;
+    var _exploreFilters = { edgeKinds: null, category: null, tier: null }; // explore mode filters
 
     // ── AUTH (sourced from compiled galaxy.json — no hardcoding) ──
     var AUTH_API = '';
@@ -539,10 +540,12 @@ var GALAXY = (function () {
         // View toggle (stable across both views)
         var finderActive = _viewMode === 'finder' ? ' active' : '';
         var graphActive = _viewMode === 'graph' ? ' active' : '';
+        var exploreActive = _viewMode === 'explore' ? ' active' : '';
         html += '<div class="cp-divider"></div>';
         html += '<div class="cp-view-toggle">';
         html += '<span class="fc-toggle-btn' + finderActive + '" onclick="GALAXY.setView(\'finder\')"><i class="fas fa-th-list"></i> Finder</span>';
         html += '<span class="fc-toggle-btn' + graphActive + '" onclick="GALAXY.setView(\'graph\')"><i class="fas fa-project-diagram"></i> Graph</span>';
+        html += '<span class="fc-toggle-btn' + exploreActive + '" onclick="GALAXY.setView(\'explore\')"><i class="fas fa-search-plus"></i> Explore</span>';
         html += '</div>';
 
         // Breadcrumb (Finder only)
@@ -606,6 +609,70 @@ var GALAXY = (function () {
                     html += '<span class="filter-pill' + active + '" style="color:' + t.color + ';border-color:' + hexToRgba(t.color, 0.4) + '" onclick="GALAXY.filterTier(\'' + t.name + '\')">' + t.badge + ' ' + t.name + ' <span style="opacity:0.5;font-size:8px">' + cnt + '</span></span>';
                 }
             });
+            html += '</div>';
+        }
+
+        // Explore-only: edge type filters + comprehensive stats HUD
+        if (_viewMode === 'explore') {
+            var st = galaxy.stats || {};
+            var edgeCounts = {};
+            (galaxy.edges || []).forEach(function (e) {
+                edgeCounts[e.kind] = (edgeCounts[e.kind] || 0) + 1;
+            });
+
+            // Stats HUD
+            html += '<div class="cp-divider"></div>';
+            html += '<div class="cp-fleet-stats">';
+            html += '<span class="cp-fleet-stat"><span class="cp-fleet-num">' + (galaxy.nodes || []).length + '</span> NODES</span>';
+            html += '<span class="cp-fleet-stat"><span class="cp-fleet-num">' + (galaxy.edges || []).length + '</span> EDGES</span>';
+            html += '</div>';
+            html += '<div class="cp-fleet-stats">';
+            html += '<span class="cp-fleet-stat"><span class="cp-fleet-num">' + (st.svc_count || 0) + '</span> SRVCS</span>';
+            html += '<span class="cp-fleet-stat"><span class="cp-fleet-num">' + (st.user_count || 0) + '</span> USERS</span>';
+            html += '<span class="cp-fleet-stat"><span class="cp-fleet-num">' + (st.org_count || 0) + '</span> ORGS</span>';
+            html += '</div>';
+
+            // Edge type filter pills
+            html += '<div class="cp-divider"></div>';
+            html += '<div style="font-size:8px;text-transform:uppercase;letter-spacing:1.2px;opacity:0.4;margin-bottom:4px">Edge Types</div>';
+            html += '<div class="cp-filters">';
+            var edgeColors = { PARENT: '#86868b', INHERITS: '#00ff88', CROSS_INTEL: '#ec4899', DOMAINS: '#f59e0b', CLUSTER: '#3b82f6', CODE_DEP: '#a855f7' };
+            ['PARENT', 'INHERITS', 'CROSS_INTEL', 'DOMAINS', 'CLUSTER', 'CODE_DEP'].forEach(function (kind) {
+                var cnt = edgeCounts[kind] || 0;
+                if (cnt === 0) return;
+                var c = edgeColors[kind] || '#86868b';
+                var active = _exploreFilters.edgeKinds === kind ? ' active' : '';
+                html += '<span class="filter-pill' + active + '" style="color:' + c + ';border-color:' + hexToRgba(c, 0.4) + '" onclick="GALAXY.filterEdgeKind(\'' + kind + '\')">' + kind.replace('_', ' ') + ' <span style="opacity:0.5;font-size:8px">' + cnt + '</span></span>';
+            });
+            html += '</div>';
+
+            // Tier distribution (same as graph but always visible in explore)
+            var tierCounts = {};
+            _compiledTiers.forEach(function (t) { tierCounts[t.name] = 0; });
+            galaxy.nodes.forEach(function (n) {
+                if (n.kind !== 'USER' && typeof n.bits === 'number') {
+                    var t = tierFor(n.bits);
+                    if (tierCounts[t.name] !== undefined) tierCounts[t.name]++;
+                    else tierCounts[t.name] = 1;
+                }
+            });
+            html += '<div class="cp-divider"></div>';
+            html += '<div class="cp-filters">';
+            _compiledTiers.forEach(function (t) {
+                var cnt = tierCounts[t.name] || 0;
+                if (cnt > 0) {
+                    var active = _activeFilter === 'tier:' + t.name ? ' active' : '';
+                    html += '<span class="filter-pill' + active + '" style="color:' + t.color + ';border-color:' + hexToRgba(t.color, 0.4) + '" onclick="GALAXY.filterTier(\'' + t.name + '\')">' + t.badge + ' ' + t.name + ' <span style="opacity:0.5;font-size:8px">' + cnt + '</span></span>';
+                }
+            });
+            html += '</div>';
+
+            // Health bar
+            var healthPctE = st.fleet_health_pct || 0;
+            var healthColorE = healthPctE >= 90 ? '#22c55e' : healthPctE >= 70 ? '#eab308' : '#ef4444';
+            html += '<div class="cp-health" title="Fleet health">';
+            html += '<div class="cp-health-label">FLEET HEALTH</div>';
+            html += '<div class="cp-health-bar"><div class="cp-health-fill" style="width:' + healthPctE + '%;background:' + healthColorE + '"></div></div>';
             html += '</div>';
         }
 
@@ -1056,6 +1123,9 @@ var GALAXY = (function () {
         var container = document.getElementById('galaxy');
         if (!container) return;
 
+        // Update URL hash for shareable state
+        _updateHash();
+
         if (mode === 'finder') {
             if (network) { network.destroy(); network = null; _graphBuilt = false; }
             renderFinder();
@@ -1063,7 +1133,7 @@ var GALAXY = (function () {
             _finderPath = [];
             renderBreadcrumb();
             container.innerHTML = '';
-            // Show fixed control panel for graph view
+            // Show fixed control panel for graph/explore view
             var cp = document.getElementById('controlPanel');
             if (cp) cp.style.display = '';
             if (!_graphBuilt) {
@@ -1077,8 +1147,60 @@ var GALAXY = (function () {
                         if (loader) loader.classList.add('hidden');
                     });
                 }
+            } else {
+                renderControlPanel();
             }
         }
+    }
+
+    function filterEdgeKind(kind) {
+        if (_exploreFilters.edgeKinds === kind) {
+            _exploreFilters.edgeKinds = null; // toggle off
+        } else {
+            _exploreFilters.edgeKinds = kind;
+        }
+        _updateHash();
+        // Highlight edges of selected kind, dim others
+        if (edgeDS && network) {
+            var updates = [];
+            edgeDS.forEach(function (edge) {
+                var edgeKind = _edgeKindMap[edge.id];
+                if (!_exploreFilters.edgeKinds) {
+                    // No filter — restore defaults
+                    updates.push({ id: edge.id, hidden: false });
+                } else {
+                    updates.push({ id: edge.id, hidden: edgeKind !== _exploreFilters.edgeKinds });
+                }
+            });
+            edgeDS.update(updates);
+        }
+        renderControlPanel();
+    }
+
+    // Edge kind tracking for explore mode filtering
+    var _edgeKindMap = {};  // vis edge id → galaxy edge kind
+
+    // URL hash state for shareable links
+    function _updateHash() {
+        var parts = [];
+        if (_viewMode && _viewMode !== 'finder') parts.push('view=' + _viewMode);
+        if (_selectedNodeId) parts.push('node=' + encodeURIComponent(_selectedNodeId));
+        if (_exploreFilters.edgeKinds) parts.push('edge=' + _exploreFilters.edgeKinds);
+        var hash = parts.length > 0 ? '#' + parts.join('&') : '';
+        if (window.location.hash !== hash) {
+            history.replaceState(null, '', hash || window.location.pathname);
+        }
+    }
+
+    function _parseHash() {
+        var hash = window.location.hash.replace(/^#/, '');
+        if (!hash) return {};
+        var params = {};
+        hash.split('&').forEach(function (kv) {
+            var parts = kv.split('=');
+            if (parts.length === 2) params[parts[0]] = decodeURIComponent(parts[1]);
+        });
+        return params;
     }
 
     function toggleTalkMode() {
@@ -1305,6 +1427,30 @@ var GALAXY = (function () {
                 color: { color: 'rgba(191,90,242,0.10)', highlight: 'rgba(191,90,242,0.4)' },
                 width: 1, dashes: [2, 6], smooth: { type: 'curvedCCW', roundness: 0.3 }
             });
+        });
+
+        // Build edge kind map for explore mode filtering
+        _edgeKindMap = {};
+        edges.forEach(function (e) {
+            var eid = e.id || '';
+            if (eid.startsWith('cluster:')) _edgeKindMap[eid] = 'CLUSTER';
+            else if (eid.startsWith('domain:')) _edgeKindMap[eid] = 'DOMAINS';
+            else if (eid.startsWith('bridge')) _edgeKindMap[eid] = 'CLUSTER';
+            else if (eid.startsWith('fed:') || eid.startsWith('fbr:')) _edgeKindMap[eid] = 'INHERITS';
+            else if (eid.startsWith('u')) _edgeKindMap[eid] = 'PARENT';
+            else if (eid.startsWith('codedep:')) _edgeKindMap[eid] = 'CODE_DEP';
+            else _edgeKindMap[eid] = 'PARENT'; // tree spine edges (e0, e1, ...)
+        });
+        // Also map CROSS_INTEL and INHERITS from galaxy data
+        (galaxy.edges || []).forEach(function (ge) {
+            if (ge.kind === 'CROSS_INTEL' || ge.kind === 'INHERITS' || ge.kind === 'CODE_DEP') {
+                // Find matching vis edge
+                edges.forEach(function (ve) {
+                    if (ve.from === ge.from && ve.to === ge.to) {
+                        _edgeKindMap[ve.id] = ge.kind;
+                    }
+                });
+            }
         });
 
         nodeDS = new vis.DataSet(nodes);
@@ -1544,6 +1690,15 @@ var GALAXY = (function () {
         var vc = galaxy.view_config || {};
         _viewMode = vc.default_view || 'finder';
 
+        // URL hash overrides default view (shareable links)
+        var hashParams = _parseHash();
+        if (hashParams.view && ['finder', 'graph', 'explore'].indexOf(hashParams.view) !== -1) {
+            _viewMode = hashParams.view;
+        }
+        if (hashParams.edge) {
+            _exploreFilters.edgeKinds = hashParams.edge;
+        }
+
         var container = el || document.getElementById('galaxy');
         if (!container) return;
 
@@ -1557,6 +1712,19 @@ var GALAXY = (function () {
             _graphBuilt = true;
             renderControlPanel();
             renderCatLegend();
+            // Apply hash-driven edge filter after graph build
+            if (_exploreFilters.edgeKinds && _viewMode === 'explore') {
+                filterEdgeKind(_exploreFilters.edgeKinds);
+                _exploreFilters.edgeKinds = _exploreFilters.edgeKinds; // re-set after toggle
+            }
+            // Focus hash-specified node
+            if (hashParams.node && nodeMap[hashParams.node] && network) {
+                network.once('stabilizationIterationsDone', function () {
+                    network.selectNodes([hashParams.node]);
+                    network.focus(hashParams.node, { scale: 1.5, animation: { duration: 600, easingFunction: 'easeInOutQuad' } });
+                    openRightDrawer();
+                });
+            }
             if (network) {
                 network.once('stabilizationIterationsDone', function () {
                     var loader = document.getElementById('galaxyLoader');
@@ -1648,6 +1816,7 @@ var GALAXY = (function () {
         selectFinderNode: selectFinderNode,
         setView: setView,
         toggleTalkMode: toggleTalkMode,
+        filterEdgeKind: filterEdgeKind,
         auth: function () { return _authUser; }
     };
 })();
