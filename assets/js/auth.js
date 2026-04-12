@@ -48,7 +48,7 @@ var AUTH = (function () {
                 return { error: err.error || ('HTTP ' + res.status) };
             }
             var data = await res.json();
-            var token = data.session_token || data.access_token;
+            var token = data.session_token || data.token || data.access_token;
             if (token) {
                 setToken(token);
                 return { user: data.user, name: data.name, avatar_url: data.avatar_url };

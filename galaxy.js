@@ -1622,6 +1622,31 @@ var GALAXY = (function () {
         return { nodes: nodes, edges: edges };
     }
 
+    // ── PER-USER AUTO-FOCUS ──────────────────────────────
+    function _findUserNode() {
+        if (!_authUser || !galaxy || !galaxy.nodes) return null;
+        var gh = (_authUser.user || _authUser.login || '').toLowerCase();
+        if (!gh) return null;
+        for (var i = 0; i < galaxy.nodes.length; i++) {
+            var n = galaxy.nodes[i];
+            if (n.github && n.github.toLowerCase() === gh) return n.id;
+        }
+        return null;
+    }
+
+    function _buildFinderPath(nodeId) {
+        var path = [];
+        var seen = {};
+        var cur = nodeMap[nodeId];
+        while (cur && !seen[cur.id]) {
+            path.unshift(cur.id);
+            seen[cur.id] = true;
+            if (!cur.parent) break;
+            cur = nodeMap[cur.parent];
+        }
+        return path;
+    }
+
     // ── INIT ─────────────────────────────────────────────
     async function init(elOrOpts) {
         // Accept DOM element, options object { session }, or nothing
@@ -1668,7 +1693,17 @@ var GALAXY = (function () {
         var container = el || document.getElementById('galaxy');
         if (!container) return;
 
+        // Auto-focus logged-in user's own node on first load (no hash override)
+        var autoFocusNodeId = null;
+        if (_authUser && !hashParams.node && !window.location.hash) {
+            autoFocusNodeId = _findUserNode();
+        }
+
         if (_viewMode === 'finder') {
+            if (autoFocusNodeId && nodeMap[autoFocusNodeId]) {
+                _finderPath = _buildFinderPath(autoFocusNodeId);
+                _selectedNodeId = autoFocusNodeId;
+            }
             renderFinder();
             // Hide loader immediately (no graph stabilization needed)
             var loader = document.getElementById('galaxyLoader');
@@ -1683,11 +1718,12 @@ var GALAXY = (function () {
                 filterEdgeKind(_exploreFilters.edgeKinds);
                 _exploreFilters.edgeKinds = _exploreFilters.edgeKinds; // re-set after toggle
             }
-            // Focus hash-specified node
-            if (hashParams.node && nodeMap[hashParams.node] && network) {
+            // Focus hash-specified node, else the authenticated user's own node
+            var focusId = (hashParams.node && nodeMap[hashParams.node]) ? hashParams.node : autoFocusNodeId;
+            if (focusId && nodeMap[focusId] && network) {
                 network.once('stabilizationIterationsDone', function () {
-                    network.selectNodes([hashParams.node]);
-                    network.focus(hashParams.node, { scale: 1.5, animation: { duration: 600, easingFunction: 'easeInOutQuad' } });
+                    network.selectNodes([focusId]);
+                    network.focus(focusId, { scale: 1.5, animation: { duration: 600, easingFunction: 'easeInOutQuad' } });
                     openRightDrawer();
                 });
             }

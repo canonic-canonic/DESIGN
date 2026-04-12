@@ -5,8 +5,9 @@
     "breadcrumbs": true
   },
   "fleet": {
-    "canonic-canonic.github.io": "canonic.org",
-    "hadleylab-canonic.github.io": "hadleylab.org",
+    "canonic-org": "canonic.org",
+    "hadleylab-org": "hadleylab.org",
+    "founderof-ai": "founderof.ai",
     "RunnerMVP/Runner-MVP": "gorunner.pro"
   },
   "zones": [
@@ -62,6 +63,16 @@
     },
     {
       "zone": "gorunner.pro",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    },
+    {
+      "zone": "founderof.ai",
+      "provider": "cloudflare",
+      "account": "73a7cdd5a8be98f45816da1c87b7518a"
+    },
+    {
+      "zone": "singu.ar",
       "provider": "cloudflare",
       "account": "73a7cdd5a8be98f45816da1c87b7518a"
     }
@@ -129,9 +140,9 @@
     },
     {
       "domain": "onconex.ai",
-      "target": "hadleylab.org/talks/oncochat/community/",
-      "serve": "proxy",
-      "surface": "community (SEO sink)"
+      "target": "APPS/ONCONEX",
+      "serve": "app",
+      "surface": "Next.js orchestrator (7 views, subdomain dispatch)"
     },
     {
       "domain": "app.onconex.ai",
@@ -228,6 +239,42 @@
       "target": "canonic.org",
       "serve": "health",
       "surface": "federation dashboard"
+    },
+    {
+      "domain": "founderof.ai",
+      "target": "founderof.ai",
+      "serve": "pages",
+      "surface": "founder landing"
+    },
+    {
+      "domain": "idrdex.founderof.ai",
+      "target": "founderof.ai/dexter/",
+      "serve": "subdomain",
+      "surface": "founder profile"
+    },
+    {
+      "domain": "marisa.founderof.ai",
+      "target": "founderof.ai/marisa/",
+      "serve": "subdomain",
+      "surface": "founder profile"
+    },
+    {
+      "domain": "nicholas.founderof.ai",
+      "target": "founderof.ai/nicholas/",
+      "serve": "subdomain",
+      "surface": "founder profile"
+    },
+    {
+      "domain": "anil.founderof.ai",
+      "target": "founderof.ai/anil/",
+      "serve": "subdomain",
+      "surface": "founder profile"
+    },
+    {
+      "domain": "singu.ar",
+      "target": "founderof.ai",
+      "serve": "redirect",
+      "surface": "founders (alias)"
     }
   ],
   "fleets": [
@@ -290,8 +337,8 @@
     }
   },
   "repos": {
-    "canonic.org": "https://github.com/canonic-canonic/canonic-canonic.github.io.git",
-    "hadleylab.org": "https://github.com/hadleylab-canonic/hadleylab-canonic.github.io.git",
+    "canonic.org": "https://github.com/canonic-canonic/canonic-canonic.git",
+    "hadleylab.org": "https://github.com/hadleylab-canonic/hadleylab-canonic.git",
     "gorunner.pro": "https://github.com/RunnerMVP/Runner-MVP.git",
     "DESIGN": "https://github.com/canonic-canonic/DESIGN.git"
   },
@@ -326,7 +373,11 @@
     "https://darioisms.com",
     "https://www.darioisms.com",
     "https://gorunner.pro",
-    "https://www.gorunner.pro"
+    "https://www.gorunner.pro",
+    "https://founderof.ai",
+    "https://www.founderof.ai",
+    "https://singu.ar",
+    "https://www.singu.ar"
   ],
   "oauth": {
     "provider": "github",

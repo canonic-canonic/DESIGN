@@ -111,8 +111,9 @@
           if (r.ok) return r.json();
           throw new Error('auth failed');
         }).then(function(data) {
-          if (data.session_token) {
-            localStorage.setItem('canonic_session_token', data.session_token);
+          var sessionToken = data.session_token || data.token || data.access_token;
+          if (sessionToken) {
+            localStorage.setItem('canonic_session_token', sessionToken);
             unlockGalaxy(data);
           }
         }).catch(function(e) {
